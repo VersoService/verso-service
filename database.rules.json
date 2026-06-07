@@ -1,0 +1,15 @@
+{
+  "rules": {
+    ".read": "auth != null",
+    ".write": "auth != null",
+    "inventario": {
+      ".indexOn": ["nome", "categoria"]
+    },
+    "services": {
+      ".indexOn": ["dataOut", "dataIn", "stato"]
+    },
+    "team": {
+      ".indexOn": ["nome"]
+    }
+  }
+}
