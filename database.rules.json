@@ -1,15 +1,36 @@
 {
   "rules": {
-    ".read": "auth != null",
-    ".write": "auth != null",
     "inventario": {
+      ".read": "auth != null",
+      ".write": "auth != null",
       ".indexOn": ["nome", "categoria"]
     },
     "services": {
+      ".read": "auth != null",
+      ".write": "auth != null",
       ".indexOn": ["dataOut", "dataIn", "stato"]
     },
     "team": {
+      ".read": "auth != null",
+      ".write": "auth != null",
       ".indexOn": ["nome"]
-    }
+    },
+    "categories": {
+      ".read": "auth != null",
+      ".write": "auth != null",
+      ".indexOn": ["name", "order"]
+    },
+    "finance": {
+      ".read": "auth != null",
+      ".write": "auth != null",
+      ".indexOn": ["date", "type", "category"]
+    },
+    "orders": {
+      ".read": "auth != null",
+      ".write": "auth != null",
+      ".indexOn": ["date", "status", "supplier"]
+    },
+    ".read": false,
+    ".write": false
   }
 }

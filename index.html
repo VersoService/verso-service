@@ -230,8 +230,14 @@ main { padding: 1.5rem 2rem 5rem; }
 /* EVENTI CARD */
 .service-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; transition: border-color 0.2s; }
 .service-card:hover { border-color: var(--border-bright); }
+.service-card.collapsed .service-card-body, .service-card.collapsed .service-card-actions, .service-card.collapsed .service-team-wrap { display: none; }
+.service-card.collapsed .service-card-header { border-bottom: none; }
 .service-card-header { padding: 1rem 1.2rem; display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; border-bottom: 1px solid var(--border); cursor: pointer; }
 .service-card-header:hover { background: var(--surface2); }
+.service-expand-btn { width: 30px; height: 30px; border: 1px solid var(--border); border-radius: 4px; background: var(--surface2); color: var(--text-dim); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s; }
+.service-card-header:hover .service-expand-btn { border-color: var(--border-bright); color: var(--accent); }
+.service-expand-btn svg { transition: transform 0.18s; }
+.service-card:not(.collapsed) .service-expand-btn svg { transform: rotate(180deg); }
 .service-title-row { display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; }
 .service-name { font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; letter-spacing: 0.1em; color: var(--text); }
 .service-status { font-family: 'IBM Plex Mono', monospace; font-size: 0.62rem; padding: 0.2rem 0.6rem; border-radius: 3px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 700; }
@@ -243,7 +249,12 @@ main { padding: 1.5rem 2rem 5rem; }
 .service-meta-item svg { color: var(--text-faint); flex-shrink: 0; }
 .service-card-body { padding: 1rem 1.2rem; }
 .service-items-list { display: flex; flex-direction: column; gap: 0.5rem; }
+.service-category-block { border: 1px solid var(--border); border-radius: 5px; overflow: hidden; background: rgba(255,255,255,0.015); }
+.service-category-head { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; padding: 0.5rem 0.75rem; border-left: 3px solid var(--accent2); border-bottom: 1px solid var(--border); background: var(--surface2); font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-dim); }
+.service-category-head .name { color: var(--text); font-weight: 700; }
+.service-category-items { display: flex; flex-direction: column; gap: 1px; background: var(--border); }
 .service-item-row { display: flex; align-items: center; gap: 0.8rem; padding: 0.55rem 0.8rem; background: var(--surface2); border-radius: 4px; border: 1px solid var(--border); }
+.service-category-items .service-item-row { border: none; border-radius: 0; background: var(--surface); }
 .service-item-icon { font-size: 1rem; flex-shrink: 0; }
 .service-item-name { flex: 1; font-size: 0.85rem; font-weight: 600; }
 .service-item-qty { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); font-weight: 700; }
@@ -291,6 +302,15 @@ main { padding: 1.5rem 2rem 5rem; }
 .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(240,165,0,0.1); }
 .field select option { background: var(--surface2); }
 .field textarea { resize: vertical; min-height: 70px; }
+.category-add-toggle { align-self: flex-start; margin-top: 0.55rem; }
+.category-add-panel { display: none; grid-template-columns: 62px minmax(0,1fr) auto; gap: 0.55rem; margin-top: 0.6rem; align-items: center; }
+.category-add-panel.open { display: grid; }
+.category-add-panel input { min-width: 0; }
+.category-icon-input { text-align: center; font-family: 'IBM Plex Mono', monospace !important; }
+@media (max-width: 520px) {
+  .category-add-panel { grid-template-columns: 58px minmax(0,1fr); }
+  .category-add-panel .btn { grid-column: 1 / -1; justify-content: center; }
+}
 .modal-actions { display: flex; justify-content: flex-end; gap: 0.7rem; margin-top: 1.5rem; padding-top: 1.2rem; border-top: 1px solid var(--border); }
 
 /* ADD ITEM TO EVENTI */
@@ -447,6 +467,28 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
 .pricing-link-tag { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.18rem 0.45rem; border-radius: 999px; background: rgba(0,212,255,0.08); border: 1px solid rgba(0,212,255,0.18); font-family: 'IBM Plex Mono', monospace; font-size: 0.62rem; color: var(--accent2); }
 .pricing-empty-links { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--text-faint); }
 
+/* ===== COSTI / ORDINI ===== */
+.finance-layout { padding: 1.5rem 2rem 5rem; display: flex; flex-direction: column; gap: 1rem; }
+.finance-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 0.9rem; }
+.finance-summary-card { background: var(--surface); border: 1px solid var(--border); border-top: 2px solid var(--accent2); border-radius: 6px; padding: 1rem 1.1rem; }
+.finance-summary-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.62rem; color: var(--text-dim); letter-spacing: 0.12em; text-transform: uppercase; }
+.finance-summary-value { font-family: 'Bebas Neue', sans-serif; font-size: 1.9rem; letter-spacing: 0.08em; color: var(--text); line-height: 1; margin-top: 0.35rem; }
+.finance-list { display: flex; flex-direction: column; gap: 0.55rem; }
+.finance-row { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 0.85rem 1rem; display: grid; grid-template-columns: 118px minmax(0, 1fr) 145px auto; align-items: center; gap: 1rem; }
+.finance-row:hover { border-color: var(--border-bright); }
+.finance-date { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; color: var(--text-dim); }
+.finance-title { font-weight: 700; font-size: 0.92rem; color: var(--text); line-height: 1.3; }
+.finance-meta { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.35rem; }
+.finance-amount { font-family: 'IBM Plex Mono', monospace; font-size: 0.9rem; font-weight: 700; text-align: right; white-space: nowrap; }
+.finance-amount.income { color: var(--success); }
+.finance-amount.expense { color: var(--danger); }
+.finance-actions { display: flex; gap: 0.35rem; justify-content: flex-end; }
+.status-pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.18rem 0.5rem; border-radius: 3px; border: 1px solid var(--border); color: var(--text-dim); background: var(--surface2); }
+.status-ordered { color: var(--accent2); border-color: rgba(0,212,255,0.25); background: rgba(0,212,255,0.08); }
+.status-paid { color: var(--accent); border-color: rgba(240,165,0,0.28); background: rgba(240,165,0,0.08); }
+.status-received { color: var(--success); border-color: rgba(0,204,102,0.25); background: rgba(0,204,102,0.08); }
+.status-cancelled { color: var(--danger); border-color: rgba(255,68,68,0.25); background: rgba(255,68,68,0.08); }
+
 /* ===== PREVENTIVI ===== */
 .quote-layout { padding: 1.5rem 2rem 5rem; display: flex; flex-direction: column; gap: 1rem; }
 .quote-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
@@ -489,6 +531,10 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
   .team-report-month { flex: 1; min-width: 140px; }
   .pricing-layout, .quote-layout { padding: 0.8rem 0.8rem calc(6rem + env(safe-area-inset-bottom)); }
   .pricing-grid { grid-template-columns: 1fr; }
+  .finance-layout { padding: 0.8rem 0.8rem calc(6rem + env(safe-area-inset-bottom)); }
+  .finance-row { grid-template-columns: 1fr; align-items: stretch; gap: 0.65rem; }
+  .finance-amount { text-align: left; }
+  .finance-actions { justify-content: flex-start; }
   .quote-line-row { grid-template-columns: minmax(0, 1fr) 58px 82px 94px; gap: 0.45rem; padding: 0.55rem 0.6rem; }
   .quote-card-head, .quote-card-body, .pricing-category-head { padding-left: 0.9rem; padding-right: 0.9rem; }
   .service-hint-row { align-items: flex-start; }
@@ -685,6 +731,12 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
     <button class="nav-tab" onclick="switchPage('preventivi')" id="tab-preventivi">
       🧾 Preventivi
     </button>
+    <button class="nav-tab" onclick="switchPage('costi')" id="tab-costi">
+      💰 Costi
+    </button>
+    <button class="nav-tab" onclick="switchPage('ordini')" id="tab-ordini">
+      🛒 Ordini
+    </button>
     <button class="nav-tab" onclick="switchPage('disponibilita')" id="tab-disponibilita">
       📅 Disponibilità
     </button>
@@ -718,6 +770,12 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
         </button>
         <button class="mobile-nav-link" data-page="preventivi" onclick="switchPage('preventivi')">
           <span class="mobile-nav-link-main">🧾 Preventivi</span>
+        </button>
+        <button class="mobile-nav-link" data-page="costi" onclick="switchPage('costi')">
+          <span class="mobile-nav-link-main">💰 Costi</span>
+        </button>
+        <button class="mobile-nav-link" data-page="ordini" onclick="switchPage('ordini')">
+          <span class="mobile-nav-link-main">🛒 Ordini</span>
         </button>
         <button class="mobile-nav-link" data-page="disponibilita" onclick="switchPage('disponibilita')">
           <span class="mobile-nav-link-main">📅 Disponibilita</span>
@@ -798,7 +856,7 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
       <div class="info-banner-icon">🚚</div>
       <div class="info-banner-text">
         <strong>Eventi</strong>
-        Crea un evento per ogni lavoro: inserisci nome, luogo, date di uscita/rientro e materiale. Lo stato segue il flusso <b>🔵 Pianificato → 🟠 In corso → ✅ Rientrato</b> e può aggiornarsi automaticamente in base al calendario. Da ogni evento puoi anche aprire la bozza su <b>Google Calendar</b> o esportare il file <b>.ics</b>.
+        Crea un evento per ogni lavoro: inserisci nome, luogo, date di uscita/rientro e materiale. Clicca una riga evento per espandere o ridurre i dettagli. Lo stato segue il flusso <b>🔵 Pianificato → 🟠 In corso → ✅ Rientrato</b> e avanza automaticamente in base al calendario. Da ogni evento puoi esportare <b>Lista carico</b>, <b>Preventivo</b>, <b>Google Calendar</b> o <b>.ics</b>.
       </div>
       <button class="info-banner-close" onclick="closeBanner('infoBannerSvc')">✕</button>
     </div>
@@ -846,6 +904,68 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
       <button class="info-banner-close" onclick="closeBanner('infoBannerPreventivi')">✕</button>
     </div>
     <div class="quote-layout" id="mainPreventivi"></div>
+  </div>
+
+  <!-- ===== PAGINA COSTI ===== -->
+  <div id="page-costi" class="page">
+    <div class="toolbar">
+      <div class="search-wrap">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" id="searchFinance" class="search-input" placeholder="Cerca movimento, categoria, metodo..." autocomplete="off">
+      </div>
+      <input type="month" id="financeMonth" class="avail-date-input" oninput="setFinanceMonth(this.value)">
+      <button class="btn btn-primary" onclick="openModalFinance()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        Movimento
+      </button>
+      <button class="btn btn-ghost" onclick="exportFinanceCsv()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        CSV
+      </button>
+    </div>
+    <div class="info-banner" id="infoBannerFinance">
+      <div class="info-banner-icon">💰</div>
+      <div class="info-banner-text">
+        <strong>Costi</strong>
+        Registra entrate e spese operative. Filtra per mese, tieni sott'occhio saldo, incassi e uscite, ed esporta il CSV quando ti serve un riepilogo.
+      </div>
+      <button class="info-banner-close" onclick="closeBanner('infoBannerFinance')">✕</button>
+    </div>
+    <div class="finance-layout" id="mainFinance"></div>
+  </div>
+
+  <!-- ===== PAGINA ORDINI ===== -->
+  <div id="page-ordini" class="page">
+    <div class="toolbar">
+      <div class="search-wrap">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" id="searchOrders" class="search-input" placeholder="Cerca ordine, fornitore, riferimento..." autocomplete="off">
+      </div>
+      <div class="filter-tabs" id="filterTabsOrders">
+        <button class="tab active" data-filter="all" onclick="setOrderFilter('all')">Tutti</button>
+        <button class="tab" data-filter="ordered" onclick="setOrderFilter('ordered')">Ordinati</button>
+        <button class="tab" data-filter="paid" onclick="setOrderFilter('paid')">Pagati</button>
+        <button class="tab" data-filter="received" onclick="setOrderFilter('received')">Arrivati</button>
+        <button class="tab" data-filter="cancelled" onclick="setOrderFilter('cancelled')">Annullati</button>
+      </div>
+      <button class="btn btn-primary" onclick="openModalOrder()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        Ordine
+      </button>
+      <button class="btn btn-ghost" onclick="exportOrdersCsv()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        CSV
+      </button>
+    </div>
+    <div class="info-banner" id="infoBannerOrders">
+      <div class="info-banner-icon">🛒</div>
+      <div class="info-banner-text">
+        <strong>Ordini</strong>
+        Segna gli acquisti fatti o da seguire, con fornitore, importo, stato e riferimento. Qui tieni separati gli ordini dal registro costi generale.
+      </div>
+      <button class="info-banner-close" onclick="closeBanner('infoBannerOrders')">✕</button>
+    </div>
+    <div class="finance-layout" id="mainOrders"></div>
   </div>
 
   <!-- ===== PAGINA DISPONIBILITA ===== -->
@@ -1008,16 +1128,13 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
       <div class="field"><label>Modello</label><input type="text" id="fModello" placeholder="es. Intimidator 330"></div>
       <div class="field">
         <label>Categoria *</label>
-        <select id="fCategoria">
-          <option value="">— Seleziona —</option>
-          <option value="Luci">🔦 Luci</option>
-          <option value="Audio">🔊 Audio</option>
-          <option value="Cavi & Connettori">🔌 Cavi & Connettori</option>
-          <option value="Strutture & Truss">🏗️ Strutture & Truss</option>
-          <option value="Consolle & Controller">🎛️ Consolle & Controller</option>
-          <option value="Accessori">🔧 Accessori</option>
-          <option value="Altro">📦 Altro</option>
-        </select>
+        <select id="fCategoria"></select>
+        <button type="button" class="btn btn-ghost btn-sm category-add-toggle" onclick="toggleCategoryCreator()">+ Categoria</button>
+        <div class="category-add-panel" id="categoryAddPanel">
+          <input type="text" id="fCategoryIcon" class="category-icon-input" maxlength="4" placeholder="📦" aria-label="Icona categoria" onkeydown="handleCategoryCreatorKey(event)">
+          <input type="text" id="fCategoryName" placeholder="Nome categoria" aria-label="Nome categoria" onkeydown="handleCategoryCreatorKey(event)">
+          <button type="button" class="btn btn-primary btn-sm" onclick="saveCategory()">Salva</button>
+        </div>
       </div>
       <div class="field"><label>Quantità *</label><input type="number" id="fQty" min="0" value="1"></div>
       <div class="field"><label>Prezzo unitario preventivo (€)</label><input type="number" id="fPrezzo" min="0" step="0.01" value="0"></div>
@@ -1084,12 +1201,71 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
   </div>
 </div>
 
+<!-- MODAL COSTO / ENTRATA -->
+<div class="modal-overlay" id="modalFinance" onclick="handleOverlay(event,'modalFinance')">
+  <div class="modal">
+    <div class="modal-title" id="modalFinanceTitle">Nuovo Movimento</div>
+    <div class="form-grid">
+      <div class="field">
+        <label>Tipo *</label>
+        <select id="finType">
+          <option value="income">Entrata</option>
+          <option value="expense">Spesa</option>
+        </select>
+      </div>
+      <div class="field"><label>Data *</label><input type="date" id="finDate"></div>
+      <div class="field full"><label>Descrizione *</label><input type="text" id="finDescription" placeholder="es. Acconto evento / carburante / noleggio"></div>
+      <div class="field"><label>Categoria</label><input type="text" id="finCategory" placeholder="es. Evento, Trasporti, Materiale"></div>
+      <div class="field"><label>Importo (€) *</label><input type="number" id="finAmount" min="0" step="0.01" value="0"></div>
+      <div class="field"><label>Metodo</label><input type="text" id="finPayment" placeholder="es. Bonifico, contanti, carta"></div>
+      <div class="field full"><label>Note</label><textarea id="finNote" placeholder="Dettagli interni..."></textarea></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modalFinance')">Annulla</button>
+      <button class="btn btn-primary" onclick="saveFinanceEntry()">Salva Movimento</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ORDINE -->
+<div class="modal-overlay" id="modalOrder" onclick="handleOverlay(event,'modalOrder')">
+  <div class="modal">
+    <div class="modal-title" id="modalOrderTitle">Nuovo Ordine</div>
+    <div class="form-grid">
+      <div class="field"><label>Data *</label><input type="date" id="ordDate"></div>
+      <div class="field">
+        <label>Stato</label>
+        <select id="ordStatus">
+          <option value="ordered">Ordinato</option>
+          <option value="paid">Pagato</option>
+          <option value="received">Arrivato</option>
+          <option value="cancelled">Annullato</option>
+        </select>
+      </div>
+      <div class="field"><label>Fornitore</label><input type="text" id="ordSupplier" placeholder="es. Thomann, Amazon, service partner"></div>
+      <div class="field"><label>Riferimento</label><input type="text" id="ordReference" placeholder="es. numero ordine / fattura"></div>
+      <div class="field full"><label>Oggetto *</label><input type="text" id="ordItem" placeholder="es. Cavi XLR, lampade, flight case"></div>
+      <div class="field"><label>Quantità</label><input type="number" id="ordQty" min="1" value="1"></div>
+      <div class="field"><label>Costo totale (€) *</label><input type="number" id="ordAmount" min="0" step="0.01" value="0"></div>
+      <div class="field full"><label>Note</label><textarea id="ordNote" placeholder="Tracking, tempi, note interne..."></textarea></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modalOrder')">Annulla</button>
+      <button class="btn btn-primary" onclick="saveOrder()">Salva Ordine</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
 // ==================== COSTANTI ====================
 const SESSION_USER_KEY = 'vs_auth_user_v1';
+const LAST_BACKUP_KEY = 'vs_last_backup_download_v1';
+const BACKUP_CONFIRM_WORD = 'RIPRISTINA';
+const DATA_BRANCHES = ['inventario', 'services', 'team', 'categories', 'finance', 'orders'];
 const CAT_ICONS = { 'Luci':'🔦','Audio':'🔊','Cavi & Connettori':'🔌','Strutture & Truss':'🏗️','Consolle & Controller':'🎛️','Accessori':'🔧','Altro':'📦' };
+const DEFAULT_CATEGORIES = Object.entries(CAT_ICONS).map(([name, icon], order) => ({ name, icon, order, builtin: true }));
 
 // ==================== STATE ====================
 let items = {};       // magazzino
@@ -1103,19 +1279,33 @@ let svcFilter = 'all';
 let svcSearch = '';
 let priceSearch = '';
 let quoteSearch = '';
+let financeSearch = '';
+let orderSearch = '';
+let orderFilter = 'all';
 let currentUser = null;
 let firebaseUnsubscribers = [];
+let firebaseDataLoaded = { inventario: false, services: false, team: false, categories: false, finance: false, orders: false };
+let categories = {};
+let financeEntries = {};
+let orders = {};
+let editFinanceId = null;
+let editOrderId = null;
+let backupReminderShown = false;
+let expandedServiceCards = new Set();
 let svcSelectedItems = []; // [{id, qty}] while editing
 let itemSuggestedLinks = []; // [{id, qty}] while editing item
 let autoStatusSyncRunning = false;
 let autoStatusTimer = null;
 let autoStatusLastRunDay = '';
+let financeMonth = getLocalDateKey().slice(0, 7);
 let teamReportMonth = getLocalDateKey().slice(0, 7);
 const PAGE_LABELS = {
   magazzino: 'Magazzino',
   service: 'Eventi',
   prezzi: 'Prezzi',
   preventivi: 'Preventivi',
+  costi: 'Costi',
+  ordini: 'Ordini',
   disponibilita: 'Disponibilita',
   scanner: 'Scanner',
   qrcodes: 'QR Codes',
@@ -1172,6 +1362,7 @@ function showApp() {
   setTimeout(() => ls.style.display = 'none', 500);
   document.getElementById('appWrapper').classList.add('visible');
   scheduleAutoServiceStatusSync();
+  setTimeout(maybeShowBackupReminder, 1200);
 }
 
 function showLogin() {
@@ -1215,6 +1406,7 @@ window.addEventListener('firebase-ready', () => {
 function startFirebaseDataListeners() {
   const { db, ref, onValue } = window._fb;
   stopFirebaseDataListeners();
+  resetFirebaseDataLoaded();
 
   firebaseUnsubscribers.push(onValue(ref(db, '.info/connected'), snap => {
     document.getElementById('connDot').className = 'conn-dot ' + (snap.val() ? 'online' : 'offline');
@@ -1224,6 +1416,7 @@ function startFirebaseDataListeners() {
   firebaseUnsubscribers.push(onValue(ref(db, 'inventario'), snap => {
     setSyncing(false);
     items = snap.val() || {};
+    markFirebaseDataLoaded('inventario');
     renderAll();
     if (checkSession()) hideLoading();
   }, () => { document.getElementById('configWarning').classList.add('show'); hideLoading(); }));
@@ -1231,6 +1424,7 @@ function startFirebaseDataListeners() {
   firebaseUnsubscribers.push(onValue(ref(db, 'services'), snap => {
     setSyncing(false);
     services = snap.val() || {};
+    markFirebaseDataLoaded('services');
     renderAll();
     scheduleAutoServiceStatusSync();
   }, () => { setSyncing(false); showToast('Errore lettura eventi', 'danger'); }));
@@ -1238,13 +1432,37 @@ function startFirebaseDataListeners() {
   firebaseUnsubscribers.push(onValue(ref(db, 'team'), snap => {
     setSyncing(false);
     members = snap.val() || {};
+    markFirebaseDataLoaded('team');
     if (currentPage === 'team') renderTeam();
   }, () => { setSyncing(false); showToast('Errore lettura team', 'danger'); }));
+
+  firebaseUnsubscribers.push(onValue(ref(db, 'categories'), snap => {
+    setSyncing(false);
+    categories = snap.val() || {};
+    markFirebaseDataLoaded('categories');
+    populateCategorySelect(document.getElementById('fCategoria')?.value || '');
+    renderAll();
+  }, () => { setSyncing(false); showToast('Errore lettura categorie', 'danger'); }));
+
+  firebaseUnsubscribers.push(onValue(ref(db, 'finance'), snap => {
+    setSyncing(false);
+    financeEntries = snap.val() || {};
+    markFirebaseDataLoaded('finance');
+    if (currentPage === 'costi') renderFinance();
+  }, () => { setSyncing(false); showToast('Errore lettura costi', 'danger'); }));
+
+  firebaseUnsubscribers.push(onValue(ref(db, 'orders'), snap => {
+    setSyncing(false);
+    orders = snap.val() || {};
+    markFirebaseDataLoaded('orders');
+    if (currentPage === 'ordini') renderOrders();
+  }, () => { setSyncing(false); showToast('Errore lettura ordini', 'danger'); }));
 }
 
 function stopFirebaseDataListeners() {
   firebaseUnsubscribers.forEach(unsubscribe => unsubscribe());
   firebaseUnsubscribers = [];
+  resetFirebaseDataLoaded();
 }
 
 setTimeout(() => { hideLoading(); }, 6000);
@@ -1259,11 +1477,210 @@ function setSyncing(on) {
 }
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
 
+function resetFirebaseDataLoaded() {
+  firebaseDataLoaded = DATA_BRANCHES.reduce((acc, key) => ({ ...acc, [key]: false }), {});
+}
+
+function markFirebaseDataLoaded(branch) {
+  firebaseDataLoaded[branch] = true;
+}
+
+function isBackupDataReady() {
+  return DATA_BRANCHES.every(key => firebaseDataLoaded[key]);
+}
+
+function getPendingBackupBranches() {
+  const labels = { inventario: 'magazzino', services: 'eventi', team: 'team', categories: 'categorie', finance: 'costi', orders: 'ordini' };
+  return DATA_BRANCHES
+    .filter(key => !firebaseDataLoaded[key])
+    .map(key => labels[key] || key);
+}
+
 function getLocalDateKey(d = new Date()) {
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, '0');
   const day = String(d.getDate()).padStart(2, '0');
   return `${y}-${m}-${day}`;
+}
+
+function getLocalDateTimeKey(d = new Date()) {
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mm = String(d.getMinutes()).padStart(2, '0');
+  const ss = String(d.getSeconds()).padStart(2, '0');
+  return `${getLocalDateKey(d)}_${hh}-${mm}-${ss}`;
+}
+
+function isPlainObject(value) {
+  return !!value && typeof value === 'object' && !Array.isArray(value);
+}
+
+function normalizeCategoryName(value) {
+  return String(value || '').replace(/\s+/g, ' ').trim();
+}
+
+function normalizeCategoryIcon(value) {
+  const chars = Array.from(String(value || '').trim());
+  const icon = chars[0] || '📦';
+  return /[<>&]/.test(icon) ? '📦' : icon;
+}
+
+function categoryKey(name) {
+  return normalizeCategoryName(name).toLocaleLowerCase('it');
+}
+
+function getSavedCategories() {
+  return Object.values(categories || {})
+    .filter(isPlainObject)
+    .map(cat => ({
+      id: String(cat.id || ''),
+      name: normalizeCategoryName(cat.name || cat.nome || cat.label),
+      icon: normalizeCategoryIcon(cat.icon || cat.emoji),
+      order: Number.isFinite(Number(cat.order)) ? Number(cat.order) : 1000,
+      builtin: false
+    }))
+    .filter(cat => cat.name);
+}
+
+function getCategoryCatalog(includeItemCategories = true) {
+  const byName = new Map();
+  DEFAULT_CATEGORIES.forEach(cat => {
+    byName.set(categoryKey(cat.name), { ...cat });
+  });
+
+  getSavedCategories().forEach(cat => {
+    const key = categoryKey(cat.name);
+    byName.set(key, { ...(byName.get(key) || {}), ...cat });
+  });
+
+  if (includeItemCategories) {
+    Object.values(items || {}).forEach(item => {
+      const name = normalizeCategoryName(item?.categoria);
+      if (!name) return;
+      const key = categoryKey(name);
+      if (!byName.has(key)) {
+        byName.set(key, { name, icon: '📦', order: 1100, builtin: false });
+      }
+    });
+  }
+
+  return Array.from(byName.values()).sort((a, b) => {
+    const orderDiff = (a.order ?? 1000) - (b.order ?? 1000);
+    if (orderDiff !== 0) return orderDiff;
+    return a.name.localeCompare(b.name, 'it');
+  });
+}
+
+function getCategoryIcon(name) {
+  const normalized = normalizeCategoryName(name);
+  const found = getCategoryCatalog(true).find(cat => categoryKey(cat.name) === categoryKey(normalized));
+  return found?.icon || CAT_ICONS[normalized] || '📦';
+}
+
+function categoryExists(name) {
+  const key = categoryKey(name);
+  return getCategoryCatalog(true).some(cat => categoryKey(cat.name) === key);
+}
+
+function sortCategoryNames(names) {
+  const order = new Map(getCategoryCatalog(true).map((cat, idx) => [categoryKey(cat.name), idx]));
+  return [...names].sort((a, b) => {
+    const aOrder = order.has(categoryKey(a)) ? order.get(categoryKey(a)) : 9999;
+    const bOrder = order.has(categoryKey(b)) ? order.get(categoryKey(b)) : 9999;
+    if (aOrder !== bOrder) return aOrder - bOrder;
+    return String(a || '').localeCompare(String(b || ''), 'it');
+  });
+}
+
+function populateCategorySelect(selected = '') {
+  const sel = document.getElementById('fCategoria');
+  if (!sel) return;
+  const current = normalizeCategoryName(selected || sel.value);
+  sel.innerHTML = '<option value="">— Seleziona —</option>';
+  getCategoryCatalog(true).forEach(cat => {
+    const opt = document.createElement('option');
+    opt.value = cat.name;
+    opt.textContent = `${cat.icon} ${cat.name}`;
+    sel.appendChild(opt);
+  });
+  if (current && !Array.from(sel.options).some(opt => opt.value === current)) {
+    const opt = document.createElement('option');
+    opt.value = current;
+    opt.textContent = `${getCategoryIcon(current)} ${current}`;
+    sel.appendChild(opt);
+  }
+  sel.value = current;
+}
+
+function toggleCategoryCreator(forceOpen) {
+  const panel = document.getElementById('categoryAddPanel');
+  if (!panel) return;
+  const shouldOpen = typeof forceOpen === 'boolean' ? forceOpen : !panel.classList.contains('open');
+  panel.classList.toggle('open', shouldOpen);
+  if (shouldOpen) setTimeout(() => document.getElementById('fCategoryName')?.focus(), 50);
+}
+
+function clearCategoryCreator() {
+  const nameInput = document.getElementById('fCategoryName');
+  const iconInput = document.getElementById('fCategoryIcon');
+  if (nameInput) nameInput.value = '';
+  if (iconInput) iconInput.value = '';
+}
+
+function saveCategory() {
+  const name = normalizeCategoryName(document.getElementById('fCategoryName')?.value);
+  const icon = normalizeCategoryIcon(document.getElementById('fCategoryIcon')?.value);
+  if (!name) {
+    showToast('Inserisci il nome categoria', 'danger');
+    return;
+  }
+  if (name.length > 40) {
+    showToast('Categoria troppo lunga', 'danger');
+    return;
+  }
+  if (/[<>]/.test(name)) {
+    showToast('Nome categoria non valido', 'danger');
+    return;
+  }
+  if (categoryExists(name)) {
+    populateCategorySelect(name);
+    showToast('Categoria già presente');
+    toggleCategoryCreator(false);
+    clearCategoryCreator();
+    return;
+  }
+
+  const fb = getFbOrWarn();
+  if (!fb) return;
+  const id = uid();
+  const now = Date.now();
+  const obj = { id, name, icon, order: DEFAULT_CATEGORIES.length + getSavedCategories().length, createdAt: now, updatedAt: now };
+  setSyncing(true);
+  const { db, ref, set } = fb;
+  set(ref(db, `categories/${id}`), obj)
+    .then(() => {
+      categories[id] = obj;
+      populateCategorySelect(name);
+      renderAll();
+      toggleCategoryCreator(false);
+      clearCategoryCreator();
+      showToast(`Categoria aggiunta: ${name}`);
+    })
+    .catch(err => {
+      setSyncing(false);
+      console.error('saveCategory failed:', err);
+      showToast('Errore categoria: ' + getErrMsg(err), 'danger');
+    });
+}
+
+function handleCategoryCreatorKey(e) {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    saveCategory();
+  }
+  if (e.key === 'Escape') {
+    e.preventDefault();
+    toggleCategoryCreator(false);
+  }
 }
 
 function isValidYmd(s) {
@@ -1278,6 +1695,10 @@ function calcServiceAutoStatus(svc, todayKey = getLocalDateKey()) {
   if (todayKey < out) return 'planned';
   if (todayKey > inn) return 'returned';
   return 'active';
+}
+
+function getServiceStatusRank(stato = 'planned') {
+  return { planned: 0, active: 1, returned: 2 }[stato] ?? 0;
 }
 
 function scheduleAutoServiceStatusSync() {
@@ -1300,7 +1721,7 @@ function autoSyncServiceStatuses() {
     const target = calcServiceAutoStatus(svc, todayKey);
     if (!target) return;
     const current = svc?.stato || 'planned';
-    if (current !== target) {
+    if (getServiceStatusRank(target) > getServiceStatusRank(current)) {
       changes.push({
         id: svcId,
         name: svc?.nome || svcId,
@@ -1558,17 +1979,89 @@ function downloadTextFile(filename, text, mimeType = 'text/plain;charset=utf-8;'
   setTimeout(() => URL.revokeObjectURL(url), 1500);
 }
 
-function buildBackupPayload() {
+function getBackupData() {
+  return {
+    inventario: items || {},
+    services: services || {},
+    team: members || {},
+    categories: categories || {},
+    finance: financeEntries || {},
+    orders: orders || {}
+  };
+}
+
+function getBackupCounts(data) {
+  return {
+    inventario: Object.keys(data?.inventario || {}).length,
+    services: Object.keys(data?.services || {}).length,
+    team: Object.keys(data?.team || {}).length,
+    categories: Object.keys(data?.categories || {}).length,
+    finance: Object.keys(data?.finance || {}).length,
+    orders: Object.keys(data?.orders || {}).length
+  };
+}
+
+function ensureBackupDataReady() {
+  if (isBackupDataReady()) return true;
+  const pending = getPendingBackupBranches().join(', ') || 'dati';
+  showToast(`Attendi sincronizzazione: ${pending}`, 'danger');
+  return false;
+}
+
+function buildBackupPayload(reason = 'manual') {
+  const data = getBackupData();
   return {
     app: 'verso-service',
-    version: 1,
+    version: 2,
+    reason,
     exportedAt: new Date().toISOString(),
-    data: {
-      inventario: items || {},
-      services: services || {},
-      team: members || {}
-    }
+    counts: getBackupCounts(data),
+    data
   };
+}
+
+function createBackupFilename(prefix = 'verso_backup') {
+  return `${prefix}_${getLocalDateTimeKey()}.json`;
+}
+
+function rememberBackupDownloaded() {
+  try {
+    localStorage.setItem(LAST_BACKUP_KEY, new Date().toISOString());
+  } catch (err) {
+    console.warn('backup date not saved:', err);
+  }
+}
+
+function downloadBackupSnapshot(prefix = 'verso_backup', reason = 'manual') {
+  const payload = JSON.stringify(buildBackupPayload(reason), null, 2);
+  const filename = createBackupFilename(prefix);
+  downloadTextFile(filename, payload, 'application/json;charset=utf-8;');
+  rememberBackupDownloaded();
+  return filename;
+}
+
+function getLastBackupDate() {
+  try {
+    const value = localStorage.getItem(LAST_BACKUP_KEY);
+    if (!value) return null;
+    const d = new Date(value);
+    return Number.isNaN(d.getTime()) ? null : d;
+  } catch (err) {
+    return null;
+  }
+}
+
+function maybeShowBackupReminder() {
+  if (backupReminderShown) return;
+  backupReminderShown = true;
+  const last = getLastBackupDate();
+  if (last) {
+    const days = Math.floor((Date.now() - last.getTime()) / (24 * 60 * 60 * 1000));
+    if (days < 14) return;
+    showToast(`Backup consigliato: ultimo export ${days} giorni fa`, days >= 30 ? 'danger' : 'ok');
+    return;
+  }
+  showToast('Backup consigliato: scarica una copia JSON fuori da Firebase');
 }
 
 function exportBackup() {
@@ -1576,9 +2069,9 @@ function exportBackup() {
     showToast('Accedi prima di esportare il backup', 'danger');
     return;
   }
-  const payload = JSON.stringify(buildBackupPayload(), null, 2);
-  downloadTextFile(`verso_backup_${getLocalDateKey()}.json`, payload, 'application/json;charset=utf-8;');
-  showToast('Backup JSON scaricato');
+  if (!ensureBackupDataReady()) return;
+  downloadBackupSnapshot('verso_backup', 'manual');
+  showToast('Backup JSON scaricato. Conservalo fuori da Firebase');
 }
 
 function openBackupImport() {
@@ -1586,17 +2079,42 @@ function openBackupImport() {
     showToast('Accedi prima di ripristinare un backup', 'danger');
     return;
   }
+  if (!ensureBackupDataReady()) return;
   document.getElementById('backupFileInput')?.click();
 }
 
+function hasBackupBranch(root, key) {
+  return Object.prototype.hasOwnProperty.call(root, key) && isPlainObject(root[key]);
+}
+
 function normalizeBackupRoot(parsed) {
-  const root = parsed?.data || parsed;
-  if (!root || typeof root !== 'object') return null;
-  return {
-    inventario: root.inventario && typeof root.inventario === 'object' ? root.inventario : {},
-    services: root.services && typeof root.services === 'object' ? root.services : {},
-    team: root.team && typeof root.team === 'object' ? root.team : {}
+  if (!isPlainObject(parsed)) return null;
+  const root = isPlainObject(parsed.data) ? parsed.data : parsed;
+  if (!isPlainObject(root)) return null;
+  if (!['inventario', 'services', 'team'].every(key => hasBackupBranch(root, key))) return null;
+  const preservedBranches = [];
+  const optionalBranch = (key, currentValue) => {
+    if (Object.prototype.hasOwnProperty.call(root, key)) return isPlainObject(root[key]) ? root[key] : {};
+    preservedBranches.push(key);
+    return currentValue || {};
   };
+  return {
+    inventario: root.inventario,
+    services: root.services,
+    team: root.team,
+    categories: optionalBranch('categories', categories),
+    finance: optionalBranch('finance', financeEntries),
+    orders: optionalBranch('orders', orders),
+    preservedBranches,
+    exportedAt: parsed.exportedAt || null
+  };
+}
+
+function formatBackupExportedAt(value) {
+  if (!value) return 'non indicata';
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return 'non valida';
+  return d.toLocaleString('it-IT');
 }
 
 function handleBackupFile(input) {
@@ -1616,24 +2134,36 @@ function handleBackupFile(input) {
 
     const backup = normalizeBackupRoot(parsed);
     if (!backup) {
-      showToast('Formato backup non riconosciuto', 'danger');
+      showToast('Formato backup non completo: servono inventario, eventi e team', 'danger');
       return;
     }
+    if (!ensureBackupDataReady()) return;
 
-    const itemCount = Object.keys(backup.inventario).length;
-    const serviceCount = Object.keys(backup.services).length;
-    const teamCount = Object.keys(backup.team).length;
-    const ok = confirm(`Ripristinare questo backup?\n\nArticoli: ${itemCount}\nEventi: ${serviceCount}\nMembri team: ${teamCount}\n\nI dati attuali verranno sovrascritti.`);
+    const counts = getBackupCounts(backup);
+    const currentCounts = getBackupCounts(getBackupData());
+    const preservedMsg = backup.preservedBranches?.length
+      ? `\n\nRami non presenti nel backup e mantenuti attuali: ${backup.preservedBranches.join(', ')}`
+      : '';
+    const ok = confirm(`Ripristinare questo backup?\n\nBackup: ${formatBackupExportedAt(backup.exportedAt)}\nArticoli: ${counts.inventario}\nEventi: ${counts.services}\nMembri team: ${counts.team}\nCategorie: ${counts.categories}\nMovimenti costi: ${counts.finance}\nOrdini: ${counts.orders}\n\nDati attuali:\nArticoli: ${currentCounts.inventario}\nEventi: ${currentCounts.services}\nMembri team: ${currentCounts.team}\nCategorie: ${currentCounts.categories}\nMovimenti costi: ${currentCounts.finance}\nOrdini: ${currentCounts.orders}${preservedMsg}\n\nPrima del ripristino verra scaricata una copia dello stato attuale. Poi i dati Firebase verranno sovrascritti.`);
     if (!ok) return;
+    const typed = prompt(`Conferma finale: digita ${BACKUP_CONFIRM_WORD} per sovrascrivere i dati.`);
+    if (typed !== BACKUP_CONFIRM_WORD) {
+      showToast('Ripristino annullato');
+      return;
+    }
 
     const fb = getFbOrWarn();
     if (!fb) return;
     const { db, ref, set } = fb;
+    downloadBackupSnapshot('verso_pre_ripristino', 'pre-restore');
     setSyncing(true);
     Promise.all([
       set(ref(db, 'inventario'), backup.inventario),
       set(ref(db, 'services'), backup.services),
-      set(ref(db, 'team'), backup.team)
+      set(ref(db, 'team'), backup.team),
+      set(ref(db, 'categories'), backup.categories),
+      set(ref(db, 'finance'), backup.finance),
+      set(ref(db, 'orders'), backup.orders)
     ])
       .then(() => showToast('Backup ripristinato'))
       .catch(err => {
@@ -1776,6 +2306,12 @@ function switchPage(page) {
     }
     renderDisponibilita();
   }
+  if (page === 'costi') {
+    const monthInput = document.getElementById('financeMonth');
+    if (monthInput && !monthInput.value) monthInput.value = financeMonth;
+    renderFinance();
+  }
+  if (page === 'ordini') renderOrders();
 }
 
 // ==================== RENDER ALL ====================
@@ -1785,6 +2321,8 @@ function renderAll() {
   if (currentPage === 'service') renderService();
   if (currentPage === 'prezzi') renderPrices();
   if (currentPage === 'preventivi') renderQuotes();
+  if (currentPage === 'costi') renderFinance();
+  if (currentPage === 'ordini') renderOrders();
   if (currentPage === 'disponibilita') renderDisponibilita();
   if (currentPage === 'team') renderTeam();
   if (currentPage === 'qrcodes') renderQrCodes();
@@ -1857,15 +2395,18 @@ function renderMagazzino() {
   if (magFilter === 'all') filtered.forEach(i => { (groups[i.categoria] = groups[i.categoria] || []).push(i); });
   else groups[magFilter] = filtered;
 
-  main.innerHTML = Object.entries(groups).map(([cat, catItems]) => `
+  main.innerHTML = sortCategoryNames(Object.keys(groups)).map(cat => {
+    const catItems = groups[cat];
+    return `
     <div class="category-section">
       <div class="cat-header">
-        <div class="cat-label"><span>${CAT_ICONS[cat]||'📦'}</span>${cat}</div>
+        <div class="cat-label"><span>${getCategoryIcon(cat)}</span>${escHtml(cat)}</div>
         <div class="cat-count">${catItems.length} art. / ${catItems.reduce((s,i)=>s+i.qty,0)} pz</div>
         <div class="cat-line"></div>
       </div>
       <div class="items-grid">${catItems.map(renderItemCard).join('')}</div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 function hl(text, q) {
@@ -1922,19 +2463,128 @@ function renderItemCard(item) {
 }
 
 function updateFilterTabsMag(arr) {
-  const cats = ['all', ...new Set(arr.map(i=>i.categoria))].filter(Boolean);
+  const cats = ['all', ...sortCategoryNames([...new Set(arr.map(i=>i.categoria).filter(Boolean))])];
   const container = document.getElementById('filterTabsMag');
   container.innerHTML = '';
   cats.forEach(c => {
     const btn = document.createElement('button');
     btn.className = 'tab' + (magFilter===c?' active':'');
-    btn.textContent = c==='all' ? 'Tutti' : `${CAT_ICONS[c]||''} ${c}`;
+    btn.textContent = c==='all' ? 'Tutti' : `${getCategoryIcon(c)} ${c}`;
     btn.onclick = () => { magFilter=c; renderMagazzino(); };
     container.appendChild(btn);
   });
 }
 
 // ==================== EVENTI ====================
+function getServiceItemEntries(svc) {
+  return (svc?.items ? Object.values(svc.items) : []).map(entry => {
+    const item = items[entry.id];
+    const category = normalizeCategoryName(item?.categoria || 'Altro') || 'Altro';
+    return {
+      id: entry.id,
+      qty: Math.max(1, parseInt(entry.qty, 10) || 1),
+      item,
+      category,
+      label: item ? getItemDisplayName(item) : `Articolo rimosso (${entry.id})`,
+      brand: item?.brand || ''
+    };
+  });
+}
+
+function getServiceMaterialStats(entries) {
+  return {
+    types: entries.length,
+    pieces: entries.reduce((sum, entry) => sum + entry.qty, 0)
+  };
+}
+
+function groupServiceEntriesByCategory(entries) {
+  const groups = {};
+  entries.forEach(entry => {
+    (groups[entry.category] = groups[entry.category] || []).push(entry);
+  });
+  return sortCategoryNames(Object.keys(groups)).map(category => ({
+    category,
+    entries: groups[category].sort((a, b) => a.label.localeCompare(b.label, 'it'))
+  }));
+}
+
+function getCategoryAccent(category) {
+  const colors = ['#00d4ff', '#f0a500', '#00cc66', '#ff6b6b', '#9b7cff', '#4dd4ac', '#ff8a3d', '#6aa8ff'];
+  const key = categoryKey(category);
+  let hash = 0;
+  for (let i = 0; i < key.length; i++) hash = ((hash << 5) - hash) + key.charCodeAt(i);
+  return colors[Math.abs(hash) % colors.length];
+}
+
+function renderServiceMaterialsHtml(entries) {
+  if (entries.length === 0) return '<div class="service-empty-items">Nessun materiale assegnato</div>';
+  return groupServiceEntriesByCategory(entries).map(group => {
+    const totalQty = group.entries.reduce((sum, entry) => sum + entry.qty, 0);
+    const accent = getCategoryAccent(group.category);
+    return `
+      <div class="service-category-block">
+        <div class="service-category-head" style="border-left-color:${accent};">
+          <span class="name">${getCategoryIcon(group.category)} ${escHtml(group.category)}</span>
+          <span>${group.entries.length} tip. / ${totalQty} pz</span>
+        </div>
+        <div class="service-category-items">
+          ${group.entries.map(entry => `
+            <div class="service-item-row">
+              <span class="service-item-icon">${entry.item ? getCategoryIcon(entry.category) : '❓'}</span>
+              <span class="service-item-name">${escHtml(entry.label)}${entry.brand ? `<span style="font-size:0.7rem;color:var(--text-dim);margin-left:0.3rem;">${escHtml(entry.brand)}</span>` : ''}</span>
+              <span class="service-item-qty">×${entry.qty}</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function safeFilenamePart(value, fallback = 'file') {
+  const slug = String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/gi, '_')
+    .replace(/^_+|_+$/g, '')
+    .toLowerCase();
+  return slug || fallback;
+}
+
+function buildServiceLoadListText(svc) {
+  const entries = getServiceItemEntries(svc);
+  const lines = [
+    `Lista carico - ${svc?.nome || 'Evento'}`,
+    svc?.luogo ? `Luogo: ${svc.luogo}` : '',
+    svc?.dataOut && svc?.dataIn ? `Date: ${formatDate(svc.dataOut)} -> ${formatDate(svc.dataIn)}` : '',
+    svc?.cliente ? `Referente: ${svc.cliente}` : '',
+    '',
+    'Materiale'
+  ].filter(line => line !== '');
+
+  if (entries.length === 0) {
+    lines.push('- Nessun materiale assegnato');
+    return lines.join('\n');
+  }
+
+  groupServiceEntriesByCategory(entries).forEach(group => {
+    lines.push('', group.category.toUpperCase());
+    group.entries.forEach(entry => {
+      lines.push(`- ${entry.label}${entry.brand ? ` (${entry.brand})` : ''}: x${entry.qty}`);
+    });
+  });
+
+  return lines.join('\n');
+}
+
+function downloadServiceLoadList(id) {
+  const svc = services[id];
+  if (!svc) return;
+  const filename = `lista_carico_${safeFilenamePart(svc.nome, 'evento')}_${getLocalDateKey()}.txt`;
+  downloadTextFile(filename, buildServiceLoadListText(svc), 'text/plain;charset=utf-8;');
+  showToast(`Lista carico pronta: ${svc.nome}`);
+}
+
 function renderService() {
   const arr = Object.values(services).sort((a,b) => new Date(a.dataOut) - new Date(b.dataOut));
   const q = svcSearch.toLowerCase();
@@ -1956,21 +2606,25 @@ function renderService() {
 function renderServiceCard(svc) {
   const statusLabels = { planned:'Pianificato', active:'In corso', returned:'Rientrato' };
   const statusClass = { planned:'status-planned', active:'status-active', returned:'status-returned' };
-  const svcItems = svc.items ? Object.values(svc.items) : [];
+  const svcId = svc.id;
+  const svcStatus = svc.stato || 'planned';
+  const svcEntries = getServiceItemEntries(svc);
+  const materialStats = getServiceMaterialStats(svcEntries);
   const quoteSummary = getServiceQuoteSummary(svc);
+  const isExpanded = expandedServiceCards.has(svcId);
 
   return `
-    <div class="service-card">
-      <div class="service-card-header" onclick="toggleSvcCard('${svc.id}')">
+    <div class="service-card ${isExpanded ? 'expanded' : 'collapsed'}" id="svcCard-${svcId}">
+      <div class="service-card-header" onclick="toggleSvcCard('${svcId}')">
         <div style="flex:1">
           <div class="service-title-row">
-            <div class="service-name">${svc.nome}</div>
-            <div class="service-status ${statusClass[svc.stato]}">${statusLabels[svc.stato]}</div>
+            <div class="service-name">${escHtml(svc.nome || 'Evento')}</div>
+            <div class="service-status ${statusClass[svcStatus] || statusClass.planned}">${statusLabels[svcStatus] || svcStatus}</div>
           </div>
           <div class="service-meta-row">
             <div class="service-meta-item">
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-              ${svc.luogo}
+              ${escHtml(svc.luogo || 'Luogo non impostato')}
             </div>
             <div class="service-meta-item">
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
@@ -1978,51 +2632,44 @@ function renderServiceCard(svc) {
             </div>
             ${svc.cliente?`<div class="service-meta-item">
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-              ${svc.cliente}
+              ${escHtml(svc.cliente)}
             </div>`:''}
             <div class="service-meta-item" style="color:var(--text-faint)">
-              📦 ${svcItems.length} tipologie
+              📦 ${materialStats.types} tipologie · ${materialStats.pieces} pz
             </div>
             <div class="service-meta-item" style="color:${quoteSummary.missingCount ? 'var(--warning)' : 'var(--accent)'}">
               💶 ${formatMoney(quoteSummary.total)}${quoteSummary.missingCount ? ` · ${quoteSummary.missingCount} senza prezzo` : ''}
             </div>
           </div>
         </div>
-      </div>
-      <div class="service-card-body" id="svcBody-${svc.id}">
-        ${svc.note?`<div class="service-note">📝 ${svc.note}</div>`:''}
-        <div class="service-items-list">
-          ${svcItems.length === 0
-            ? '<div class="service-empty-items">Nessun materiale assegnato</div>'
-            : svcItems.map(si => {
-                const item = items[si.id];
-                const name = item ? `${item.nome}${item.modello?' '+item.modello:''}` : `Articolo rimosso (${si.id})`;
-                const icon = item ? (CAT_ICONS[item.categoria]||'📦') : '❓';
-                return `<div class="service-item-row">
-                  <span class="service-item-icon">${icon}</span>
-                  <span class="service-item-name">${name}${item&&item.brand?`<span style="font-size:0.7rem;color:var(--text-dim);margin-left:0.3rem;">${item.brand}</span>`:''}</span>
-                  <span class="service-item-qty">×${si.qty}</span>
-                </div>`;
-              }).join('')
-          }
+        <div class="service-expand-btn" title="${isExpanded ? 'Riduci evento' : 'Espandi evento'}" aria-label="${isExpanded ? 'Riduci evento' : 'Espandi evento'}">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="6 9 12 15 18 9"/></svg>
         </div>
       </div>
-      <div id="svcTeam-${svc.id}">${getServiceTeamHtml(svc.id)}</div>
+      <div class="service-card-body">
+        ${svc.note?`<div class="service-note">📝 ${escHtml(svc.note)}</div>`:''}
+        <div class="service-items-list">
+          ${renderServiceMaterialsHtml(svcEntries)}
+        </div>
+      </div>
+      <div class="service-team-wrap" id="svcTeam-${svcId}">${getServiceTeamHtml(svcId)}</div>
       <div class="service-card-actions">
-        ${svc.stato==='planned'?`<button class="btn btn-sm" style="background:rgba(240,165,0,0.1);color:var(--accent);border:1px solid rgba(240,165,0,0.3);" onclick="setServiceStato('${svc.id}','active')">🚚 Segna In corso</button>`:''}
-        ${svc.stato==='active'?`<button class="btn btn-sm" style="background:rgba(0,204,102,0.1);color:var(--success);border:1px solid rgba(0,204,102,0.3);" onclick="setServiceStato('${svc.id}','returned')">✅ Segna Rientrato</button>`:''}
-        <button class="btn btn-ghost btn-sm" onclick="openQuoteForService('${svc.id}')">🧾 Preventivo</button>
-        <button class="btn btn-ghost btn-sm" onclick="openGoogleCalendarForService('${svc.id}')">📆 Google Calendar</button>
-        <button class="btn btn-ghost btn-sm" onclick="downloadServiceIcs('${svc.id}')">ICS</button>
-        <button class="btn btn-ghost btn-sm" onclick="openModalService('${svc.id}')">✏️ Modifica</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteService('${svc.id}')">Elimina</button>
+        ${svcStatus==='planned'?`<button class="btn btn-sm" style="background:rgba(240,165,0,0.1);color:var(--accent);border:1px solid rgba(240,165,0,0.3);" onclick="setServiceStato('${svcId}','active')">🚚 Segna In corso</button>`:''}
+        ${svcStatus==='active'?`<button class="btn btn-sm" style="background:rgba(0,204,102,0.1);color:var(--success);border:1px solid rgba(0,204,102,0.3);" onclick="setServiceStato('${svcId}','returned')">✅ Segna Rientrato</button>`:''}
+        <button class="btn btn-ghost btn-sm" onclick="downloadServiceLoadList('${svcId}')">📋 Lista carico</button>
+        <button class="btn btn-ghost btn-sm" onclick="openQuoteForService('${svcId}')">🧾 Preventivo</button>
+        <button class="btn btn-ghost btn-sm" onclick="openGoogleCalendarForService('${svcId}')">📆 Google Calendar</button>
+        <button class="btn btn-ghost btn-sm" onclick="downloadServiceIcs('${svcId}')">ICS</button>
+        <button class="btn btn-ghost btn-sm" onclick="openModalService('${svcId}')">✏️ Modifica</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteService('${svcId}')">Elimina</button>
       </div>
     </div>`;
 }
 
 function toggleSvcCard(id) {
-  const body = document.getElementById('svcBody-' + id);
-  if (body) body.style.display = body.style.display === 'none' ? '' : 'none';
+  if (expandedServiceCards.has(id)) expandedServiceCards.delete(id);
+  else expandedServiceCards.add(id);
+  renderService();
 }
 
 function setServiceStato(id, stato) {
@@ -2040,6 +2687,356 @@ function setServiceStato(id, stato) {
       console.error('setServiceStato failed:', err);
       showToast('Errore stato: ' + getErrMsg(err), 'danger');
     });
+}
+
+// ==================== COSTI ====================
+function getFinanceArray() {
+  return Object.values(financeEntries || {}).sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
+}
+
+function financeMatchesSearch(entry) {
+  const q = financeSearch.trim().toLowerCase();
+  if (!q) return true;
+  return [entry.description, entry.category, entry.payment, entry.note, entry.type]
+    .some(value => String(value || '').toLowerCase().includes(q));
+}
+
+function getFilteredFinanceEntries() {
+  return getFinanceArray().filter(entry => {
+    if (financeMonth && String(entry.date || '').slice(0, 7) !== financeMonth) return false;
+    return financeMatchesSearch(entry);
+  });
+}
+
+function setFinanceMonth(value) {
+  financeMonth = value || '';
+  renderFinance();
+}
+
+function renderFinance() {
+  const monthInput = document.getElementById('financeMonth');
+  if (monthInput && monthInput.value !== financeMonth) monthInput.value = financeMonth;
+  const container = document.getElementById('mainFinance');
+  if (!container) return;
+
+  const entries = getFilteredFinanceEntries();
+  const income = entries.filter(e => e.type === 'income').reduce((sum, e) => sum + normalizeMoney(e.amount), 0);
+  const expense = entries.filter(e => e.type !== 'income').reduce((sum, e) => sum + normalizeMoney(e.amount), 0);
+  const balance = income - expense;
+
+  if (entries.length === 0) {
+    container.innerHTML = `
+      <div class="finance-summary">
+        ${renderFinanceSummaryCard('Entrate', income, 'var(--success)')}
+        ${renderFinanceSummaryCard('Spese', expense, 'var(--danger)')}
+        ${renderFinanceSummaryCard('Saldo', balance, balance >= 0 ? 'var(--success)' : 'var(--danger)')}
+        ${renderFinanceSummaryCard('Movimenti', 0, 'var(--text)', false)}
+      </div>
+      <div class="empty-state"><div class="icon">💰</div><p>Nessun movimento per questo filtro.</p></div>`;
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="finance-summary">
+      ${renderFinanceSummaryCard('Entrate', income, 'var(--success)')}
+      ${renderFinanceSummaryCard('Spese', expense, 'var(--danger)')}
+      ${renderFinanceSummaryCard('Saldo', balance, balance >= 0 ? 'var(--success)' : 'var(--danger)')}
+      ${renderFinanceSummaryCard('Movimenti', entries.length, 'var(--text)', false)}
+    </div>
+    <div class="finance-list">
+      ${entries.map(renderFinanceRow).join('')}
+    </div>`;
+}
+
+function renderFinanceSummaryCard(label, value, color, money = true) {
+  return `<div class="finance-summary-card">
+    <div class="finance-summary-label">${label}</div>
+    <div class="finance-summary-value" style="color:${color};">${money ? formatMoney(value) : value}</div>
+  </div>`;
+}
+
+function renderFinanceRow(entry) {
+  const isIncome = entry.type === 'income';
+  const amount = normalizeMoney(entry.amount);
+  return `<div class="finance-row">
+    <div class="finance-date">${formatDate(entry.date)}</div>
+    <div>
+      <div class="finance-title">${escHtml(entry.description || 'Movimento')}</div>
+      <div class="finance-meta">
+        <span class="status-pill ${isIncome ? 'status-received' : 'status-cancelled'}">${isIncome ? 'Entrata' : 'Spesa'}</span>
+        ${entry.category ? `<span class="tag tag-loc">${escHtml(entry.category)}</span>` : ''}
+        ${entry.payment ? `<span class="tag tag-serial">${escHtml(entry.payment)}</span>` : ''}
+        ${entry.note ? `<span class="tag">${escHtml(entry.note)}</span>` : ''}
+      </div>
+    </div>
+    <div class="finance-amount ${isIncome ? 'income' : 'expense'}">${isIncome ? '+' : '-'} ${formatMoney(amount)}</div>
+    <div class="finance-actions">
+      <button class="icon-btn" onclick="openModalFinance('${entry.id}')" title="Modifica">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      </button>
+      <button class="icon-btn del" onclick="deleteFinanceEntry('${entry.id}')" title="Elimina">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+      </button>
+    </div>
+  </div>`;
+}
+
+function openModalFinance(id = null) {
+  editFinanceId = id;
+  document.getElementById('modalFinanceTitle').textContent = id ? 'Modifica Movimento' : 'Nuovo Movimento';
+  const entry = id ? financeEntries[id] : null;
+  document.getElementById('finType').value = entry?.type || 'expense';
+  document.getElementById('finDate').value = entry?.date || getLocalDateKey();
+  document.getElementById('finDescription').value = entry?.description || '';
+  document.getElementById('finCategory').value = entry?.category || '';
+  document.getElementById('finAmount').value = normalizeMoney(entry?.amount || 0);
+  document.getElementById('finPayment').value = entry?.payment || '';
+  document.getElementById('finNote').value = entry?.note || '';
+  openModal('modalFinance');
+  setTimeout(() => document.getElementById('finDescription').focus(), 160);
+}
+
+function saveFinanceEntry() {
+  const type = document.getElementById('finType').value === 'income' ? 'income' : 'expense';
+  const date = document.getElementById('finDate').value;
+  const description = document.getElementById('finDescription').value.trim();
+  const amount = normalizeMoney(document.getElementById('finAmount').value);
+  if (!date) { showToast('Inserisci la data', 'danger'); return; }
+  if (!description) { showToast('Inserisci la descrizione', 'danger'); return; }
+  if (amount <= 0) { showToast('Inserisci un importo valido', 'danger'); return; }
+  const fb = getFbOrWarn();
+  if (!fb) return;
+
+  const id = editFinanceId || uid();
+  const now = Date.now();
+  const obj = {
+    ...(financeEntries[id] || {}),
+    id,
+    type,
+    date,
+    description,
+    category: document.getElementById('finCategory').value.trim(),
+    amount,
+    payment: document.getElementById('finPayment').value.trim(),
+    note: document.getElementById('finNote').value.trim(),
+    updatedAt: now,
+    createdAt: financeEntries[id]?.createdAt || now
+  };
+  setSyncing(true);
+  const { db, ref, set } = fb;
+  set(ref(db, `finance/${id}`), obj)
+    .then(() => {
+      financeMonth = date.slice(0, 7);
+      showToast(editFinanceId ? 'Movimento aggiornato' : 'Movimento salvato');
+      closeModal('modalFinance');
+    })
+    .catch(err => {
+      setSyncing(false);
+      console.error('saveFinanceEntry failed:', err);
+      showToast('Errore movimento: ' + getErrMsg(err), 'danger');
+    });
+}
+
+function deleteFinanceEntry(id) {
+  const entry = financeEntries[id];
+  if (!entry || !confirm(`Eliminare il movimento "${entry.description || id}"?`)) return;
+  const fb = getFbOrWarn();
+  if (!fb) return;
+  setSyncing(true);
+  const { db, ref, remove } = fb;
+  remove(ref(db, `finance/${id}`))
+    .then(() => showToast('Movimento eliminato', 'danger'))
+    .catch(err => {
+      setSyncing(false);
+      console.error('deleteFinanceEntry failed:', err);
+      showToast('Errore eliminazione movimento: ' + getErrMsg(err), 'danger');
+    });
+}
+
+function csvCell(value) {
+  return `"${String(value ?? '').replace(/"/g, '""')}"`;
+}
+
+function exportFinanceCsv() {
+  const entries = getFilteredFinanceEntries();
+  const cols = ['Data', 'Tipo', 'Descrizione', 'Categoria', 'Importo', 'Metodo', 'Note'];
+  const rows = entries.map(e => [
+    e.date,
+    e.type === 'income' ? 'Entrata' : 'Spesa',
+    e.description,
+    e.category,
+    normalizeMoney(e.amount),
+    e.payment,
+    e.note
+  ].map(csvCell).join(','));
+  downloadTextFile(`costi_verso_service_${financeMonth || getLocalDateKey()}.csv`, '\ufeff' + [cols.join(','), ...rows].join('\n'), 'text/csv;charset=utf-8;');
+  showToast('CSV costi esportato');
+}
+
+// ==================== ORDINI ====================
+const ORDER_STATUS = {
+  ordered: { label: 'Ordinato', cls: 'status-ordered' },
+  paid: { label: 'Pagato', cls: 'status-paid' },
+  received: { label: 'Arrivato', cls: 'status-received' },
+  cancelled: { label: 'Annullato', cls: 'status-cancelled' }
+};
+
+function getOrdersArray() {
+  return Object.values(orders || {}).sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
+}
+
+function orderMatchesSearch(order) {
+  const q = orderSearch.trim().toLowerCase();
+  if (!q) return true;
+  return [order.item, order.supplier, order.reference, order.note, order.status]
+    .some(value => String(value || '').toLowerCase().includes(q));
+}
+
+function getFilteredOrders() {
+  return getOrdersArray().filter(order => {
+    if (orderFilter !== 'all' && order.status !== orderFilter) return false;
+    return orderMatchesSearch(order);
+  });
+}
+
+function renderOrders() {
+  const container = document.getElementById('mainOrders');
+  if (!container) return;
+  const arr = getFilteredOrders();
+  const active = arr.filter(o => o.status !== 'cancelled');
+  const total = active.reduce((sum, o) => sum + normalizeMoney(o.amount), 0);
+  const paid = active.filter(o => o.status === 'paid' || o.status === 'received').reduce((sum, o) => sum + normalizeMoney(o.amount), 0);
+  const open = active.filter(o => o.status === 'ordered').length;
+
+  container.innerHTML = `
+    <div class="finance-summary">
+      ${renderFinanceSummaryCard('Totale ordini', total, 'var(--accent)')}
+      ${renderFinanceSummaryCard('Pagato/arrivato', paid, 'var(--success)')}
+      ${renderFinanceSummaryCard('Da seguire', open, 'var(--warning)', false)}
+      ${renderFinanceSummaryCard('Righe', arr.length, 'var(--text)', false)}
+    </div>
+    ${arr.length === 0 ? '<div class="empty-state"><div class="icon">🛒</div><p>Nessun ordine per questo filtro.</p></div>' : `<div class="finance-list">${arr.map(renderOrderRow).join('')}</div>`}`;
+}
+
+function renderOrderRow(order) {
+  const status = ORDER_STATUS[order.status] || ORDER_STATUS.ordered;
+  return `<div class="finance-row">
+    <div class="finance-date">${formatDate(order.date)}</div>
+    <div>
+      <div class="finance-title">${escHtml(order.item || 'Ordine')}</div>
+      <div class="finance-meta">
+        <span class="status-pill ${status.cls}">${status.label}</span>
+        ${order.supplier ? `<span class="tag tag-loc">${escHtml(order.supplier)}</span>` : ''}
+        ${order.reference ? `<span class="tag tag-serial">${escHtml(order.reference)}</span>` : ''}
+        <span class="tag">${parseInt(order.qty, 10) || 1} pz</span>
+        ${order.note ? `<span class="tag">${escHtml(order.note)}</span>` : ''}
+      </div>
+    </div>
+    <div class="finance-amount">${formatMoney(order.amount || 0)}</div>
+    <div class="finance-actions">
+      <button class="icon-btn" onclick="openModalOrder('${order.id}')" title="Modifica">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      </button>
+      <button class="icon-btn del" onclick="deleteOrder('${order.id}')" title="Elimina">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+      </button>
+    </div>
+  </div>`;
+}
+
+function openModalOrder(id = null) {
+  editOrderId = id;
+  document.getElementById('modalOrderTitle').textContent = id ? 'Modifica Ordine' : 'Nuovo Ordine';
+  const order = id ? orders[id] : null;
+  document.getElementById('ordDate').value = order?.date || getLocalDateKey();
+  document.getElementById('ordStatus').value = order?.status || 'ordered';
+  document.getElementById('ordSupplier').value = order?.supplier || '';
+  document.getElementById('ordReference').value = order?.reference || '';
+  document.getElementById('ordItem').value = order?.item || '';
+  document.getElementById('ordQty').value = parseInt(order?.qty, 10) || 1;
+  document.getElementById('ordAmount').value = normalizeMoney(order?.amount || 0);
+  document.getElementById('ordNote').value = order?.note || '';
+  openModal('modalOrder');
+  setTimeout(() => document.getElementById('ordItem').focus(), 160);
+}
+
+function saveOrder() {
+  const date = document.getElementById('ordDate').value;
+  const item = document.getElementById('ordItem').value.trim();
+  const amount = normalizeMoney(document.getElementById('ordAmount').value);
+  if (!date) { showToast('Inserisci la data ordine', 'danger'); return; }
+  if (!item) { showToast("Inserisci l'oggetto ordine", 'danger'); return; }
+  if (amount <= 0) { showToast('Inserisci un costo valido', 'danger'); return; }
+  const fb = getFbOrWarn();
+  if (!fb) return;
+
+  const id = editOrderId || uid();
+  const now = Date.now();
+  const obj = {
+    ...(orders[id] || {}),
+    id,
+    date,
+    status: document.getElementById('ordStatus').value || 'ordered',
+    supplier: document.getElementById('ordSupplier').value.trim(),
+    reference: document.getElementById('ordReference').value.trim(),
+    item,
+    qty: Math.max(1, parseInt(document.getElementById('ordQty').value, 10) || 1),
+    amount,
+    note: document.getElementById('ordNote').value.trim(),
+    updatedAt: now,
+    createdAt: orders[id]?.createdAt || now
+  };
+  setSyncing(true);
+  const { db, ref, set } = fb;
+  set(ref(db, `orders/${id}`), obj)
+    .then(() => {
+      showToast(editOrderId ? 'Ordine aggiornato' : 'Ordine salvato');
+      closeModal('modalOrder');
+    })
+    .catch(err => {
+      setSyncing(false);
+      console.error('saveOrder failed:', err);
+      showToast('Errore ordine: ' + getErrMsg(err), 'danger');
+    });
+}
+
+function deleteOrder(id) {
+  const order = orders[id];
+  if (!order || !confirm(`Eliminare l'ordine "${order.item || id}"?`)) return;
+  const fb = getFbOrWarn();
+  if (!fb) return;
+  setSyncing(true);
+  const { db, ref, remove } = fb;
+  remove(ref(db, `orders/${id}`))
+    .then(() => showToast('Ordine eliminato', 'danger'))
+    .catch(err => {
+      setSyncing(false);
+      console.error('deleteOrder failed:', err);
+      showToast('Errore eliminazione ordine: ' + getErrMsg(err), 'danger');
+    });
+}
+
+function setOrderFilter(filter) {
+  orderFilter = filter;
+  document.querySelectorAll('#filterTabsOrders .tab').forEach(t => t.classList.toggle('active', t.dataset.filter === filter));
+  renderOrders();
+}
+
+function exportOrdersCsv() {
+  const arr = getFilteredOrders();
+  const cols = ['Data', 'Stato', 'Fornitore', 'Riferimento', 'Oggetto', 'Quantita', 'Costo', 'Note'];
+  const rows = arr.map(o => [
+    o.date,
+    ORDER_STATUS[o.status]?.label || o.status,
+    o.supplier,
+    o.reference,
+    o.item,
+    o.qty,
+    normalizeMoney(o.amount),
+    o.note
+  ].map(csvCell).join(','));
+  downloadTextFile(`ordini_verso_service_${getLocalDateKey()}.csv`, '\ufeff' + [cols.join(','), ...rows].join('\n'), 'text/csv;charset=utf-8;');
+  showToast('CSV ordini esportato');
 }
 
 // ==================== DISPONIBILITA ====================
@@ -2062,10 +3059,12 @@ function renderDisponibilita() {
   const groups = {};
   arr.forEach(i => { (groups[i.categoria] = groups[i.categoria] || []).push(i); });
 
-  container.innerHTML = Object.entries(groups).map(([cat, catItems]) => `
+  container.innerHTML = sortCategoryNames(Object.keys(groups)).map(cat => {
+    const catItems = groups[cat];
+    return `
     <div class="category-section">
       <div class="cat-header">
-        <div class="cat-label"><span>${CAT_ICONS[cat]||'📦'}</span>${cat}</div>
+        <div class="cat-label"><span>${getCategoryIcon(cat)}</span>${escHtml(cat)}</div>
         <div class="cat-line"></div>
       </div>
       <div class="avail-grid">
@@ -2085,7 +3084,8 @@ function renderDisponibilita() {
           </div>`;
         }).join('')}
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 // ==================== PREZZI ====================
@@ -2134,10 +3134,12 @@ function renderPrices() {
       </div>
     </div>
     <div class="pricing-list">
-      ${Object.entries(groups).map(([cat, catItems]) => `
+      ${sortCategoryNames(Object.keys(groups)).map(cat => {
+        const catItems = groups[cat];
+        return `
         <div class="pricing-category-card">
           <div class="pricing-category-head">
-            <div class="pricing-category-title">${CAT_ICONS[cat] || '📦'} ${cat}</div>
+            <div class="pricing-category-title">${getCategoryIcon(cat)} ${escHtml(cat)}</div>
             <div class="cat-line"></div>
             <div class="cat-count">${catItems.length} articoli</div>
           </div>
@@ -2157,7 +3159,7 @@ function renderPrices() {
                     <div class="tag tag-serial" style="font-size:0.6rem;">${parseInt(item.qty, 10) || 0} pz</div>
                   </div>
                   <div class="pricing-item-meta">
-                    <span class="tag tag-loc">${CAT_ICONS[item.categoria] || '📦'} ${escHtml(item.categoria || 'Altro')}</span>
+                    <span class="tag tag-loc">${getCategoryIcon(item.categoria)} ${escHtml(item.categoria || 'Altro')}</span>
                     ${getItemPrice(item) > 0 ? `<span class="tag" style="background:rgba(0,204,102,0.08);border:1px solid rgba(0,204,102,0.18);color:var(--success);">${formatMoney(item.prezzo)}</span>` : `<span class="tag" style="background:rgba(255,149,0,0.08);border:1px solid rgba(255,149,0,0.18);color:var(--warning);">Prezzo mancante</span>`}
                   </div>
                   <div class="pricing-input-wrap">
@@ -2173,8 +3175,8 @@ function renderPrices() {
                 </div>`;
             }).join('')}
           </div>
-        </div>
-      `).join('')}
+        </div>`;
+      }).join('')}
     </div>`;
 }
 
@@ -2528,12 +3530,15 @@ function openModalItem(id = null) {
   editItemId = id;
   itemSuggestedLinks = [];
   document.getElementById('modalItemTitle').textContent = id ? 'Modifica Articolo' : 'Nuovo Articolo';
+  toggleCategoryCreator(false);
+  clearCategoryCreator();
+  populateCategorySelect('');
   if (id && items[id]) {
     const i = items[id];
     document.getElementById('fNome').value = i.nome||'';
     document.getElementById('fBrand').value = i.brand||'';
     document.getElementById('fModello').value = i.modello||'';
-    document.getElementById('fCategoria').value = i.categoria||'';
+    populateCategorySelect(i.categoria || '');
     document.getElementById('fQty').value = i.qty??1;
     document.getElementById('fPrezzo').value = getItemPrice(i);
     document.getElementById('fPosizione').value = i.posizione||'';
@@ -2542,7 +3547,7 @@ function openModalItem(id = null) {
     itemSuggestedLinks = getSuggestedLinks(i);
   } else {
     ['fNome','fBrand','fModello','fPosizione','fSeriale','fNote'].forEach(f=>document.getElementById(f).value='');
-    document.getElementById('fCategoria').value='';
+    populateCategorySelect('');
     document.getElementById('fQty').value=1;
     document.getElementById('fPrezzo').value=0;
   }
@@ -2554,7 +3559,7 @@ function openModalItem(id = null) {
 
 function saveItem() {
   const nome = document.getElementById('fNome').value.trim();
-  const categoria = document.getElementById('fCategoria').value;
+  const categoria = normalizeCategoryName(document.getElementById('fCategoria').value);
   if (!nome) { showToast('Inserisci il nome','danger'); return; }
   if (!categoria) { showToast('Seleziona una categoria','danger'); return; }
   const fb = getFbOrWarn();
@@ -2606,7 +3611,7 @@ function populateSuggestionPicker(currentId = null) {
     .forEach(item => {
       const opt = document.createElement('option');
       opt.value = item.id;
-      opt.textContent = `${CAT_ICONS[item.categoria] || '📦'} ${getItemDisplayName(item)}`;
+      opt.textContent = `${getCategoryIcon(item.categoria)} ${getItemDisplayName(item)}`;
       sel.appendChild(opt);
     });
 }
@@ -2621,7 +3626,7 @@ function renderItemSuggestionLinks() {
   container.innerHTML = itemSuggestedLinks.map((link, idx) => {
     const item = items[link.id];
     return `<div class="service-item-row">
-      <span class="service-item-icon">${item ? (CAT_ICONS[item.categoria] || '📦') : '📦'}</span>
+      <span class="service-item-icon">${item ? getCategoryIcon(item.categoria) : '📦'}</span>
       <span class="service-item-name">${escHtml(getItemDisplayName(item))}</span>
       <span class="service-item-qty">x${Math.max(1, parseInt(link.qty, 10) || 1)}</span>
       <button class="service-item-remove" onclick="removeSuggestionLink(${idx})">
@@ -2686,7 +3691,7 @@ function populateItemPicker() {
   Object.values(items).sort((a,b)=>getItemDisplayName(a).localeCompare(getItemDisplayName(b), 'it')).forEach(i => {
     const opt = document.createElement('option');
     opt.value = i.id;
-    opt.textContent = `${CAT_ICONS[i.categoria]||'📦'} ${getItemDisplayName(i)} (${i.qty} pz · ${formatMoney(i.prezzo || 0)})`;
+    opt.textContent = `${getCategoryIcon(i.categoria)} ${getItemDisplayName(i)} (${i.qty} pz · ${formatMoney(i.prezzo || 0)})`;
     sel.appendChild(opt);
   });
 }
@@ -2715,7 +3720,7 @@ function renderSvcSelectedItems() {
   container.innerHTML = svcSelectedItems.map((si,idx) => {
     const item = items[si.id];
     const name = item ? getItemDisplayName(item) : si.id;
-    const icon = item ? (CAT_ICONS[item.categoria]||'📦') : '📦';
+    const icon = item ? getCategoryIcon(item.categoria) : '📦';
     return `<div class="service-item-row">
       <span class="service-item-icon">${icon}</span>
       <span class="service-item-name">${name}</span>
@@ -2746,7 +3751,7 @@ function renderSvcSuggestions() {
     <div class="service-hint-list">
       ${suggestions.map(entry => `
         <div class="service-hint-row">
-          <div class="service-hint-name">${CAT_ICONS[entry.item.categoria] || '📦'} ${escHtml(getItemDisplayName(entry.item))}</div>
+          <div class="service-hint-name">${getCategoryIcon(entry.item.categoria)} ${escHtml(getItemDisplayName(entry.item))}</div>
           <div class="service-hint-meta">Consigliato +${entry.missingQty} · da ${escHtml(entry.sources.join(', '))}</div>
           <button class="btn btn-primary btn-sm service-hint-add" onclick="applyServiceSuggestion('${entry.id}', ${entry.missingQty})">Aggiungi</button>
         </div>
@@ -2818,7 +3823,10 @@ function closeModal(id) {
   document.getElementById(id).classList.remove('open');
   if (id === 'modalAssign') assigningSvcId = null;
   if (id === 'modalItem') itemSuggestedLinks = [];
+  if (id === 'modalItem') { toggleCategoryCreator(false); clearCategoryCreator(); }
   if (id === 'modalService') svcSelectedItems = [];
+  if (id === 'modalFinance') editFinanceId = null;
+  if (id === 'modalOrder') editOrderId = null;
   editItemId = null; editSvcId = null;
 }
 function handleOverlay(e, id) { if (e.target === document.getElementById(id)) closeModal(id); }
@@ -2834,6 +3842,8 @@ document.getElementById('searchMag').addEventListener('input', e => { magSearch 
 document.getElementById('searchSvc').addEventListener('input', e => { svcSearch = e.target.value.trim(); renderService(); });
 document.getElementById('searchPrices').addEventListener('input', e => { priceSearch = e.target.value.trim(); renderPrices(); });
 document.getElementById('searchQuotes').addEventListener('input', e => { quoteSearch = e.target.value.trim(); renderQuotes(); });
+document.getElementById('searchFinance').addEventListener('input', e => { financeSearch = e.target.value.trim(); renderFinance(); });
+document.getElementById('searchOrders').addEventListener('input', e => { orderSearch = e.target.value.trim(); renderOrders(); });
 
 // ==================== EXPORT ====================
 function exportCSV() {
@@ -3108,8 +4118,8 @@ function getServiceTeamHtml(svcId) {
         ? `<span style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;color:var(--accent);">${formatHours(t.ore)}h</span>`
         : '';
       return `<span style="display:inline-flex;align-items:center;gap:0.3rem;background:var(--surface2);border:1px solid var(--border);border-radius:3px;padding:0.15rem 0.5rem;font-size:0.75rem;">
-        <span style="font-weight:600;">${m ? m.nome : '?'}</span>
-        ${t.ruolo ? `<span style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;color:var(--accent2);">${t.ruolo}</span>` : ''}
+        <span style="font-weight:600;">${m ? escHtml(m.nome) : '?'}</span>
+        ${t.ruolo ? `<span style="font-family:'IBM Plex Mono',monospace;font-size:0.6rem;color:var(--accent2);">${escHtml(t.ruolo)}</span>` : ''}
         ${hoursTag}
       </span>`;
     }).join('')}
@@ -3340,10 +4350,12 @@ function renderQrCodes() {
   const groups = {};
   arr.forEach(i => { (groups[i.categoria] = groups[i.categoria] || []).push(i); });
 
-  container.innerHTML = Object.entries(groups).map(([cat, catItems]) => `
+  container.innerHTML = sortCategoryNames(Object.keys(groups)).map(cat => {
+    const catItems = groups[cat];
+    return `
     <div class="category-section">
       <div class="cat-header">
-        <div class="cat-label"><span>${CAT_ICONS[cat]||'📦'}</span>${cat}</div>
+        <div class="cat-label"><span>${getCategoryIcon(cat)}</span>${escHtml(cat)}</div>
         <div class="cat-count">${catItems.length} articoli</div>
         <div class="cat-line"></div>
       </div>
@@ -3360,7 +4372,8 @@ function renderQrCodes() {
             </div>
           </div>`).join('')}
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 
   // Render mini QRs
   arr.forEach(item => {
@@ -3913,6 +4926,7 @@ document.addEventListener('visibilitychange', () => {
     resumeCameraOnVisible = false;
     startCamera();
   }
+  if (checkSession()) autoSyncServiceStatuses();
 });
 
 // ==================== PATCH SWITCHPAGE FOR QR + SCANNER ====================
@@ -3940,6 +4954,20 @@ function refreshFabForCurrentPage() {
     fab.textContent = '€';
     fab.setAttribute('aria-label', 'Nuovo articolo');
     fab.onclick = openModalItem;
+    return;
+  }
+
+  if (currentPage === 'costi') {
+    fab.textContent = '+';
+    fab.setAttribute('aria-label', 'Nuovo movimento');
+    fab.onclick = openModalFinance;
+    return;
+  }
+
+  if (currentPage === 'ordini') {
+    fab.textContent = '+';
+    fab.setAttribute('aria-label', 'Nuovo ordine');
+    fab.onclick = openModalOrder;
     return;
   }
 
@@ -3994,6 +5022,12 @@ function switchPage(page) {
   if (page === 'magazzino') renderMagazzino();
   if (page === 'prezzi') renderPrices();
   if (page === 'preventivi') renderQuotes();
+  if (page === 'costi') {
+    const monthInput = document.getElementById('financeMonth');
+    if (monthInput && !monthInput.value) monthInput.value = financeMonth;
+    renderFinance();
+  }
+  if (page === 'ordini') renderOrders();
   if (page === 'disponibilita') {
     if (!document.getElementById('availDate').value)
       document.getElementById('availDate').value = new Date().toISOString().slice(0,10);

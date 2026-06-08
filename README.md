@@ -1,6 +1,6 @@
 # VERSO SERVICE - Guida Completa
 
-Gestionale web single-file per magazzino, eventi, team e QR.
+Gestionale web single-file per magazzino, eventi, costi, ordini, team e QR.
 
 ## 1. Obiettivo del progetto
 
@@ -8,6 +8,8 @@ L'app serve a gestire tutto il ciclo operativo di un service:
 - inventario articoli
 - pianificazione e gestione eventi
 - verifica disponibilita per data
+- gestione costi, entrate e spese operative
+- tracciamento ordini/acquisti con costo
 - assegnazioni team e ore lavorate
 - generazione/scansione QR per movimenti rapidi
 
@@ -70,13 +72,37 @@ Per uso online con GitHub Pages:
 3. Pubblica le regole in `database.rules.json` sul Realtime Database.
 4. Verifica che GitHub Pages sia tra i domini autorizzati in **Authentication -> Settings -> Authorized domains**.
 
-Le regole incluse permettono lettura/scrittura solo a utenti autenticati:
+Le regole incluse permettono lettura/scrittura solo a utenti autenticati e solo sui rami dati usati dall'app (`inventario`, `services`, `team`, `categories`, `finance`, `orders`). Qualsiasi altro ramo del Realtime Database resta negato di default:
 
 ```json
 {
   "rules": {
-    ".read": "auth != null",
-    ".write": "auth != null"
+    "inventario": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "services": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "team": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "categories": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "finance": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "orders": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    ".read": false,
+    ".write": false
   }
 }
 ```
@@ -95,6 +121,9 @@ Path Realtime Database usati:
 - `inventario/`
 - `services/`
 - `team/`
+- `categories/`
+- `finance/`
+- `orders/`
 
 La UI e in ascolto realtime (`onValue`) su questi nodi; quando cambia un dato in DB, la pagina si aggiorna automaticamente.
 
@@ -103,6 +132,7 @@ La UI e in ascolto realtime (`onValue`) su questi nodi; quando cambia un dato in
 ### Magazzino
 - CRUD articoli
 - ricerca/filtro per categoria
+- categorie base + categorie personalizzate aggiungibili durante la creazione articolo
 - update rapido quantita con `+/-`
 - badge "in evento" calcolato dagli eventi attivi
 - export CSV inventario
@@ -110,8 +140,10 @@ La UI e in ascolto realtime (`onValue`) su questi nodi; quando cambia un dato in
 ### Eventi
 - CRUD evento con date, stato, note, materiale
 - stati: `planned` -> `active` -> `returned`
-- stato aggiornabile manualmente e anche automaticamente in base alle date
-- ogni evento contiene lista articoli con quantita
+- stato aggiornabile manualmente e anche automaticamente in avanti in base alle date
+- vista evento compatta/espandibile per gestire liste lunghe
+- ogni evento contiene lista articoli con quantita, raggruppata per categoria quando espanso
+- export **Lista carico** in `.txt` con solo materiale e quantita, separato dal preventivo
 
 ### Disponibilita
 - selezioni una data
@@ -137,6 +169,20 @@ La UI e in ascolto realtime (`onValue`) su questi nodi; quando cambia un dato in
 - assegnazione membri agli eventi
 - ore lavorate per membro/evento
 - report mensile ore (input mese + export CSV)
+
+### Costi
+- CRUD movimenti economici
+- tipo movimento: entrata o spesa
+- filtro per mese e ricerca libera
+- riepilogo entrate, spese, saldo e numero movimenti
+- export CSV dei movimenti filtrati
+
+### Ordini
+- CRUD ordini/acquisti
+- stati: `ordered`, `paid`, `received`, `cancelled`
+- fornitore, riferimento, oggetto, quantita e costo totale
+- riepilogo totale ordini, pagato/arrivato e righe da seguire
+- export CSV ordini
 
 ## 7. Modello dati (schema pratico)
 
@@ -191,17 +237,70 @@ La UI e in ascolto realtime (`onValue`) su questi nodi; quando cambia un dato in
 }
 ```
 
+### `categories/<categoryId>`
+
+```json
+{
+  "id": "cat01",
+  "name": "Laser",
+  "icon": "✨",
+  "order": 7,
+  "createdAt": 1710000000000,
+  "updatedAt": 1710000000000
+}
+```
+
+### `finance/<movementId>`
+
+```json
+{
+  "id": "mov001",
+  "type": "expense",
+  "date": "2026-06-08",
+  "description": "Carburante",
+  "category": "Trasporti",
+  "amount": 85.5,
+  "payment": "Carta",
+  "note": "...",
+  "createdAt": 1710000000000,
+  "updatedAt": 1710000000000
+}
+```
+
+### `orders/<orderId>`
+
+```json
+{
+  "id": "ord001",
+  "date": "2026-06-08",
+  "status": "ordered",
+  "supplier": "Fornitore",
+  "reference": "ORD-123",
+  "item": "Cavi XLR",
+  "qty": 10,
+  "amount": 120,
+  "note": "...",
+  "createdAt": 1710000000000,
+  "updatedAt": 1710000000000
+}
+```
+
 ## 8. Storage: cosa usa davvero il progetto
 
 ### Realtime Database (principale)
 - E il database reale dell'app.
-- Tutti i dati persistenti stanno qui (`inventario`, `services`, `team`).
-- Il piano gratuito Spark e sufficiente per uso leggero/medio: se superi i limiti il servizio puo bloccarsi temporaneamente, non cancellare automaticamente i dati.
+- Tutti i dati persistenti stanno qui (`inventario`, `services`, `team`, `categories`, `finance`, `orders`).
+- Il piano gratuito Spark e sufficiente per uso leggero/medio: se superi i limiti il servizio puo bloccarsi o rifiutare operazioni, ma non e pensato come sistema di backup pluriennale.
+- Su Spark non hai i backup automatici gestiti di Realtime Database. Per zero sorprese operative, conserva sempre copie JSON fuori da Firebase.
 
 ### Backup JSON
-- Dal pulsante **Backup** nell'header scarichi un file JSON con `inventario`, `services` e `team`.
-- Dal pulsante **Ripristina** puoi ricaricare un backup JSON, con conferma prima di sovrascrivere i dati attuali.
-- Conserva periodicamente i backup fuori da Firebase (es. Drive, disco esterno, repo privato).
+- Dal pulsante **Backup** nell'header scarichi un file JSON con `inventario`, `services`, `team`, `categories`, `finance` e `orders`.
+- Il backup include data di export, motivo e conteggi dei rami dati.
+- Il download viene consentito solo dopo la prima sincronizzazione completa di magazzino, eventi, team, categorie, costi e ordini.
+- Dal pulsante **Ripristina** puoi ricaricare un backup JSON completo, con doppia conferma prima di sovrascrivere i dati attuali.
+- Anche il ripristino viene consentito solo dopo la sincronizzazione completa, per poter scaricare una copia corretta dello stato corrente.
+- Prima di ogni ripristino l'app scarica automaticamente una copia `verso_pre_ripristino_*.json`.
+- Conserva periodicamente i backup fuori da Firebase (es. Drive, disco esterno, repo privato). Consigliato: almeno settimanale, e sempre prima di lavori importanti.
 
 ### `sessionStorage` (browser)
 - Usato solo per ricordare l'email dell'utente nella sessione browser.
@@ -214,7 +313,9 @@ La UI e in ascolto realtime (`onValue`) su questi nodi; quando cambia un dato in
 - Ma nel codice corrente non viene usato nessun upload/download su Firebase Storage.
 
 ### Local storage / IndexedDB
-- Non usati esplicitamente dal codice applicativo.
+- `localStorage` viene usato solo per ricordare quando e stato scaricato l'ultimo backup manuale/pre-ripristino:
+  - `vs_last_backup_download_v1`
+- IndexedDB non e usato esplicitamente dal codice applicativo.
 
 ### File generati lato client
 - CSV e PNG vengono generati in memoria (Blob/canvas) e scaricati dal browser.
@@ -253,15 +354,18 @@ Prima del deploy pubblico controlla:
 2. Utenti creati manualmente e nessun flusso pubblico di registrazione nell'app.
 3. Regole `database.rules.json` pubblicate.
 4. Dominio GitHub Pages autorizzato in Firebase Auth.
-5. Backup JSON scaricato periodicamente.
+5. Backup JSON scaricato periodicamente e conservato fuori da Firebase.
 
 ## 11. Dove mettere mano quando devi modificare il codice
 
 In `index.html` la logica e organizzata per blocchi. Mappa rapida:
 - Login/sessione: funzioni `checkSession`, `doLogin`, `showApp`
-- Firebase sync base: listener `onValue` su `inventario/services/team`
-- Magazzino: `renderMagazzino`, `saveItem`, `changeQty`, `deleteItem`
+- Firebase sync base: listener `onValue` su `inventario/services/team/categories/finance/orders`
+- Magazzino: `renderMagazzino`, `saveItem`, `changeQty`, `deleteItem`, `saveCategory`
 - Eventi: `renderService`, `saveService`, `setServiceStato`
+- Lista carico eventi: `downloadServiceLoadList`, `buildServiceLoadListText`
+- Costi: `renderFinance`, `saveFinanceEntry`, `deleteFinanceEntry`, `exportFinanceCsv`
+- Ordini: `renderOrders`, `saveOrder`, `deleteOrder`, `exportOrdersCsv`
 - Disponibilita: `renderDisponibilita`, `getItemsBusyOnDate`
 - Team: `renderTeam`, `saveMember`, `saveAssignment`, `saveAssignmentHours`
 - QR: `showQrModal`, `renderQrCodes`, `downloadQr`, `printQr`
