@@ -30,6 +30,11 @@
       ".write": "auth != null",
       ".indexOn": ["date", "status", "supplier"]
     },
+    "truck": {
+      ".read": "auth != null",
+      ".write": "auth != null",
+      ".indexOn": ["date", "person"]
+    },
     ".read": false,
     ".write": false
   }

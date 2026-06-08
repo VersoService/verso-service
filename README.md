@@ -1,6 +1,6 @@
 # VERSO SERVICE - Guida Completa
 
-Gestionale web single-file per magazzino, eventi, costi, ordini, team e QR.
+Gestionale web single-file per magazzino, eventi, costi, ordini, camion, team e QR.
 
 ## 1. Obiettivo del progetto
 
@@ -10,6 +10,7 @@ L'app serve a gestire tutto il ciclo operativo di un service:
 - verifica disponibilita per data
 - gestione costi, entrate e spese operative
 - tracciamento ordini/acquisti con costo
+- storico assegnazioni camion per data
 - assegnazioni team e ore lavorate
 - generazione/scansione QR per movimenti rapidi
 
@@ -72,7 +73,7 @@ Per uso online con GitHub Pages:
 3. Pubblica le regole in `database.rules.json` sul Realtime Database.
 4. Verifica che GitHub Pages sia tra i domini autorizzati in **Authentication -> Settings -> Authorized domains**.
 
-Le regole incluse permettono lettura/scrittura solo a utenti autenticati e solo sui rami dati usati dall'app (`inventario`, `services`, `team`, `categories`, `finance`, `orders`). Qualsiasi altro ramo del Realtime Database resta negato di default:
+Le regole incluse permettono lettura/scrittura solo a utenti autenticati e solo sui rami dati usati dall'app (`inventario`, `services`, `team`, `categories`, `finance`, `orders`, `truck`). Qualsiasi altro ramo del Realtime Database resta negato di default:
 
 ```json
 {
@@ -101,6 +102,10 @@ Le regole incluse permettono lettura/scrittura solo a utenti autenticati e solo 
       ".read": "auth != null",
       ".write": "auth != null"
     },
+    "truck": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
     ".read": false,
     ".write": false
   }
@@ -124,6 +129,7 @@ Path Realtime Database usati:
 - `categories/`
 - `finance/`
 - `orders/`
+- `truck/`
 
 La UI e in ascolto realtime (`onValue`) su questi nodi; quando cambia un dato in DB, la pagina si aggiorna automaticamente.
 
@@ -133,6 +139,7 @@ La UI e in ascolto realtime (`onValue`) su questi nodi; quando cambia un dato in
 - CRUD articoli
 - ricerca/filtro per categoria
 - categorie base + categorie personalizzate aggiungibili durante la creazione articolo
+- tipo gestione articolo: `reusable` per materiale che rientra, `consumable` per materiale a consumo
 - update rapido quantita con `+/-`
 - badge "in evento" calcolato dagli eventi attivi
 - export CSV inventario
@@ -143,6 +150,7 @@ La UI e in ascolto realtime (`onValue`) su questi nodi; quando cambia un dato in
 - stato aggiornabile manualmente e anche automaticamente in avanti in base alle date
 - vista evento compatta/espandibile per gestire liste lunghe
 - ogni evento contiene lista articoli con quantita, raggruppata per categoria quando espanso
+- quando un evento passa a `returned`, l'app propone di scalare dal magazzino i consumabili usati
 - export **Lista carico** in `.txt` con solo materiale e quantita, separato dal preventivo
 
 ### Disponibilita
@@ -179,10 +187,15 @@ La UI e in ascolto realtime (`onValue`) su questi nodi; quando cambia un dato in
 
 ### Ordini
 - CRUD ordini/acquisti
-- stati: `ordered`, `paid`, `received`, `cancelled`
+- stati: `pending`, `ordered`, `paid`, `received`, `cancelled`
 - fornitore, riferimento, oggetto, quantita e costo totale
 - riepilogo totale ordini, pagato/arrivato e righe da seguire
 - export CSV ordini
+
+### Camion
+- storico semplice di chi prende il camion in una data
+- campi: data, nome, note opzionali
+- vista mobile-first con date future in alto e storico passato sotto
 
 ## 7. Modello dati (schema pratico)
 
@@ -195,6 +208,7 @@ La UI e in ascolto realtime (`onValue`) su questi nodi; quando cambia un dato in
   "brand": "Chauvet",
   "modello": "Intimidator",
   "categoria": "Luci",
+  "type": "reusable",
   "qty": 8,
   "posizione": "Scaffale A3",
   "seriale": "SN-001",
@@ -218,6 +232,7 @@ La UI e in ascolto realtime (`onValue`) su questi nodi; quando cambia un dato in
   "items": {
     "abc123": { "id": "abc123", "qty": 2 }
   },
+  "consumablesDeductedAt": 1710000000000,
   "team": {
     "member01": { "id": "member01", "ruolo": "Fonico", "ore": 8 }
   },
@@ -273,7 +288,7 @@ La UI e in ascolto realtime (`onValue`) su questi nodi; quando cambia un dato in
 {
   "id": "ord001",
   "date": "2026-06-08",
-  "status": "ordered",
+  "status": "pending",
   "supplier": "Fornitore",
   "reference": "ORD-123",
   "item": "Cavi XLR",
@@ -285,18 +300,31 @@ La UI e in ascolto realtime (`onValue`) su questi nodi; quando cambia un dato in
 }
 ```
 
+### `truck/<truckEntryId>`
+
+```json
+{
+  "id": "truck001",
+  "date": "2026-06-21",
+  "person": "Michi",
+  "note": "Ritiro mattina",
+  "createdAt": 1710000000000,
+  "updatedAt": 1710000000000
+}
+```
+
 ## 8. Storage: cosa usa davvero il progetto
 
 ### Realtime Database (principale)
 - E il database reale dell'app.
-- Tutti i dati persistenti stanno qui (`inventario`, `services`, `team`, `categories`, `finance`, `orders`).
+- Tutti i dati persistenti stanno qui (`inventario`, `services`, `team`, `categories`, `finance`, `orders`, `truck`).
 - Il piano gratuito Spark e sufficiente per uso leggero/medio: se superi i limiti il servizio puo bloccarsi o rifiutare operazioni, ma non e pensato come sistema di backup pluriennale.
 - Su Spark non hai i backup automatici gestiti di Realtime Database. Per zero sorprese operative, conserva sempre copie JSON fuori da Firebase.
 
 ### Backup JSON
-- Dal pulsante **Backup** nell'header scarichi un file JSON con `inventario`, `services`, `team`, `categories`, `finance` e `orders`.
+- Dal pulsante **Backup** nell'header scarichi un file JSON con `inventario`, `services`, `team`, `categories`, `finance`, `orders` e `truck`.
 - Il backup include data di export, motivo e conteggi dei rami dati.
-- Il download viene consentito solo dopo la prima sincronizzazione completa di magazzino, eventi, team, categorie, costi e ordini.
+- Il download viene consentito solo dopo la prima sincronizzazione completa di magazzino, eventi, team, categorie, costi, ordini e camion.
 - Dal pulsante **Ripristina** puoi ricaricare un backup JSON completo, con doppia conferma prima di sovrascrivere i dati attuali.
 - Anche il ripristino viene consentito solo dopo la sincronizzazione completa, per poter scaricare una copia corretta dello stato corrente.
 - Prima di ogni ripristino l'app scarica automaticamente una copia `verso_pre_ripristino_*.json`.
@@ -360,12 +388,13 @@ Prima del deploy pubblico controlla:
 
 In `index.html` la logica e organizzata per blocchi. Mappa rapida:
 - Login/sessione: funzioni `checkSession`, `doLogin`, `showApp`
-- Firebase sync base: listener `onValue` su `inventario/services/team/categories/finance/orders`
+- Firebase sync base: listener `onValue` su `inventario/services/team/categories/finance/orders/truck`
 - Magazzino: `renderMagazzino`, `saveItem`, `changeQty`, `deleteItem`, `saveCategory`
 - Eventi: `renderService`, `saveService`, `setServiceStato`
 - Lista carico eventi: `downloadServiceLoadList`, `buildServiceLoadListText`
 - Costi: `renderFinance`, `saveFinanceEntry`, `deleteFinanceEntry`, `exportFinanceCsv`
 - Ordini: `renderOrders`, `saveOrder`, `deleteOrder`, `exportOrdersCsv`
+- Camion: `renderTruck`, `saveTruckEntry`, `deleteTruckEntry`
 - Disponibilita: `renderDisponibilita`, `getItemsBusyOnDate`
 - Team: `renderTeam`, `saveMember`, `saveAssignment`, `saveAssignmentHours`
 - QR: `showQrModal`, `renderQrCodes`, `downloadQr`, `printQr`

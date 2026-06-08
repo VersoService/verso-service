@@ -244,6 +244,8 @@ main { padding: 1.5rem 2rem 5rem; }
 .status-planned { background: rgba(0,212,255,0.1); color: var(--accent2); border: 1px solid rgba(0,212,255,0.3); }
 .status-active { background: rgba(240,165,0,0.12); color: var(--accent); border: 1px solid rgba(240,165,0,0.3); }
 .status-returned { background: rgba(0,204,102,0.1); color: var(--success); border: 1px solid rgba(0,204,102,0.3); }
+.tag-consumable { background: rgba(255,149,0,0.09); border-color: rgba(255,149,0,0.22); color: var(--warning); }
+.tag-reusable { background: rgba(0,212,255,0.06); border-color: rgba(0,212,255,0.16); color: var(--accent2); }
 .service-meta-row { display: flex; gap: 1.2rem; flex-wrap: wrap; margin-top: 0.4rem; }
 .service-meta-item { font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; color: var(--text-dim); display: flex; align-items: center; gap: 0.35rem; }
 .service-meta-item svg { color: var(--text-faint); flex-shrink: 0; }
@@ -316,6 +318,19 @@ main { padding: 1.5rem 2rem 5rem; }
 /* ADD ITEM TO EVENTI */
 .add-item-section { margin-top: 1rem; }
 .add-item-section-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--text-dim); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 0.6rem; }
+.service-picker-controls { display: grid; grid-template-columns: minmax(160px, 0.55fr) minmax(180px, 1fr); gap: 0.6rem; margin-bottom: 0.6rem; }
+.service-picker-controls select,
+.service-picker-controls input,
+.service-picker-row select,
+.service-picker-row input { background: var(--surface2); border: 1px solid var(--border); border-radius: 3px; padding: 0.5rem 0.7rem; color: var(--text); font-family: 'IBM Plex Sans', sans-serif; font-size: 0.85rem; outline: none; min-width: 0; }
+.service-picker-controls select:focus,
+.service-picker-controls input:focus,
+.service-picker-row select:focus,
+.service-picker-row input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(240,165,0,0.1); }
+.service-picker-row { display: flex; gap: 0.6rem; margin-bottom: 0.6rem; flex-wrap: wrap; }
+.service-picker-row select { flex: 1; min-width: 180px; }
+.service-picker-row input { width: 70px; font-family: 'IBM Plex Mono', monospace; text-align: center; }
+.service-picker-hint { font-family: 'IBM Plex Mono', monospace; font-size: 0.66rem; color: var(--text-faint); letter-spacing: 0.08em; margin: -0.25rem 0 0.55rem; }
 .item-picker-list { display: flex; flex-direction: column; gap: 0.4rem; max-height: 200px; overflow-y: auto; }
 .item-picker-row { display: flex; align-items: center; gap: 0.7rem; padding: 0.5rem 0.7rem; background: var(--surface2); border: 1px solid var(--border); border-radius: 3px; cursor: pointer; transition: border-color 0.15s; }
 .item-picker-row:hover { border-color: var(--accent); }
@@ -484,18 +499,36 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
 .finance-amount.expense { color: var(--danger); }
 .finance-actions { display: flex; gap: 0.35rem; justify-content: flex-end; }
 .status-pill { font-family: 'IBM Plex Mono', monospace; font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.18rem 0.5rem; border-radius: 3px; border: 1px solid var(--border); color: var(--text-dim); background: var(--surface2); }
+.status-pending { color: var(--warning); border-color: rgba(255,184,0,0.28); background: rgba(255,184,0,0.08); }
 .status-ordered { color: var(--accent2); border-color: rgba(0,212,255,0.25); background: rgba(0,212,255,0.08); }
 .status-paid { color: var(--accent); border-color: rgba(240,165,0,0.28); background: rgba(240,165,0,0.08); }
 .status-received { color: var(--success); border-color: rgba(0,204,102,0.25); background: rgba(0,204,102,0.08); }
 .status-cancelled { color: var(--danger); border-color: rgba(255,68,68,0.25); background: rgba(255,68,68,0.08); }
+.truck-layout { padding: 1.5rem 2rem 5rem; display: flex; flex-direction: column; gap: 0.8rem; max-width: 760px; }
+.truck-row { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 0.9rem 1rem; display: grid; grid-template-columns: 116px minmax(0, 1fr) auto; align-items: center; gap: 0.9rem; }
+.truck-row.today { border-color: rgba(240,165,0,0.45); background: rgba(240,165,0,0.06); }
+.truck-date { font-family: 'Bebas Neue', sans-serif; font-size: 1.35rem; letter-spacing: 0.08em; color: var(--accent); line-height: 1; }
+.truck-day { font-family: 'IBM Plex Mono', monospace; font-size: 0.62rem; color: var(--text-dim); letter-spacing: 0.12em; text-transform: uppercase; margin-top: 0.18rem; }
+.truck-person { font-size: 1rem; font-weight: 800; color: var(--text); line-height: 1.25; }
+.truck-note { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--text-dim); margin-top: 0.25rem; line-height: 1.35; }
+.truck-actions { display: flex; gap: 0.35rem; justify-content: flex-end; }
+.truck-month-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.66rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-dim); margin: 0.45rem 0 0.05rem; }
 
 /* ===== PREVENTIVI ===== */
 .quote-layout { padding: 1.5rem 2rem 5rem; display: flex; flex-direction: column; gap: 1rem; }
 .quote-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
-.quote-card-head { padding: 1rem 1.15rem; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.quote-card.collapsed .quote-card-body { display: none; }
+.quote-card.collapsed .quote-card-head { border-bottom: none; }
+.quote-card-head { padding: 1rem 1.15rem; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; flex-wrap: wrap; cursor: pointer; transition: background 0.15s; }
+.quote-card-head:hover { background: var(--surface2); }
 .quote-card-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.28rem; letter-spacing: 0.1em; color: var(--text); }
 .quote-card-meta { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--text-dim); display: flex; gap: 0.9rem; flex-wrap: wrap; margin-top: 0.35rem; }
 .quote-card-body { padding: 1rem 1.15rem 1.15rem; display: flex; flex-direction: column; gap: 1rem; }
+.quote-head-side { display: flex; align-items: flex-start; gap: 0.8rem; flex-wrap: wrap; justify-content: flex-end; }
+.quote-mini-summary { min-width: 140px; padding: 0.48rem 0.7rem; border: 1px solid rgba(240,165,0,0.28); border-radius: 4px; background: rgba(240,165,0,0.07); text-align: right; }
+.quote-mini-summary .label { font-family: 'IBM Plex Mono', monospace; font-size: 0.58rem; color: var(--text-dim); letter-spacing: 0.12em; text-transform: uppercase; }
+.quote-mini-summary .value { font-family: 'Bebas Neue', sans-serif; font-size: 1.35rem; letter-spacing: 0.08em; color: var(--accent); line-height: 1; margin-top: 0.15rem; }
+.quote-card:not(.collapsed) .service-expand-btn svg { transform: rotate(180deg); }
 .quote-warning { padding: 0.75rem 0.85rem; border-radius: 4px; border: 1px solid rgba(255,149,0,0.22); border-left: 3px solid var(--warning); background: rgba(255,149,0,0.08); font-size: 0.8rem; color: var(--text-dim); }
 .quote-lines { display: flex; flex-direction: column; gap: 0.45rem; }
 .quote-line-row { display: grid; grid-template-columns: minmax(0, 1fr) 64px 96px 110px; gap: 0.6rem; align-items: center; padding: 0.6rem 0.7rem; border: 1px solid var(--border); border-radius: 4px; background: var(--surface2); }
@@ -535,6 +568,11 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
   .finance-row { grid-template-columns: 1fr; align-items: stretch; gap: 0.65rem; }
   .finance-amount { text-align: left; }
   .finance-actions { justify-content: flex-start; }
+  .truck-layout { padding: 0.8rem 0.8rem calc(6rem + env(safe-area-inset-bottom)); max-width: none; }
+  .truck-row { grid-template-columns: 1fr; align-items: stretch; gap: 0.65rem; }
+  .truck-actions { justify-content: flex-start; }
+  .service-picker-controls { grid-template-columns: 1fr; }
+  .service-picker-row input { width: 82px; }
   .quote-line-row { grid-template-columns: minmax(0, 1fr) 58px 82px 94px; gap: 0.45rem; padding: 0.55rem 0.6rem; }
   .quote-card-head, .quote-card-body, .pricing-category-head { padding-left: 0.9rem; padding-right: 0.9rem; }
   .service-hint-row { align-items: flex-start; }
@@ -737,6 +775,9 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
     <button class="nav-tab" onclick="switchPage('ordini')" id="tab-ordini">
       🛒 Ordini
     </button>
+    <button class="nav-tab" onclick="switchPage('camion')" id="tab-camion">
+      🚚 Camion
+    </button>
     <button class="nav-tab" onclick="switchPage('disponibilita')" id="tab-disponibilita">
       📅 Disponibilità
     </button>
@@ -776,6 +817,9 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
         </button>
         <button class="mobile-nav-link" data-page="ordini" onclick="switchPage('ordini')">
           <span class="mobile-nav-link-main">🛒 Ordini</span>
+        </button>
+        <button class="mobile-nav-link" data-page="camion" onclick="switchPage('camion')">
+          <span class="mobile-nav-link-main">🚚 Camion</span>
         </button>
         <button class="mobile-nav-link" data-page="disponibilita" onclick="switchPage('disponibilita')">
           <span class="mobile-nav-link-main">📅 Disponibilita</span>
@@ -943,6 +987,7 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
       </div>
       <div class="filter-tabs" id="filterTabsOrders">
         <button class="tab active" data-filter="all" onclick="setOrderFilter('all')">Tutti</button>
+        <button class="tab" data-filter="pending" onclick="setOrderFilter('pending')">Da effettuare</button>
         <button class="tab" data-filter="ordered" onclick="setOrderFilter('ordered')">Ordinati</button>
         <button class="tab" data-filter="paid" onclick="setOrderFilter('paid')">Pagati</button>
         <button class="tab" data-filter="received" onclick="setOrderFilter('received')">Arrivati</button>
@@ -966,6 +1011,29 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
       <button class="info-banner-close" onclick="closeBanner('infoBannerOrders')">✕</button>
     </div>
     <div class="finance-layout" id="mainOrders"></div>
+  </div>
+
+  <!-- ===== PAGINA CAMION ===== -->
+  <div id="page-camion" class="page">
+    <div class="toolbar">
+      <div class="search-wrap">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" id="searchTruck" class="search-input" placeholder="Cerca nome o nota..." autocomplete="off">
+      </div>
+      <button class="btn btn-primary" onclick="openModalTruck()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        Camion
+      </button>
+    </div>
+    <div class="info-banner" id="infoBannerTruck">
+      <div class="info-banner-icon">🚚</div>
+      <div class="info-banner-text">
+        <strong>Camion</strong>
+        Storico rapido di chi prende il camion nei vari giorni. Pensato soprattutto da mobile: aggiungi nome e data, poi ritrovi subito le assegnazioni in ordine calendario.
+      </div>
+      <button class="info-banner-close" onclick="closeBanner('infoBannerTruck')">✕</button>
+    </div>
+    <div class="truck-layout" id="mainTruck"></div>
   </div>
 
   <!-- ===== PAGINA DISPONIBILITA ===== -->
@@ -1128,13 +1196,20 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
       <div class="field"><label>Modello</label><input type="text" id="fModello" placeholder="es. Intimidator 330"></div>
       <div class="field">
         <label>Categoria *</label>
-        <select id="fCategoria"></select>
+        <select id="fCategoria" onchange="handleItemCategoryChange()"></select>
         <button type="button" class="btn btn-ghost btn-sm category-add-toggle" onclick="toggleCategoryCreator()">+ Categoria</button>
         <div class="category-add-panel" id="categoryAddPanel">
           <input type="text" id="fCategoryIcon" class="category-icon-input" maxlength="4" placeholder="📦" aria-label="Icona categoria" onkeydown="handleCategoryCreatorKey(event)">
           <input type="text" id="fCategoryName" placeholder="Nome categoria" aria-label="Nome categoria" onkeydown="handleCategoryCreatorKey(event)">
           <button type="button" class="btn btn-primary btn-sm" onclick="saveCategory()">Salva</button>
         </div>
+      </div>
+      <div class="field">
+        <label>Tipo gestione</label>
+        <select id="fItemType">
+          <option value="reusable">Riutilizzabile</option>
+          <option value="consumable">Consumabile</option>
+        </select>
       </div>
       <div class="field"><label>Quantità *</label><input type="number" id="fQty" min="0" value="1"></div>
       <div class="field"><label>Prezzo unitario preventivo (€)</label><input type="number" id="fPrezzo" min="0" step="0.01" value="0"></div>
@@ -1186,9 +1261,14 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
     <div class="add-item-section">
       <div class="add-item-section-title">Materiale incluso nell'evento</div>
       <div id="serviceItemsSelected" class="service-items-list" style="margin-bottom:0.8rem;"></div>
-      <div style="display:flex;gap:0.6rem;margin-bottom:0.6rem;flex-wrap:wrap;">
-        <select id="pickerSelect" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:3px;padding:0.5rem 0.7rem;color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:0.85rem;outline:none;min-width:150px;"></select>
-        <input type="number" id="pickerQty" min="1" value="1" style="width:70px;background:var(--surface2);border:1px solid var(--border);border-radius:3px;padding:0.5rem;color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:0.85rem;outline:none;text-align:center;">
+      <div class="service-picker-controls">
+        <select id="pickerCategory" onchange="setServicePickerCategory(this.value)"></select>
+        <input type="search" id="pickerSearch" placeholder="Cerca articolo, marca, modello..." autocomplete="off" oninput="setServicePickerSearch(this.value)">
+      </div>
+      <div id="servicePickerHint" class="service-picker-hint"></div>
+      <div class="service-picker-row">
+        <select id="pickerSelect"></select>
+        <input type="number" id="pickerQty" min="1" value="1">
         <button class="btn btn-ghost btn-sm" onclick="addItemToService()">+ Aggiungi</button>
       </div>
       <div id="serviceSuggestedItems"></div>
@@ -1236,6 +1316,7 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
       <div class="field">
         <label>Stato</label>
         <select id="ordStatus">
+          <option value="pending">Da effettuare</option>
           <option value="ordered">Ordinato</option>
           <option value="paid">Pagato</option>
           <option value="received">Arrivato</option>
@@ -1256,6 +1337,22 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
   </div>
 </div>
 
+<!-- MODAL CAMION -->
+<div class="modal-overlay" id="modalTruck" onclick="handleOverlay(event,'modalTruck')">
+  <div class="modal" style="max-width:460px;">
+    <div class="modal-title" id="modalTruckTitle">Nuova Assegnazione Camion</div>
+    <div class="form-grid">
+      <div class="field"><label>Data *</label><input type="date" id="truckDate"></div>
+      <div class="field"><label>Nome *</label><input type="text" id="truckPerson" placeholder="es. Michi"></div>
+      <div class="field full"><label>Note</label><textarea id="truckNote" placeholder="es. mattina, rientro sera, consegna..."></textarea></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modalTruck')">Annulla</button>
+      <button class="btn btn-primary" onclick="saveTruckEntry()">Salva</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -1263,9 +1360,13 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
 const SESSION_USER_KEY = 'vs_auth_user_v1';
 const LAST_BACKUP_KEY = 'vs_last_backup_download_v1';
 const BACKUP_CONFIRM_WORD = 'RIPRISTINA';
-const DATA_BRANCHES = ['inventario', 'services', 'team', 'categories', 'finance', 'orders'];
-const CAT_ICONS = { 'Luci':'🔦','Audio':'🔊','Cavi & Connettori':'🔌','Strutture & Truss':'🏗️','Consolle & Controller':'🎛️','Accessori':'🔧','Altro':'📦' };
+const DATA_BRANCHES = ['inventario', 'services', 'team', 'categories', 'finance', 'orders', 'truck'];
+const CAT_ICONS = { 'Luci':'🔦','Audio':'🔊','Cavi & Connettori':'🔌','Strutture & Truss':'🏗️','Consolle & Controller':'🎛️','Consumabili':'🎊','Accessori':'🔧','Altro':'📦' };
 const DEFAULT_CATEGORIES = Object.entries(CAT_ICONS).map(([name, icon], order) => ({ name, icon, order, builtin: true }));
+const ITEM_TYPES = {
+  reusable: { label: 'Riutilizzabile', shortLabel: 'Riutilizzabile', cls: 'tag-reusable' },
+  consumable: { label: 'Consumabile', shortLabel: 'Consumo', cls: 'tag-consumable' }
+};
 
 // ==================== STATE ====================
 let items = {};       // magazzino
@@ -1281,18 +1382,24 @@ let priceSearch = '';
 let quoteSearch = '';
 let financeSearch = '';
 let orderSearch = '';
+let truckSearch = '';
 let orderFilter = 'all';
 let currentUser = null;
 let firebaseUnsubscribers = [];
-let firebaseDataLoaded = { inventario: false, services: false, team: false, categories: false, finance: false, orders: false };
+let firebaseDataLoaded = { inventario: false, services: false, team: false, categories: false, finance: false, orders: false, truck: false };
 let categories = {};
 let financeEntries = {};
 let orders = {};
+let truckLog = {};
 let editFinanceId = null;
 let editOrderId = null;
+let editTruckId = null;
 let backupReminderShown = false;
 let expandedServiceCards = new Set();
+let expandedQuoteCards = new Set();
 let svcSelectedItems = []; // [{id, qty}] while editing
+let servicePickerCategory = 'all';
+let servicePickerSearch = '';
 let itemSuggestedLinks = []; // [{id, qty}] while editing item
 let autoStatusSyncRunning = false;
 let autoStatusTimer = null;
@@ -1306,6 +1413,7 @@ const PAGE_LABELS = {
   preventivi: 'Preventivi',
   costi: 'Costi',
   ordini: 'Ordini',
+  camion: 'Camion',
   disponibilita: 'Disponibilita',
   scanner: 'Scanner',
   qrcodes: 'QR Codes',
@@ -1457,6 +1565,13 @@ function startFirebaseDataListeners() {
     markFirebaseDataLoaded('orders');
     if (currentPage === 'ordini') renderOrders();
   }, () => { setSyncing(false); showToast('Errore lettura ordini', 'danger'); }));
+
+  firebaseUnsubscribers.push(onValue(ref(db, 'truck'), snap => {
+    setSyncing(false);
+    truckLog = snap.val() || {};
+    markFirebaseDataLoaded('truck');
+    if (currentPage === 'camion') renderTruck();
+  }, () => { setSyncing(false); showToast('Errore lettura camion', 'danger'); }));
 }
 
 function stopFirebaseDataListeners() {
@@ -1490,7 +1605,7 @@ function isBackupDataReady() {
 }
 
 function getPendingBackupBranches() {
-  const labels = { inventario: 'magazzino', services: 'eventi', team: 'team', categories: 'categorie', finance: 'costi', orders: 'ordini' };
+  const labels = { inventario: 'magazzino', services: 'eventi', team: 'team', categories: 'categorie', finance: 'costi', orders: 'ordini', truck: 'camion' };
   return DATA_BRANCHES
     .filter(key => !firebaseDataLoaded[key])
     .map(key => labels[key] || key);
@@ -1579,6 +1694,12 @@ function getCategoryIcon(name) {
 function categoryExists(name) {
   const key = categoryKey(name);
   return getCategoryCatalog(true).some(cat => categoryKey(cat.name) === key);
+}
+
+function handleItemCategoryChange() {
+  const cat = document.getElementById('fCategoria')?.value || '';
+  const typeSelect = document.getElementById('fItemType');
+  if (typeSelect && categoryKey(cat).includes('consum')) typeSelect.value = 'consumable';
 }
 
 function sortCategoryNames(names) {
@@ -1785,6 +1906,20 @@ function getItemDisplayName(item) {
   return `${item.nome || 'Articolo'}${item.modello ? ' ' + item.modello : ''}`;
 }
 
+function getItemType(item) {
+  const raw = String(item?.type || item?.itemType || '').trim();
+  if (raw === 'consumable' || item?.consumable === true) return 'consumable';
+  return 'reusable';
+}
+
+function isConsumableItem(item) {
+  return getItemType(item) === 'consumable';
+}
+
+function getItemTypeMeta(item) {
+  return ITEM_TYPES[getItemType(item)] || ITEM_TYPES.reusable;
+}
+
 function getItemPrice(item) {
   return normalizeMoney(item?.prezzo || 0);
 }
@@ -1986,7 +2121,8 @@ function getBackupData() {
     team: members || {},
     categories: categories || {},
     finance: financeEntries || {},
-    orders: orders || {}
+    orders: orders || {},
+    truck: truckLog || {}
   };
 }
 
@@ -1997,7 +2133,8 @@ function getBackupCounts(data) {
     team: Object.keys(data?.team || {}).length,
     categories: Object.keys(data?.categories || {}).length,
     finance: Object.keys(data?.finance || {}).length,
-    orders: Object.keys(data?.orders || {}).length
+    orders: Object.keys(data?.orders || {}).length,
+    truck: Object.keys(data?.truck || {}).length
   };
 }
 
@@ -2105,6 +2242,7 @@ function normalizeBackupRoot(parsed) {
     categories: optionalBranch('categories', categories),
     finance: optionalBranch('finance', financeEntries),
     orders: optionalBranch('orders', orders),
+    truck: optionalBranch('truck', truckLog),
     preservedBranches,
     exportedAt: parsed.exportedAt || null
   };
@@ -2144,7 +2282,7 @@ function handleBackupFile(input) {
     const preservedMsg = backup.preservedBranches?.length
       ? `\n\nRami non presenti nel backup e mantenuti attuali: ${backup.preservedBranches.join(', ')}`
       : '';
-    const ok = confirm(`Ripristinare questo backup?\n\nBackup: ${formatBackupExportedAt(backup.exportedAt)}\nArticoli: ${counts.inventario}\nEventi: ${counts.services}\nMembri team: ${counts.team}\nCategorie: ${counts.categories}\nMovimenti costi: ${counts.finance}\nOrdini: ${counts.orders}\n\nDati attuali:\nArticoli: ${currentCounts.inventario}\nEventi: ${currentCounts.services}\nMembri team: ${currentCounts.team}\nCategorie: ${currentCounts.categories}\nMovimenti costi: ${currentCounts.finance}\nOrdini: ${currentCounts.orders}${preservedMsg}\n\nPrima del ripristino verra scaricata una copia dello stato attuale. Poi i dati Firebase verranno sovrascritti.`);
+    const ok = confirm(`Ripristinare questo backup?\n\nBackup: ${formatBackupExportedAt(backup.exportedAt)}\nArticoli: ${counts.inventario}\nEventi: ${counts.services}\nMembri team: ${counts.team}\nCategorie: ${counts.categories}\nMovimenti costi: ${counts.finance}\nOrdini: ${counts.orders}\nCamion: ${counts.truck}\n\nDati attuali:\nArticoli: ${currentCounts.inventario}\nEventi: ${currentCounts.services}\nMembri team: ${currentCounts.team}\nCategorie: ${currentCounts.categories}\nMovimenti costi: ${currentCounts.finance}\nOrdini: ${currentCounts.orders}\nCamion: ${currentCounts.truck}${preservedMsg}\n\nPrima del ripristino verra scaricata una copia dello stato attuale. Poi i dati Firebase verranno sovrascritti.`);
     if (!ok) return;
     const typed = prompt(`Conferma finale: digita ${BACKUP_CONFIRM_WORD} per sovrascrivere i dati.`);
     if (typed !== BACKUP_CONFIRM_WORD) {
@@ -2163,7 +2301,8 @@ function handleBackupFile(input) {
       set(ref(db, 'team'), backup.team),
       set(ref(db, 'categories'), backup.categories),
       set(ref(db, 'finance'), backup.finance),
-      set(ref(db, 'orders'), backup.orders)
+      set(ref(db, 'orders'), backup.orders),
+      set(ref(db, 'truck'), backup.truck)
     ])
       .then(() => showToast('Backup ripristinato'))
       .catch(err => {
@@ -2289,31 +2428,6 @@ window.addEventListener('resize', () => {
   if (!isMobileViewport()) toggleMobileMenu(false);
 });
 
-// ==================== ROUTING ====================
-function switchPage(page) {
-  currentPage = page;
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('page-' + page).classList.add('active');
-  document.getElementById('tab-' + page).classList.add('active');
-
-  // FAB action
-  document.getElementById('fabAdd').onclick = page === 'service' ? openModalService : openModalItem;
-
-  if (page === 'disponibilita') {
-    if (!document.getElementById('availDate').value) {
-      document.getElementById('availDate').value = new Date().toISOString().slice(0,10);
-    }
-    renderDisponibilita();
-  }
-  if (page === 'costi') {
-    const monthInput = document.getElementById('financeMonth');
-    if (monthInput && !monthInput.value) monthInput.value = financeMonth;
-    renderFinance();
-  }
-  if (page === 'ordini') renderOrders();
-}
-
 // ==================== RENDER ALL ====================
 function renderAll() {
   updateHeaderStats();
@@ -2323,6 +2437,7 @@ function renderAll() {
   if (currentPage === 'preventivi') renderQuotes();
   if (currentPage === 'costi') renderFinance();
   if (currentPage === 'ordini') renderOrders();
+  if (currentPage === 'camion') renderTruck();
   if (currentPage === 'disponibilita') renderDisponibilita();
   if (currentPage === 'team') renderTeam();
   if (currentPage === 'qrcodes') renderQrCodes();
@@ -2380,7 +2495,7 @@ function renderMagazzino() {
     if (magFilter !== 'all' && i.categoria !== magFilter) return false;
     if (magSearch) {
       const q = magSearch.toLowerCase();
-      return [i.nome,i.brand,i.modello,i.seriale,i.note,i.posizione].some(v => v?.toLowerCase().includes(q));
+      return [i.nome,i.brand,i.modello,i.seriale,i.note,i.posizione,getItemTypeMeta(i).label].some(v => String(v || '').toLowerCase().includes(q));
     }
     return true;
   });
@@ -2421,6 +2536,7 @@ function renderItemCard(item) {
   const avail = Math.max(0, item.qty - busy);
   const dotClass = item.qty === 0 ? 'dot-zero' : avail <= 0 ? 'dot-zero' : avail <= 2 ? 'dot-low' : 'dot-ok';
   const availClass = avail === 0 ? 'none' : avail <= 2 ? 'low' : '';
+  const typeMeta = getItemTypeMeta(item);
 
   return `
     <div class="item-card">
@@ -2435,6 +2551,7 @@ function renderItemCard(item) {
       <div class="item-meta">
         ${item.posizione?`<span class="tag tag-loc">📍 ${hl(item.posizione,q)}</span>`:''}
         ${item.seriale?`<span class="tag tag-serial">S/N: ${hl(item.seriale,q)}</span>`:''}
+        <span class="tag ${typeMeta.cls}">${isConsumableItem(item) ? '🧾' : '↩'} ${typeMeta.shortLabel}</span>
         ${getItemPrice(item)>0?`<span class="tag" style="background:rgba(240,165,0,0.08);color:var(--accent);border:1px solid rgba(240,165,0,0.2);">💶 ${formatMoney(item.prezzo)}</span>`:''}
         ${busy>0?`<span class="tag tag-busy">🚚 ${busy} in evento</span>`:''}
       </div>
@@ -2486,7 +2603,9 @@ function getServiceItemEntries(svc) {
       item,
       category,
       label: item ? getItemDisplayName(item) : `Articolo rimosso (${entry.id})`,
-      brand: item?.brand || ''
+      brand: item?.brand || '',
+      type: getItemType(item),
+      consumable: isConsumableItem(item)
     };
   });
 }
@@ -2532,7 +2651,7 @@ function renderServiceMaterialsHtml(entries) {
           ${group.entries.map(entry => `
             <div class="service-item-row">
               <span class="service-item-icon">${entry.item ? getCategoryIcon(entry.category) : '❓'}</span>
-              <span class="service-item-name">${escHtml(entry.label)}${entry.brand ? `<span style="font-size:0.7rem;color:var(--text-dim);margin-left:0.3rem;">${escHtml(entry.brand)}</span>` : ''}</span>
+              <span class="service-item-name">${escHtml(entry.label)}${entry.brand ? `<span style="font-size:0.7rem;color:var(--text-dim);margin-left:0.3rem;">${escHtml(entry.brand)}</span>` : ''}${entry.consumable ? `<span class="tag tag-consumable" style="margin-left:0.45rem;font-size:0.58rem;">Consumo</span>` : ''}</span>
               <span class="service-item-qty">×${entry.qty}</span>
             </div>
           `).join('')}
@@ -2570,11 +2689,80 @@ function buildServiceLoadListText(svc) {
   groupServiceEntriesByCategory(entries).forEach(group => {
     lines.push('', group.category.toUpperCase());
     group.entries.forEach(entry => {
-      lines.push(`- ${entry.label}${entry.brand ? ` (${entry.brand})` : ''}: x${entry.qty}`);
+      lines.push(`- ${entry.label}${entry.brand ? ` (${entry.brand})` : ''}: x${entry.qty}${entry.consumable ? ' [CONSUMO]' : ''}`);
     });
   });
 
   return lines.join('\n');
+}
+
+function getServiceConsumableEntries(svc) {
+  return getServiceItemEntries(svc)
+    .filter(entry => entry.item && entry.consumable && entry.qty > 0);
+}
+
+function buildConsumableDeductionMessage(svc, entries) {
+  const rows = entries.map(entry => {
+    const current = parseInt(entry.item.qty, 10) || 0;
+    const next = Math.max(0, current - entry.qty);
+    const warn = current < entry.qty ? ' - stock insufficiente, andra a 0' : '';
+    return `- ${entry.label}: ${current} -> ${next} (-${entry.qty})${warn}`;
+  });
+  return [
+    `Scalare i consumabili usati per "${svc?.nome || 'evento'}"?`,
+    '',
+    ...rows,
+    '',
+    'OK = scala dal magazzino. Annulla = segna l\'evento senza scaricare consumabili.'
+  ].join('\n');
+}
+
+function getConsumableDeductionUpdates(svcId, svc, entries) {
+  const now = Date.now();
+  const updates = {};
+  entries.forEach(entry => {
+    const current = parseInt(entry.item.qty, 10) || 0;
+    updates[`inventario/${entry.id}/qty`] = Math.max(0, current - entry.qty);
+    updates[`inventario/${entry.id}/updatedAt`] = now;
+  });
+  updates[`services/${svcId}/consumablesDeductedAt`] = now;
+  updates[`services/${svcId}/consumablesDeductedCount`] = entries.length;
+  return updates;
+}
+
+function shouldOfferConsumableDeduction(svc) {
+  return svc && !svc.consumablesDeductedAt && getServiceConsumableEntries(svc).length > 0;
+}
+
+function deductServiceConsumables(svcId, ask = true, svcOverride = null) {
+  const svc = svcOverride || services[svcId];
+  if (!svc) return Promise.resolve(false);
+  if (svc.consumablesDeductedAt) {
+    showToast('Consumabili gia scaricati per questo evento');
+    return Promise.resolve(false);
+  }
+  const entries = getServiceConsumableEntries(svc);
+  if (entries.length === 0) {
+    showToast('Nessun consumabile da scalare');
+    return Promise.resolve(false);
+  }
+  if (ask && !confirm(buildConsumableDeductionMessage(svc, entries))) return Promise.resolve(false);
+  const fb = getFbOrWarn();
+  if (!fb) return Promise.resolve(false);
+  setSyncing(true);
+  const { db, ref, update } = fb;
+  return update(ref(db), getConsumableDeductionUpdates(svcId, svc, entries))
+    .then(() => {
+      showToast(`Consumabili scalati: ${entries.length} righe`);
+      haptic('success');
+      return true;
+    })
+    .catch(err => {
+      setSyncing(false);
+      console.error('deductServiceConsumables failed:', err);
+      showToast('Errore scarico consumabili: ' + getErrMsg(err), 'danger');
+      return false;
+    });
 }
 
 function downloadServiceLoadList(id) {
@@ -2656,6 +2844,7 @@ function renderServiceCard(svc) {
       <div class="service-card-actions">
         ${svcStatus==='planned'?`<button class="btn btn-sm" style="background:rgba(240,165,0,0.1);color:var(--accent);border:1px solid rgba(240,165,0,0.3);" onclick="setServiceStato('${svcId}','active')">🚚 Segna In corso</button>`:''}
         ${svcStatus==='active'?`<button class="btn btn-sm" style="background:rgba(0,204,102,0.1);color:var(--success);border:1px solid rgba(0,204,102,0.3);" onclick="setServiceStato('${svcId}','returned')">✅ Segna Rientrato</button>`:''}
+        ${svcStatus==='returned' && shouldOfferConsumableDeduction(svc) ? `<button class="btn btn-sm" style="background:rgba(255,149,0,0.1);color:var(--warning);border:1px solid rgba(255,149,0,0.28);" onclick="deductServiceConsumables('${svcId}')">🧾 Scala consumabili</button>` : ''}
         <button class="btn btn-ghost btn-sm" onclick="downloadServiceLoadList('${svcId}')">📋 Lista carico</button>
         <button class="btn btn-ghost btn-sm" onclick="openQuoteForService('${svcId}')">🧾 Preventivo</button>
         <button class="btn btn-ghost btn-sm" onclick="openGoogleCalendarForService('${svcId}')">📆 Google Calendar</button>
@@ -2675,11 +2864,24 @@ function toggleSvcCard(id) {
 function setServiceStato(id, stato) {
   const fb = getFbOrWarn();
   if (!fb) return;
+  const svc = services[id] || {};
+  const updates = {
+    [`services/${id}/stato`]: stato,
+    [`services/${id}/updatedAt`]: Date.now()
+  };
+  let deductedConsumables = false;
+  if (stato === 'returned' && shouldOfferConsumableDeduction(svc)) {
+    const entries = getServiceConsumableEntries(svc);
+    if (confirm(buildConsumableDeductionMessage(svc, entries))) {
+      Object.assign(updates, getConsumableDeductionUpdates(id, svc, entries));
+      deductedConsumables = true;
+    }
+  }
   setSyncing(true);
   const { db, ref, update } = fb;
-  update(ref(db, `services/${id}`), { stato, updatedAt: Date.now() })
+  update(ref(db), updates)
     .then(() => {
-      showToast('Stato aggiornato');
+      showToast(deductedConsumables ? 'Stato aggiornato e consumabili scalati' : 'Stato aggiornato');
       haptic('success');
     })
     .catch(err => {
@@ -2875,6 +3077,7 @@ function exportFinanceCsv() {
 
 // ==================== ORDINI ====================
 const ORDER_STATUS = {
+  pending: { label: 'Da effettuare', cls: 'status-pending' },
   ordered: { label: 'Ordinato', cls: 'status-ordered' },
   paid: { label: 'Pagato', cls: 'status-paid' },
   received: { label: 'Arrivato', cls: 'status-received' },
@@ -2906,7 +3109,7 @@ function renderOrders() {
   const active = arr.filter(o => o.status !== 'cancelled');
   const total = active.reduce((sum, o) => sum + normalizeMoney(o.amount), 0);
   const paid = active.filter(o => o.status === 'paid' || o.status === 'received').reduce((sum, o) => sum + normalizeMoney(o.amount), 0);
-  const open = active.filter(o => o.status === 'ordered').length;
+  const open = active.filter(o => o.status === 'pending' || o.status === 'ordered').length;
 
   container.innerHTML = `
     <div class="finance-summary">
@@ -2919,7 +3122,7 @@ function renderOrders() {
 }
 
 function renderOrderRow(order) {
-  const status = ORDER_STATUS[order.status] || ORDER_STATUS.ordered;
+  const status = ORDER_STATUS[order.status] || ORDER_STATUS.pending;
   return `<div class="finance-row">
     <div class="finance-date">${formatDate(order.date)}</div>
     <div>
@@ -2949,7 +3152,7 @@ function openModalOrder(id = null) {
   document.getElementById('modalOrderTitle').textContent = id ? 'Modifica Ordine' : 'Nuovo Ordine';
   const order = id ? orders[id] : null;
   document.getElementById('ordDate').value = order?.date || getLocalDateKey();
-  document.getElementById('ordStatus').value = order?.status || 'ordered';
+  document.getElementById('ordStatus').value = order?.status || 'pending';
   document.getElementById('ordSupplier').value = order?.supplier || '';
   document.getElementById('ordReference').value = order?.reference || '';
   document.getElementById('ordItem').value = order?.item || '';
@@ -2976,7 +3179,7 @@ function saveOrder() {
     ...(orders[id] || {}),
     id,
     date,
-    status: document.getElementById('ordStatus').value || 'ordered',
+    status: document.getElementById('ordStatus').value || 'pending',
     supplier: document.getElementById('ordSupplier').value.trim(),
     reference: document.getElementById('ordReference').value.trim(),
     item,
@@ -3039,6 +3242,146 @@ function exportOrdersCsv() {
   showToast('CSV ordini esportato');
 }
 
+// ==================== CAMION ====================
+function getTruckEntries() {
+  const today = getLocalDateKey();
+  return Object.values(truckLog || {}).sort((a, b) => {
+    const aDate = String(a.date || '');
+    const bDate = String(b.date || '');
+    const aPast = aDate && aDate < today;
+    const bPast = bDate && bDate < today;
+    if (aPast !== bPast) return aPast ? 1 : -1;
+    const byDate = aPast ? bDate.localeCompare(aDate) : aDate.localeCompare(bDate);
+    if (byDate !== 0) return byDate;
+    return String(a.person || '').localeCompare(String(b.person || ''), 'it');
+  });
+}
+
+function truckMatchesSearch(entry) {
+  const q = truckSearch.trim().toLowerCase();
+  if (!q) return true;
+  return [entry.person, entry.note, entry.date]
+    .some(value => String(value || '').toLowerCase().includes(q));
+}
+
+function getFilteredTruckEntries() {
+  return getTruckEntries().filter(truckMatchesSearch);
+}
+
+function getTruckMonthLabel(dateStr) {
+  if (!isValidYmd(dateStr)) return 'Senza data';
+  const [y, m] = dateStr.split('-');
+  const d = new Date(Number(y), Number(m) - 1, 1);
+  return d.toLocaleDateString('it-IT', { month: 'long', year: 'numeric' });
+}
+
+function getTruckDayLabel(dateStr) {
+  if (!isValidYmd(dateStr)) return '';
+  const [y, m, d] = dateStr.split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString('it-IT', { weekday: 'short' });
+}
+
+function renderTruck() {
+  const container = document.getElementById('mainTruck');
+  if (!container) return;
+  const arr = getFilteredTruckEntries();
+  if (arr.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="icon">🚚</div><p>${Object.keys(truckLog || {}).length === 0 ? 'Nessuna assegnazione camion.' : 'Nessun risultato.'}</p></div>`;
+    return;
+  }
+
+  let currentMonth = '';
+  container.innerHTML = arr.map(entry => {
+    const month = getTruckMonthLabel(entry.date);
+    const monthHead = month !== currentMonth ? `<div class="truck-month-label">${escHtml(month)}</div>` : '';
+    currentMonth = month;
+    return monthHead + renderTruckRow(entry);
+  }).join('');
+}
+
+function renderTruckRow(entry) {
+  const today = entry.date === getLocalDateKey();
+  return `<div class="truck-row ${today ? 'today' : ''}">
+    <div>
+      <div class="truck-date">${formatDate(entry.date)}</div>
+      <div class="truck-day">${escHtml(getTruckDayLabel(entry.date))}${today ? ' · oggi' : ''}</div>
+    </div>
+    <div>
+      <div class="truck-person">${escHtml(entry.person || 'Senza nome')}</div>
+      ${entry.note ? `<div class="truck-note">${escHtml(entry.note)}</div>` : ''}
+    </div>
+    <div class="truck-actions">
+      <button class="icon-btn" onclick="openModalTruck('${entry.id}')" title="Modifica">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      </button>
+      <button class="icon-btn del" onclick="deleteTruckEntry('${entry.id}')" title="Elimina">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+      </button>
+    </div>
+  </div>`;
+}
+
+function openModalTruck(id = null) {
+  editTruckId = id;
+  const entry = id ? truckLog[id] : null;
+  document.getElementById('modalTruckTitle').textContent = id ? 'Modifica Camion' : 'Nuova Assegnazione Camion';
+  document.getElementById('truckDate').value = entry?.date || getLocalDateKey();
+  document.getElementById('truckPerson').value = entry?.person || '';
+  document.getElementById('truckNote').value = entry?.note || '';
+  openModal('modalTruck');
+  setTimeout(() => document.getElementById(id ? 'truckPerson' : 'truckDate').focus(), 160);
+}
+
+function saveTruckEntry() {
+  const date = document.getElementById('truckDate').value;
+  const person = document.getElementById('truckPerson').value.trim();
+  const note = document.getElementById('truckNote').value.trim();
+  if (!date) { showToast('Inserisci la data camion', 'danger'); return; }
+  if (!person) { showToast('Inserisci chi prende il camion', 'danger'); return; }
+  const fb = getFbOrWarn();
+  if (!fb) return;
+
+  const id = editTruckId || uid();
+  const now = Date.now();
+  const obj = {
+    ...(truckLog[id] || {}),
+    id,
+    date,
+    person,
+    note,
+    updatedAt: now,
+    createdAt: truckLog[id]?.createdAt || now
+  };
+  setSyncing(true);
+  const { db, ref, set } = fb;
+  set(ref(db, `truck/${id}`), obj)
+    .then(() => {
+      showToast(editTruckId ? 'Camion aggiornato' : 'Camion salvato');
+      closeModal('modalTruck');
+    })
+    .catch(err => {
+      setSyncing(false);
+      console.error('saveTruckEntry failed:', err);
+      showToast('Errore camion: ' + getErrMsg(err), 'danger');
+    });
+}
+
+function deleteTruckEntry(id) {
+  const entry = truckLog[id];
+  if (!entry || !confirm(`Eliminare "${entry.person || id}" del ${formatDate(entry.date)}?`)) return;
+  const fb = getFbOrWarn();
+  if (!fb) return;
+  setSyncing(true);
+  const { db, ref, remove } = fb;
+  remove(ref(db, `truck/${id}`))
+    .then(() => showToast('Assegnazione camion eliminata', 'danger'))
+    .catch(err => {
+      setSyncing(false);
+      console.error('deleteTruckEntry failed:', err);
+      showToast('Errore eliminazione camion: ' + getErrMsg(err), 'danger');
+    });
+}
+
 // ==================== DISPONIBILITA ====================
 function renderDisponibilita() {
   const dateStr = document.getElementById('availDate').value;
@@ -3076,6 +3419,7 @@ function renderDisponibilita() {
             <div>
               <div class="avail-item-name">${item.nome}${item.modello?` <span class="avail-item-model">${item.modello}</span>`:''}</div>
               ${item.brand?`<div class="avail-item-brand">${item.brand}</div>`:''}
+              ${isConsumableItem(item) ? `<div class="avail-item-brand" style="color:var(--warning);">Consumabile</div>` : ''}
             </div>
             <div class="avail-numbers">
               <div class="avail-numbers-main ${cls}">${avail}</div>
@@ -3160,6 +3504,7 @@ function renderPrices() {
                   </div>
                   <div class="pricing-item-meta">
                     <span class="tag tag-loc">${getCategoryIcon(item.categoria)} ${escHtml(item.categoria || 'Altro')}</span>
+                    <span class="tag ${getItemTypeMeta(item).cls}">${getItemTypeMeta(item).shortLabel}</span>
                     ${getItemPrice(item) > 0 ? `<span class="tag" style="background:rgba(0,204,102,0.08);border:1px solid rgba(0,204,102,0.18);color:var(--success);">${formatMoney(item.prezzo)}</span>` : `<span class="tag" style="background:rgba(255,149,0,0.08);border:1px solid rgba(255,149,0,0.18);color:var(--warning);">Prezzo mancante</span>`}
                   </div>
                   <div class="pricing-input-wrap">
@@ -3221,9 +3566,11 @@ function renderQuotes() {
     const summary = getServiceQuoteSummary(svc);
     const cfg = summary.config;
     const statusLabel = { planned: '🔵 Pianificato', active: '🟠 In corso', returned: '✅ Rientrato' }[svc.stato] || svc.stato || '';
+    const isExpanded = expandedQuoteCards.has(svc.id);
+    const totalQty = summary.lines.reduce((sum, line) => sum + line.qty, 0);
     return `
-      <div class="quote-card" id="quoteCard_${svc.id}">
-        <div class="quote-card-head">
+      <div class="quote-card ${isExpanded ? 'expanded' : 'collapsed'}" id="quoteCard_${svc.id}">
+        <div class="quote-card-head" onclick="toggleQuoteCard('${svc.id}')">
           <div style="flex:1;">
             <div class="quote-card-title">${escHtml(svc.nome || 'Evento')}</div>
             <div class="quote-card-meta">
@@ -3231,12 +3578,23 @@ function renderQuotes() {
               <span>📅 ${formatDate(svc.dataOut)} → ${formatDate(svc.dataIn)}</span>
               ${svc.cliente ? `<span>👤 ${escHtml(svc.cliente)}</span>` : ''}
               <span>${statusLabel}</span>
+              <span>📦 ${summary.lines.length} righe / ${totalQty} pz</span>
+              ${summary.missingCount ? `<span style="color:var(--warning);">⚠ ${summary.missingCount} senza prezzo</span>` : ''}
             </div>
           </div>
-          <div class="quote-actions-row">
-            <button class="btn btn-ghost btn-sm" onclick="switchPage('service')">Apri Eventi</button>
-            <button class="btn btn-ghost btn-sm" onclick="openGoogleCalendarForService('${svc.id}')">Google Calendar</button>
-            <button class="btn btn-ghost btn-sm" onclick="downloadServiceIcs('${svc.id}')">ICS</button>
+          <div class="quote-head-side">
+            <div class="quote-mini-summary">
+              <div class="label">Totale</div>
+              <div class="value">${formatMoney(summary.total)}</div>
+            </div>
+            <div class="quote-actions-row" onclick="event.stopPropagation()">
+              <button class="btn btn-ghost btn-sm" onclick="switchPage('service')">Apri Eventi</button>
+              <button class="btn btn-ghost btn-sm" onclick="openGoogleCalendarForService('${svc.id}')">Google Calendar</button>
+              <button class="btn btn-ghost btn-sm" onclick="downloadServiceIcs('${svc.id}')">ICS</button>
+            </div>
+            <div class="service-expand-btn" title="${isExpanded ? 'Riduci preventivo' : 'Espandi preventivo'}" aria-label="${isExpanded ? 'Riduci preventivo' : 'Espandi preventivo'}">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
           </div>
         </div>
         <div class="quote-card-body">
@@ -3309,6 +3667,23 @@ function renderQuotes() {
         </div>
       </div>`;
   }).join('');
+}
+
+function toggleQuoteCard(svcId) {
+  if (expandedQuoteCards.has(svcId)) expandedQuoteCards.delete(svcId);
+  else expandedQuoteCards.add(svcId);
+
+  const card = document.getElementById(`quoteCard_${svcId}`);
+  if (!card) return;
+  const isExpanded = expandedQuoteCards.has(svcId);
+  card.classList.toggle('expanded', isExpanded);
+  card.classList.toggle('collapsed', !isExpanded);
+  const btn = card.querySelector('.service-expand-btn');
+  if (btn) {
+    const label = isExpanded ? 'Riduci preventivo' : 'Espandi preventivo';
+    btn.setAttribute('title', label);
+    btn.setAttribute('aria-label', label);
+  }
 }
 
 function getQuoteDraftValues(svcId) {
@@ -3461,6 +3836,7 @@ function printQuote(svcId) {
 }
 
 function openQuoteForService(svcId) {
+  expandedQuoteCards.add(svcId);
   switchPage('preventivi');
   setTimeout(() => {
     const el = document.getElementById(`quoteCard_${svcId}`);
@@ -3539,6 +3915,7 @@ function openModalItem(id = null) {
     document.getElementById('fBrand').value = i.brand||'';
     document.getElementById('fModello').value = i.modello||'';
     populateCategorySelect(i.categoria || '');
+    document.getElementById('fItemType').value = getItemType(i);
     document.getElementById('fQty').value = i.qty??1;
     document.getElementById('fPrezzo').value = getItemPrice(i);
     document.getElementById('fPosizione').value = i.posizione||'';
@@ -3548,6 +3925,7 @@ function openModalItem(id = null) {
   } else {
     ['fNome','fBrand','fModello','fPosizione','fSeriale','fNote'].forEach(f=>document.getElementById(f).value='');
     populateCategorySelect('');
+    document.getElementById('fItemType').value='reusable';
     document.getElementById('fQty').value=1;
     document.getElementById('fPrezzo').value=0;
   }
@@ -3577,6 +3955,7 @@ function saveItem() {
     brand: document.getElementById('fBrand').value.trim(),
     modello: document.getElementById('fModello').value.trim(),
     categoria,
+    type: document.getElementById('fItemType').value === 'consumable' ? 'consumable' : 'reusable',
     qty: parseInt(document.getElementById('fQty').value, 10) || 0,
     prezzo: normalizeMoney(document.getElementById('fPrezzo').value),
     posizione: document.getElementById('fPosizione').value.trim(),
@@ -3679,21 +4058,82 @@ function openModalService(id = null) {
     document.getElementById('sDataIn').value='';
   }
 
+  servicePickerCategory = 'all';
+  servicePickerSearch = '';
+  const searchInput = document.getElementById('pickerSearch');
+  if (searchInput) searchInput.value = '';
   populateItemPicker();
   renderSvcSelectedItems();
   openModal('modalService');
   setTimeout(()=>document.getElementById('sNome').focus(),200);
 }
 
+function setServicePickerCategory(value) {
+  servicePickerCategory = value || 'all';
+  populateItemPicker();
+}
+
+function setServicePickerSearch(value) {
+  servicePickerSearch = String(value || '').trim();
+  populateItemPicker();
+}
+
+function getServicePickerItems() {
+  const q = servicePickerSearch.toLowerCase();
+  return Object.values(items)
+    .filter(i => {
+      const category = normalizeCategoryName(i.categoria || 'Altro') || 'Altro';
+      if (servicePickerCategory !== 'all' && categoryKey(category) !== categoryKey(servicePickerCategory)) return false;
+      if (!q) return true;
+      return [
+        getItemDisplayName(i),
+        i.nome,
+        i.brand,
+        i.modello,
+        i.categoria,
+        i.posizione,
+        i.seriale,
+        getItemTypeMeta(i).label
+      ].some(v => String(v || '').toLowerCase().includes(q));
+    })
+    .sort((a,b)=>getItemDisplayName(a).localeCompare(getItemDisplayName(b), 'it'));
+}
+
+function populateServicePickerCategories() {
+  const catSelect = document.getElementById('pickerCategory');
+  if (!catSelect) return;
+  const current = servicePickerCategory || 'all';
+  const categoryNames = sortCategoryNames([...new Set(Object.values(items).map(i => normalizeCategoryName(i.categoria || 'Altro') || 'Altro'))]);
+  catSelect.innerHTML = '<option value="all">Tutte le categorie</option>';
+  categoryNames.forEach(cat => {
+    const count = Object.values(items).filter(i => categoryKey(i.categoria || 'Altro') === categoryKey(cat)).length;
+    const opt = document.createElement('option');
+    opt.value = cat;
+    opt.textContent = `${getCategoryIcon(cat)} ${cat} (${count})`;
+    catSelect.appendChild(opt);
+  });
+  catSelect.value = categoryNames.some(cat => categoryKey(cat) === categoryKey(current)) ? current : 'all';
+  servicePickerCategory = catSelect.value;
+}
+
 function populateItemPicker() {
+  populateServicePickerCategories();
   const sel = document.getElementById('pickerSelect');
+  const hint = document.getElementById('servicePickerHint');
+  const filtered = getServicePickerItems();
+  const total = Object.keys(items || {}).length;
   sel.innerHTML = '<option value="">— Seleziona articolo —</option>';
-  Object.values(items).sort((a,b)=>getItemDisplayName(a).localeCompare(getItemDisplayName(b), 'it')).forEach(i => {
+  filtered.forEach(i => {
     const opt = document.createElement('option');
     opt.value = i.id;
-    opt.textContent = `${getCategoryIcon(i.categoria)} ${getItemDisplayName(i)} (${i.qty} pz · ${formatMoney(i.prezzo || 0)})`;
+    opt.textContent = `${getCategoryIcon(i.categoria)} ${getItemDisplayName(i)}${isConsumableItem(i) ? ' · Consumo' : ''} (${i.qty} pz · ${formatMoney(i.prezzo || 0)})`;
     sel.appendChild(opt);
   });
+  if (hint) {
+    hint.textContent = total === 0
+      ? 'Nessun articolo in magazzino'
+      : `${filtered.length} di ${total} articoli disponibili`;
+  }
 }
 
 function addItemToService() {
@@ -3723,7 +4163,7 @@ function renderSvcSelectedItems() {
     const icon = item ? getCategoryIcon(item.categoria) : '📦';
     return `<div class="service-item-row">
       <span class="service-item-icon">${icon}</span>
-      <span class="service-item-name">${name}</span>
+      <span class="service-item-name">${escHtml(name)}${item && isConsumableItem(item) ? `<span class="tag tag-consumable" style="margin-left:0.45rem;font-size:0.58rem;">Consumo</span>` : ''}</span>
       <span class="service-item-qty">×${si.qty}</span>
       <button class="service-item-remove" onclick="removeSvcItem(${idx})">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -3809,6 +4249,9 @@ function saveService() {
       haptic('success');
       closeModal('modalService');
       renderService();
+      if (selectedStatus === 'returned' && !obj.consumablesDeductedAt && getServiceConsumableEntries(obj).length > 0) {
+        setTimeout(() => deductServiceConsumables(id, true, obj), 120);
+      }
     })
     .catch(err => {
       setSyncing(false);
@@ -3824,9 +4267,14 @@ function closeModal(id) {
   if (id === 'modalAssign') assigningSvcId = null;
   if (id === 'modalItem') itemSuggestedLinks = [];
   if (id === 'modalItem') { toggleCategoryCreator(false); clearCategoryCreator(); }
-  if (id === 'modalService') svcSelectedItems = [];
+  if (id === 'modalService') {
+    svcSelectedItems = [];
+    servicePickerCategory = 'all';
+    servicePickerSearch = '';
+  }
   if (id === 'modalFinance') editFinanceId = null;
   if (id === 'modalOrder') editOrderId = null;
+  if (id === 'modalTruck') editTruckId = null;
   editItemId = null; editSvcId = null;
 }
 function handleOverlay(e, id) { if (e.target === document.getElementById(id)) closeModal(id); }
@@ -3844,12 +4292,13 @@ document.getElementById('searchPrices').addEventListener('input', e => { priceSe
 document.getElementById('searchQuotes').addEventListener('input', e => { quoteSearch = e.target.value.trim(); renderQuotes(); });
 document.getElementById('searchFinance').addEventListener('input', e => { financeSearch = e.target.value.trim(); renderFinance(); });
 document.getElementById('searchOrders').addEventListener('input', e => { orderSearch = e.target.value.trim(); renderOrders(); });
+document.getElementById('searchTruck').addEventListener('input', e => { truckSearch = e.target.value.trim(); renderTruck(); });
 
 // ==================== EXPORT ====================
 function exportCSV() {
   const arr = Object.values(items);
-  const cols = ['Nome','Brand','Modello','Categoria','Quantità','Prezzo Preventivo','Posizione','Seriale','Note'];
-  const rows = arr.map(i=>[i.nome,i.brand,i.modello,i.categoria,i.qty,normalizeMoney(i.prezzo || 0),i.posizione,i.seriale,i.note].map(v=>`"${(v||'').replace(/"/g,'""')}"`).join(','));
+  const cols = ['Nome','Brand','Modello','Categoria','Tipo','Quantità','Prezzo Preventivo','Posizione','Seriale','Note'];
+  const rows = arr.map(i=>[i.nome,i.brand,i.modello,i.categoria,getItemTypeMeta(i).label,i.qty,normalizeMoney(i.prezzo || 0),i.posizione,i.seriale,i.note].map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(','));
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob(['\ufeff'+[cols.join(','),...rows].join('\n')],{type:'text/csv;charset=utf-8;'}));
   a.download = `inventario_verso_service_${new Date().toISOString().slice(0,10)}.csv`;
@@ -3905,6 +4354,7 @@ document.addEventListener('keydown', e => {
     closeModal('modalAssign');
     closeModal('modalQr');
     closeModal('modalScanAction');
+    closeModal('modalTruck');
     toggleMobileMenu(false);
   }
 });
@@ -4929,9 +5379,6 @@ document.addEventListener('visibilitychange', () => {
   if (checkSession()) autoSyncServiceStatuses();
 });
 
-// ==================== PATCH SWITCHPAGE FOR QR + SCANNER ====================
-const _origSwitchPage = switchPage;
-
 function refreshFabForCurrentPage() {
   const fab = document.getElementById('fabAdd');
   if (!fab) return;
@@ -4968,6 +5415,13 @@ function refreshFabForCurrentPage() {
     fab.textContent = '+';
     fab.setAttribute('aria-label', 'Nuovo ordine');
     fab.onclick = openModalOrder;
+    return;
+  }
+
+  if (currentPage === 'camion') {
+    fab.textContent = '+';
+    fab.setAttribute('aria-label', 'Nuova assegnazione camion');
+    fab.onclick = openModalTruck;
     return;
   }
 
@@ -5028,6 +5482,7 @@ function switchPage(page) {
     renderFinance();
   }
   if (page === 'ordini') renderOrders();
+  if (page === 'camion') renderTruck();
   if (page === 'disponibilita') {
     if (!document.getElementById('availDate').value)
       document.getElementById('availDate').value = new Date().toISOString().slice(0,10);
