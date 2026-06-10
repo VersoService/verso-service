@@ -11,6 +11,7 @@ L'app serve a gestire tutto il ciclo operativo di un service:
 - gestione costi, entrate e spese operative
 - tracciamento ordini/acquisti con costo
 - storico assegnazioni camion per data
+- rimborsi team e collegamenti economici evento/ordine
 - assegnazioni team e ore lavorate
 - generazione/scansione QR per movimenti rapidi
 
@@ -151,6 +152,7 @@ La UI e in ascolto realtime (`onValue`) su questi nodi; quando cambia un dato in
 - vista evento compatta/espandibile per gestire liste lunghe
 - ogni evento contiene lista articoli con quantita, raggruppata per categoria quando espanso
 - quando un evento passa a `returned`, l'app propone di scalare dal magazzino i consumabili usati
+- da evento/preventivo puoi registrare l'incasso nella sezione Costi
 - export **Lista carico** in `.txt` con solo materiale e quantita, separato dal preventivo
 
 ### Disponibilita
@@ -182,7 +184,10 @@ La UI e in ascolto realtime (`onValue`) su questi nodi; quando cambia un dato in
 - CRUD movimenti economici
 - tipo movimento: entrata o spesa
 - filtro per mese e ricerca libera
-- riepilogo entrate, spese, saldo e numero movimenti
+- riepilogo entrate, spese, saldo e rimborsi aperti
+- collegamento opzionale a evento e ordine
+- spese anticipate da membri del team con stato rimborso `open` / `paid`
+- grafico annuale entrate/spese mese per mese
 - export CSV dei movimenti filtrati
 
 ### Ordini
@@ -190,6 +195,7 @@ La UI e in ascolto realtime (`onValue`) su questi nodi; quando cambia un dato in
 - stati: `pending`, `ordered`, `paid`, `received`, `cancelled`
 - fornitore, riferimento, oggetto, quantita e costo totale
 - riepilogo totale ordini, pagato/arrivato e righe da seguire
+- dagli ordini pagati/arrivati puoi registrare la spesa nella sezione Costi
 - export CSV ordini
 
 ### Camion
@@ -276,6 +282,12 @@ La UI e in ascolto realtime (`onValue`) su questi nodi; quando cambia un dato in
   "category": "Trasporti",
   "amount": 85.5,
   "payment": "Carta",
+  "eventId": "svc001",
+  "orderId": "",
+  "paidByMemberId": "member01",
+  "reimbursementStatus": "open",
+  "sourceType": "event_income",
+  "sourceId": "svc001",
   "note": "...",
   "createdAt": 1710000000000,
   "updatedAt": 1710000000000
@@ -392,8 +404,8 @@ In `index.html` la logica e organizzata per blocchi. Mappa rapida:
 - Magazzino: `renderMagazzino`, `saveItem`, `changeQty`, `deleteItem`, `saveCategory`
 - Eventi: `renderService`, `saveService`, `setServiceStato`
 - Lista carico eventi: `downloadServiceLoadList`, `buildServiceLoadListText`
-- Costi: `renderFinance`, `saveFinanceEntry`, `deleteFinanceEntry`, `exportFinanceCsv`
-- Ordini: `renderOrders`, `saveOrder`, `deleteOrder`, `exportOrdersCsv`
+- Costi: `renderFinance`, `saveFinanceEntry`, `deleteFinanceEntry`, `markFinanceReimbursed`, `recordEventIncome`, `recordOrderExpense`, `exportFinanceCsv`
+- Ordini: `renderOrders`, `saveOrder`, `deleteOrder`, `recordOrderExpense`, `exportOrdersCsv`
 - Camion: `renderTruck`, `saveTruckEntry`, `deleteTruckEntry`
 - Disponibilita: `renderDisponibilita`, `getItemsBusyOnDate`
 - Team: `renderTeam`, `saveMember`, `saveAssignment`, `saveAssignmentHours`
