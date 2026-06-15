@@ -1356,8 +1356,8 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
     <div class="form-grid">
       <div class="field full"><label>Nome Evento *</label><input type="text" id="sNome" placeholder="es. Concerto Piazza Roma"></div>
       <div class="field full"><label>Luogo / Location *</label><input type="text" id="sLuogo" placeholder="es. Piazza Roma, Milano"></div>
-      <div class="field"><label>Data uscita *</label><input type="date" id="sDataOut"></div>
-      <div class="field"><label>Data rientro *</label><input type="date" id="sDataIn"></div>
+      <div class="field"><label>Data uscita *</label><input type="date" id="sDataOut" oninput="refreshServicePickerAvailability()"></div>
+      <div class="field"><label>Data rientro *</label><input type="date" id="sDataIn" oninput="refreshServicePickerAvailability()"></div>
       <div class="field">
         <label>Stato</label>
         <select id="sStato">
@@ -4798,6 +4798,58 @@ function setServicePickerSearch(value) {
   populateItemPicker();
 }
 
+function refreshServicePickerAvailability() {
+  if (!document.getElementById('modalService')?.classList.contains('open')) return;
+  populateItemPicker();
+}
+
+function getServiceModalDateRange() {
+  const dataOut = document.getElementById('sDataOut')?.value || '';
+  const dataIn = document.getElementById('sDataIn')?.value || dataOut;
+  return {
+    dataOut,
+    dataIn,
+    hasRange: isValidYmd(dataOut) && isValidYmd(dataIn) && dataIn >= dataOut
+  };
+}
+
+function dateRangesOverlap(startA, endA, startB, endB) {
+  if (!isValidYmd(startA) || !isValidYmd(endA) || !isValidYmd(startB) || !isValidYmd(endB)) return false;
+  return startA <= endB && startB <= endA;
+}
+
+function getServiceReservedQtyForModal(itemId) {
+  const { dataOut, dataIn, hasRange } = getServiceModalDateRange();
+  let busy = getOpenLoanQty(itemId);
+  Object.values(services || {}).forEach(svc => {
+    if (!svc || svc.id === editSvcId || svc.stato === 'returned' || !svc.items?.[itemId]) return;
+    if (hasRange) {
+      const svcOut = svc.dataOut || '';
+      const svcIn = svc.dataIn || svcOut;
+      if (!dateRangesOverlap(dataOut, dataIn, svcOut, svcIn)) return;
+    } else if (svc.stato !== 'active') {
+      return;
+    }
+    busy += Math.max(1, parseInt(svc.items[itemId].qty, 10) || 1);
+  });
+  return busy;
+}
+
+function getMaxServiceQtyForItem(itemId) {
+  const item = items?.[itemId];
+  if (!item) return 0;
+  const stock = Math.max(0, parseInt(item.qty, 10) || 0);
+  return Math.max(0, stock - getServiceReservedQtyForModal(itemId));
+}
+
+function getSelectedServiceQty(itemId) {
+  return svcSelectedItems.reduce((sum, entry) => entry.id === itemId ? sum + (Math.max(1, parseInt(entry.qty, 10) || 1)) : sum, 0);
+}
+
+function getRemainingServiceQtyForItem(itemId) {
+  return Math.max(0, getMaxServiceQtyForItem(itemId) - getSelectedServiceQty(itemId));
+}
+
 function getServicePickerItems() {
   const q = servicePickerSearch.toLowerCase();
   return Object.values(items)
@@ -4842,28 +4894,55 @@ function populateItemPicker() {
   const hint = document.getElementById('servicePickerHint');
   const filtered = getServicePickerItems();
   const total = Object.keys(items || {}).length;
+  let selectable = 0;
   sel.innerHTML = '<option value="">— Seleziona articolo —</option>';
   filtered.forEach(i => {
+    const stock = Math.max(0, parseInt(i.qty, 10) || 0);
+    const selected = getSelectedServiceQty(i.id);
+    const maxForEvent = getMaxServiceQtyForItem(i.id);
+    const remaining = Math.max(0, maxForEvent - selected);
+    if (remaining > 0) selectable++;
     const opt = document.createElement('option');
     opt.value = i.id;
-    opt.textContent = `${getCategoryIcon(i.categoria)} ${getItemDisplayName(i)}${isConsumableItem(i) ? ' · Consumo' : ''} (${i.qty} pz · ${formatMoney(i.prezzo || 0)})`;
+    opt.disabled = remaining <= 0;
+    opt.textContent = `${getCategoryIcon(i.categoria)} ${getItemDisplayName(i)}${isConsumableItem(i) ? ' · Consumo' : ''} (${remaining} disp.${selected ? ` · gia x${selected}` : ''} / ${stock} pz · ${formatMoney(i.prezzo || 0)})`;
     sel.appendChild(opt);
   });
   if (hint) {
     hint.textContent = total === 0
       ? 'Nessun articolo in magazzino'
-      : `${filtered.length} di ${total} articoli disponibili`;
+      : `${selectable} selezionabili di ${filtered.length} filtrati`;
   }
+}
+
+function addItemToServiceSelection(id, qty) {
+  if (!id) { showToast('Seleziona un articolo','danger'); return false; }
+  const item = items?.[id];
+  if (!item) { showToast('Articolo non trovato', 'danger'); return false; }
+  const amount = Math.max(1, parseInt(qty, 10) || 1);
+  const selected = getSelectedServiceQty(id);
+  const maxForEvent = getMaxServiceQtyForItem(id);
+  const remaining = Math.max(0, maxForEvent - selected);
+  if (remaining <= 0) {
+    showToast(`${getItemDisplayName(item)} non ha altri pezzi disponibili`, 'danger');
+    return false;
+  }
+  if (amount > remaining) {
+    showToast(`Disponibili solo ${remaining} pezzi da aggiungere`, 'danger');
+    return false;
+  }
+  const existing = svcSelectedItems.find(i => i.id === id);
+  if (existing) existing.qty = Math.max(1, parseInt(existing.qty, 10) || 1) + amount;
+  else svcSelectedItems.push({ id, qty: amount });
+  renderSvcSelectedItems();
+  populateItemPicker();
+  return true;
 }
 
 function addItemToService() {
   const id = document.getElementById('pickerSelect').value;
   const qty = Math.max(1, parseInt(document.getElementById('pickerQty').value, 10) || 1);
-  if (!id) { showToast('Seleziona un articolo','danger'); return; }
-  const existing = svcSelectedItems.find(i=>i.id===id);
-  if (existing) { existing.qty += qty; }
-  else { svcSelectedItems.push({id, qty}); }
-  renderSvcSelectedItems();
+  if (!addItemToServiceSelection(id, qty)) return;
   const suggestions = getServiceSuggestedItems();
   if (suggestions.length > 0) showToast('Suggerimenti accessori disponibili');
   document.getElementById('pickerSelect').value='';
@@ -4877,17 +4956,37 @@ function renderSvcSelectedItems() {
     renderSvcSuggestions();
     return;
   }
-  container.innerHTML = svcSelectedItems.map((si,idx) => {
+  const entries = svcSelectedItems.map((si,idx) => {
     const item = items[si.id];
-    const name = item ? getItemDisplayName(item) : si.id;
-    const icon = item ? getCategoryIcon(item.categoria) : '📦';
-    return `<div class="service-item-row">
-      <span class="service-item-icon">${icon}</span>
-      <span class="service-item-name">${escHtml(name)}${item && isConsumableItem(item) ? `<span class="tag tag-consumable" style="margin-left:0.45rem;font-size:0.58rem;">Consumo</span>` : ''}</span>
-      <span class="service-item-qty">×${si.qty}</span>
-      <button class="service-item-remove" onclick="removeSvcItem(${idx})">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
+    const category = normalizeCategoryName(item?.categoria || 'Altro') || 'Altro';
+    return {
+      idx,
+      id: si.id,
+      qty: Math.max(1, parseInt(si.qty, 10) || 1),
+      item,
+      category,
+      label: item ? getItemDisplayName(item) : si.id,
+      consumable: isConsumableItem(item)
+    };
+  });
+  container.innerHTML = groupServiceEntriesByCategory(entries).map(group => {
+    const totalQty = group.entries.reduce((sum, entry) => sum + entry.qty, 0);
+    const accent = getCategoryAccent(group.category);
+    return `<div class="service-category-block">
+      <div class="service-category-head" style="border-left-color:${accent};">
+        <span class="name">${getCategoryIcon(group.category)} ${escHtml(group.category)}</span>
+        <span>${group.entries.length} tip. / ${totalQty} pz</span>
+      </div>
+      <div class="service-category-items">
+        ${group.entries.map(entry => `<div class="service-item-row">
+          <span class="service-item-icon">${entry.item ? getCategoryIcon(entry.category) : '📦'}</span>
+          <span class="service-item-name">${escHtml(entry.label)}${entry.consumable ? `<span class="tag tag-consumable" style="margin-left:0.45rem;font-size:0.58rem;">Consumo</span>` : ''}</span>
+          <span class="service-item-qty">×${entry.qty}</span>
+          <button class="service-item-remove" onclick="removeSvcItem(${entry.idx})">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>`).join('')}
+      </div>
     </div>`;
   }).join('');
   renderSvcSuggestions();
@@ -4896,6 +4995,7 @@ function renderSvcSelectedItems() {
 function removeSvcItem(idx) {
   svcSelectedItems.splice(idx, 1);
   renderSvcSelectedItems();
+  populateItemPicker();
 }
 
 function renderSvcSuggestions() {
@@ -4921,11 +5021,35 @@ function renderSvcSuggestions() {
 }
 
 function applyServiceSuggestion(itemId, qty) {
-  const amount = Math.max(1, parseInt(qty, 10) || 1);
-  const existing = svcSelectedItems.find(entry => entry.id === itemId);
-  if (existing) existing.qty += amount;
-  else svcSelectedItems.push({ id: itemId, qty: amount });
-  renderSvcSelectedItems();
+  addItemToServiceSelection(itemId, qty);
+}
+
+function validateServiceSelectionAvailability() {
+  const merged = new Map();
+  svcSelectedItems.forEach(entry => {
+    if (!entry?.id) return;
+    const qty = Math.max(1, parseInt(entry.qty, 10) || 1);
+    merged.set(entry.id, (merged.get(entry.id) || 0) + qty);
+  });
+  svcSelectedItems = [...merged.entries()].map(([id, qty]) => ({ id, qty }));
+
+  const invalid = svcSelectedItems
+    .map(entry => {
+      const item = items?.[entry.id];
+      if (!item) return null;
+      const maxForEvent = getMaxServiceQtyForItem(entry.id);
+      return entry.qty > maxForEvent ? { item, requested: entry.qty, max: maxForEvent } : null;
+    })
+    .filter(Boolean);
+
+  if (invalid.length > 0) {
+    const first = invalid[0];
+    showToast(`${getItemDisplayName(first.item)}: max disponibile ${first.max}, richiesto ${first.requested}`, 'danger');
+    renderSvcSelectedItems();
+    populateItemPicker();
+    return false;
+  }
+  return true;
 }
 
 function saveService() {
@@ -4937,6 +5061,7 @@ function saveService() {
   if (!luogo) { showToast('Inserisci il luogo','danger'); return; }
   if (!dataOut || !dataIn) { showToast('Inserisci le date','danger'); return; }
   if (dataIn < dataOut) { showToast('La data rientro deve essere uguale o successiva alla data uscita','danger'); return; }
+  if (!validateServiceSelectionAvailability()) return;
   const fb = getFbOrWarn();
   if (!fb) return;
 
