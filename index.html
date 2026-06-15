@@ -389,7 +389,7 @@ main { padding: 1.5rem 2rem 5rem; }
 @media print {
   header, nav, .toolbar, #fabAdd, .sync-bar, #loginScreen, #loadingScreen, .mobile-nav-overlay { display: none !important; }
   .page { display: block !important; }
-  #page-magazzino, #page-service, #page-prezzi, #page-preventivi, #page-scanner, #page-disponibilita, #page-team { display: none !important; }
+  #page-magazzino, #page-service, #page-prezzi, #page-preventivi, #page-scanner, #page-prestiti, #page-disponibilita, #page-team { display: none !important; }
   #page-qrcodes { display: block !important; }
   .qr-grid { grid-template-columns: repeat(4, 1fr); gap: 0.5rem; }
   .qr-card { border: 1px solid #ccc; break-inside: avoid; }
@@ -516,6 +516,9 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
 .status-received { color: var(--success); border-color: rgba(0,204,102,0.25); background: rgba(0,204,102,0.08); }
 .status-cancelled { color: var(--danger); border-color: rgba(255,68,68,0.25); background: rgba(255,68,68,0.08); }
 .truck-layout { padding: 1.5rem 2rem 5rem; display: flex; flex-direction: column; gap: 0.8rem; max-width: 760px; }
+.truck-quick-add { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 0.85rem; display: grid; grid-template-columns: 150px minmax(0, 1fr) auto; gap: 0.6rem; align-items: center; }
+.truck-quick-add input { background: var(--surface2); border: 1px solid var(--border); border-radius: 3px; padding: 0.62rem 0.75rem; color: var(--text); font-family: 'IBM Plex Sans', sans-serif; font-size: 0.88rem; outline: none; min-width: 0; }
+.truck-quick-add input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(240,165,0,0.1); }
 .truck-row { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 0.9rem 1rem; display: grid; grid-template-columns: 116px minmax(0, 1fr) auto; align-items: center; gap: 0.9rem; }
 .truck-row.today { border-color: rgba(240,165,0,0.45); background: rgba(240,165,0,0.06); }
 .truck-date { font-family: 'Bebas Neue', sans-serif; font-size: 1.35rem; letter-spacing: 0.08em; color: var(--accent); line-height: 1; }
@@ -524,6 +527,22 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
 .truck-note { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--text-dim); margin-top: 0.25rem; line-height: 1.35; }
 .truck-actions { display: flex; gap: 0.35rem; justify-content: flex-end; }
 .truck-month-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.66rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-dim); margin: 0.45rem 0 0.05rem; }
+.loan-layout { padding: 1.5rem 2rem 5rem; display: flex; flex-direction: column; gap: 0.9rem; }
+.loan-quick-add { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 0.95rem; display: grid; grid-template-columns: repeat(2, minmax(160px, 1fr)) 90px 145px minmax(180px, 1fr) auto; gap: 0.65rem; align-items: end; }
+.loan-quick-field { display: flex; flex-direction: column; gap: 0.32rem; min-width: 0; }
+.loan-quick-field label { font-family: 'IBM Plex Mono', monospace; font-size: 0.6rem; color: var(--text-dim); letter-spacing: 0.12em; text-transform: uppercase; }
+.loan-quick-add input, .loan-quick-add select { background: var(--surface2); border: 1px solid var(--border); border-radius: 3px; padding: 0.62rem 0.75rem; color: var(--text); font-family: 'IBM Plex Sans', sans-serif; font-size: 0.86rem; outline: none; min-width: 0; width: 100%; }
+.loan-quick-add input:focus, .loan-quick-add select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(240,165,0,0.1); }
+.loan-row { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 0.9rem 1rem; display: grid; grid-template-columns: 125px minmax(0, 1fr) minmax(150px, 0.7fr) auto; align-items: center; gap: 0.9rem; }
+.loan-row.returned { opacity: 0.72; }
+.loan-date { font-family: 'Bebas Neue', sans-serif; font-size: 1.28rem; letter-spacing: 0.08em; color: var(--accent); line-height: 1; }
+.loan-date-sub { font-family: 'IBM Plex Mono', monospace; font-size: 0.62rem; color: var(--text-dim); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 0.18rem; }
+.loan-title { font-size: 0.94rem; font-weight: 800; color: var(--text); line-height: 1.25; }
+.loan-meta { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.35rem; }
+.loan-person { font-size: 0.9rem; font-weight: 700; color: var(--text); }
+.loan-note { font-family: 'IBM Plex Mono', monospace; font-size: 0.66rem; color: var(--text-dim); margin-top: 0.25rem; line-height: 1.35; }
+.loan-actions { display: flex; gap: 0.35rem; justify-content: flex-end; flex-wrap: wrap; }
+.loan-section-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.66rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-dim); margin-top: 0.35rem; }
 
 /* ===== PREVENTIVI ===== */
 .quote-layout { padding: 1.5rem 2rem 5rem; display: flex; flex-direction: column; gap: 1rem; }
@@ -584,8 +603,15 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
   .finance-chart-col { height: 122px; }
   .finance-chart-month { font-size: 0.5rem; }
   .truck-layout { padding: 0.8rem 0.8rem calc(6rem + env(safe-area-inset-bottom)); max-width: none; }
+  .truck-quick-add { grid-template-columns: 1fr; }
+  .truck-quick-add .btn { justify-content: center; min-height: 42px; }
   .truck-row { grid-template-columns: 1fr; align-items: stretch; gap: 0.65rem; }
   .truck-actions { justify-content: flex-start; }
+  .loan-layout { padding: 0.8rem 0.8rem calc(6rem + env(safe-area-inset-bottom)); }
+  .loan-quick-add { grid-template-columns: 1fr; }
+  .loan-quick-add .btn { justify-content: center; min-height: 42px; }
+  .loan-row { grid-template-columns: 1fr; align-items: stretch; gap: 0.65rem; }
+  .loan-actions { justify-content: flex-start; }
   .service-picker-controls { grid-template-columns: 1fr; }
   .service-picker-row input { width: 82px; }
   .quote-line-row { grid-template-columns: minmax(0, 1fr) 58px 82px 94px; gap: 0.45rem; padding: 0.55rem 0.6rem; }
@@ -793,6 +819,9 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
     <button class="nav-tab" onclick="switchPage('camion')" id="tab-camion">
       🚚 Camion
     </button>
+    <button class="nav-tab" onclick="switchPage('prestiti')" id="tab-prestiti">
+      🙋 Prestiti
+    </button>
     <button class="nav-tab" onclick="switchPage('disponibilita')" id="tab-disponibilita">
       📅 Disponibilità
     </button>
@@ -835,6 +864,9 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
         </button>
         <button class="mobile-nav-link" data-page="camion" onclick="switchPage('camion')">
           <span class="mobile-nav-link-main">🚚 Camion</span>
+        </button>
+        <button class="mobile-nav-link" data-page="prestiti" onclick="switchPage('prestiti')">
+          <span class="mobile-nav-link-main">🙋 Prestiti</span>
         </button>
         <button class="mobile-nav-link" data-page="disponibilita" onclick="switchPage('disponibilita')">
           <span class="mobile-nav-link-main">📅 Disponibilita</span>
@@ -1054,7 +1086,67 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
       </div>
       <button class="info-banner-close" onclick="closeBanner('infoBannerTruck')">✕</button>
     </div>
-    <div class="truck-layout" id="mainTruck"></div>
+    <div class="truck-layout">
+      <div class="truck-quick-add">
+        <input type="date" id="truckQuickDate" aria-label="Data camion">
+        <input type="text" id="truckQuickPerson" placeholder="Chi prende il camion? es. Michi" autocomplete="off" onkeydown="handleTruckQuickKey(event)">
+        <button class="btn btn-primary" type="button" onclick="saveTruckQuickEntry()">Salva</button>
+      </div>
+      <div id="mainTruck"></div>
+    </div>
+  </div>
+
+  <!-- ===== PAGINA PRESTITI ===== -->
+  <div id="page-prestiti" class="page">
+    <div class="toolbar">
+      <div class="search-wrap">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" id="searchLoans" class="search-input" placeholder="Cerca persona, articolo o nota..." autocomplete="off">
+      </div>
+      <div class="filter-tabs finance-filter-tabs" id="filterTabsLoans">
+        <button class="tab active" data-filter="open" onclick="setLoanFilter('open')">Aperti</button>
+        <button class="tab" data-filter="returned" onclick="setLoanFilter('returned')">Riconsegnati</button>
+        <button class="tab" data-filter="all" onclick="setLoanFilter('all')">Tutti</button>
+      </div>
+    </div>
+    <div class="info-banner" id="infoBannerLoans">
+      <div class="info-banner-icon">🙋</div>
+      <div class="info-banner-text">
+        <strong>Prestiti</strong>
+        Segna quando un membro del team prende materiale per sé o lo tiene fuori magazzino. Finché non viene cliccato <b>Riconsegnato</b>, quei pezzi risultano non disponibili.
+      </div>
+      <button class="info-banner-close" onclick="closeBanner('infoBannerLoans')">✕</button>
+    </div>
+    <div class="loan-layout">
+      <div class="loan-quick-add">
+        <div class="loan-quick-field">
+          <label>Membro</label>
+          <select id="loanPerson"></select>
+        </div>
+        <div class="loan-quick-field">
+          <label>Cerca articolo</label>
+          <input type="search" id="loanItemSearch" placeholder="es. cavo XLR" autocomplete="off" oninput="setLoanItemSearch(this.value)">
+        </div>
+        <div class="loan-quick-field">
+          <label>Quantità</label>
+          <input type="number" id="loanQty" min="1" value="1">
+        </div>
+        <div class="loan-quick-field">
+          <label>Data</label>
+          <input type="date" id="loanDate">
+        </div>
+        <div class="loan-quick-field">
+          <label>Nota</label>
+          <input type="text" id="loanNote" placeholder="opzionale" autocomplete="off" onkeydown="handleLoanQuickKey(event)">
+        </div>
+        <button class="btn btn-primary" type="button" onclick="saveLoan()">Registra</button>
+        <div class="loan-quick-field" style="grid-column:1 / -1;">
+          <label>Articolo</label>
+          <select id="loanItem"></select>
+        </div>
+      </div>
+      <div id="mainLoans"></div>
+    </div>
   </div>
 
   <!-- ===== PAGINA DISPONIBILITA ===== -->
@@ -1392,7 +1484,7 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
 const SESSION_USER_KEY = 'vs_auth_user_v1';
 const LAST_BACKUP_KEY = 'vs_last_backup_download_v1';
 const BACKUP_CONFIRM_WORD = 'RIPRISTINA';
-const DATA_BRANCHES = ['inventario', 'services', 'team', 'categories', 'finance', 'orders', 'truck'];
+const DATA_BRANCHES = ['inventario', 'services', 'team', 'categories', 'finance', 'orders', 'truck', 'loans'];
 const CAT_ICONS = { 'Luci':'🔦','Audio':'🔊','Cavi & Connettori':'🔌','Strutture & Truss':'🏗️','Consolle & Controller':'🎛️','Consumabili':'🎊','Accessori':'🔧','Altro':'📦' };
 const DEFAULT_CATEGORIES = Object.entries(CAT_ICONS).map(([name, icon], order) => ({ name, icon, order, builtin: true }));
 const ITEM_TYPES = {
@@ -1416,14 +1508,18 @@ let financeSearch = '';
 let financeFilter = 'all';
 let orderSearch = '';
 let truckSearch = '';
+let loanSearch = '';
+let loanFilter = 'open';
+let loanItemSearch = '';
 let orderFilter = 'all';
 let currentUser = null;
 let firebaseUnsubscribers = [];
-let firebaseDataLoaded = { inventario: false, services: false, team: false, categories: false, finance: false, orders: false, truck: false };
+let firebaseDataLoaded = { inventario: false, services: false, team: false, categories: false, finance: false, orders: false, truck: false, loans: false };
 let categories = {};
 let financeEntries = {};
 let orders = {};
 let truckLog = {};
+let loans = {};
 let editFinanceId = null;
 let editOrderId = null;
 let editTruckId = null;
@@ -1447,6 +1543,7 @@ const PAGE_LABELS = {
   costi: 'Costi',
   ordini: 'Ordini',
   camion: 'Camion',
+  prestiti: 'Prestiti',
   disponibilita: 'Disponibilita',
   scanner: 'Scanner',
   qrcodes: 'QR Codes',
@@ -1575,6 +1672,7 @@ function startFirebaseDataListeners() {
     members = snap.val() || {};
     markFirebaseDataLoaded('team');
     if (currentPage === 'team') renderTeam();
+    if (currentPage === 'prestiti') renderLoans();
   }, () => { setSyncing(false); showToast('Errore lettura team', 'danger'); }));
 
   firebaseUnsubscribers.push(onValue(ref(db, 'categories'), snap => {
@@ -1605,6 +1703,13 @@ function startFirebaseDataListeners() {
     markFirebaseDataLoaded('truck');
     if (currentPage === 'camion') renderTruck();
   }, () => { setSyncing(false); showToast('Errore lettura camion', 'danger'); }));
+
+  firebaseUnsubscribers.push(onValue(ref(db, 'loans'), snap => {
+    setSyncing(false);
+    loans = snap.val() || {};
+    markFirebaseDataLoaded('loans');
+    renderAll();
+  }, () => { setSyncing(false); showToast('Errore lettura prestiti', 'danger'); }));
 }
 
 function stopFirebaseDataListeners() {
@@ -1638,7 +1743,7 @@ function isBackupDataReady() {
 }
 
 function getPendingBackupBranches() {
-  const labels = { inventario: 'magazzino', services: 'eventi', team: 'team', categories: 'categorie', finance: 'costi', orders: 'ordini', truck: 'camion' };
+  const labels = { inventario: 'magazzino', services: 'eventi', team: 'team', categories: 'categorie', finance: 'costi', orders: 'ordini', truck: 'camion', loans: 'prestiti' };
   return DATA_BRANCHES
     .filter(key => !firebaseDataLoaded[key])
     .map(key => labels[key] || key);
@@ -2155,7 +2260,8 @@ function getBackupData() {
     categories: categories || {},
     finance: financeEntries || {},
     orders: orders || {},
-    truck: truckLog || {}
+    truck: truckLog || {},
+    loans: loans || {}
   };
 }
 
@@ -2167,7 +2273,8 @@ function getBackupCounts(data) {
     categories: Object.keys(data?.categories || {}).length,
     finance: Object.keys(data?.finance || {}).length,
     orders: Object.keys(data?.orders || {}).length,
-    truck: Object.keys(data?.truck || {}).length
+    truck: Object.keys(data?.truck || {}).length,
+    loans: Object.keys(data?.loans || {}).length
   };
 }
 
@@ -2182,7 +2289,7 @@ function buildBackupPayload(reason = 'manual') {
   const data = getBackupData();
   return {
     app: 'verso-service',
-    version: 2,
+    version: 3,
     reason,
     exportedAt: new Date().toISOString(),
     counts: getBackupCounts(data),
@@ -2276,6 +2383,7 @@ function normalizeBackupRoot(parsed) {
     finance: optionalBranch('finance', financeEntries),
     orders: optionalBranch('orders', orders),
     truck: optionalBranch('truck', truckLog),
+    loans: optionalBranch('loans', loans),
     preservedBranches,
     exportedAt: parsed.exportedAt || null
   };
@@ -2315,7 +2423,7 @@ function handleBackupFile(input) {
     const preservedMsg = backup.preservedBranches?.length
       ? `\n\nRami non presenti nel backup e mantenuti attuali: ${backup.preservedBranches.join(', ')}`
       : '';
-    const ok = confirm(`Ripristinare questo backup?\n\nBackup: ${formatBackupExportedAt(backup.exportedAt)}\nArticoli: ${counts.inventario}\nEventi: ${counts.services}\nMembri team: ${counts.team}\nCategorie: ${counts.categories}\nMovimenti costi: ${counts.finance}\nOrdini: ${counts.orders}\nCamion: ${counts.truck}\n\nDati attuali:\nArticoli: ${currentCounts.inventario}\nEventi: ${currentCounts.services}\nMembri team: ${currentCounts.team}\nCategorie: ${currentCounts.categories}\nMovimenti costi: ${currentCounts.finance}\nOrdini: ${currentCounts.orders}\nCamion: ${currentCounts.truck}${preservedMsg}\n\nPrima del ripristino verra scaricata una copia dello stato attuale. Poi i dati Firebase verranno sovrascritti.`);
+    const ok = confirm(`Ripristinare questo backup?\n\nBackup: ${formatBackupExportedAt(backup.exportedAt)}\nArticoli: ${counts.inventario}\nEventi: ${counts.services}\nMembri team: ${counts.team}\nCategorie: ${counts.categories}\nMovimenti costi: ${counts.finance}\nOrdini: ${counts.orders}\nCamion: ${counts.truck}\nPrestiti: ${counts.loans}\n\nDati attuali:\nArticoli: ${currentCounts.inventario}\nEventi: ${currentCounts.services}\nMembri team: ${currentCounts.team}\nCategorie: ${currentCounts.categories}\nMovimenti costi: ${currentCounts.finance}\nOrdini: ${currentCounts.orders}\nCamion: ${currentCounts.truck}\nPrestiti: ${currentCounts.loans}${preservedMsg}\n\nPrima del ripristino verra scaricata una copia dello stato attuale. Poi i dati Firebase verranno sovrascritti.`);
     if (!ok) return;
     const typed = prompt(`Conferma finale: digita ${BACKUP_CONFIRM_WORD} per sovrascrivere i dati.`);
     if (typed !== BACKUP_CONFIRM_WORD) {
@@ -2335,7 +2443,8 @@ function handleBackupFile(input) {
       set(ref(db, 'categories'), backup.categories),
       set(ref(db, 'finance'), backup.finance),
       set(ref(db, 'orders'), backup.orders),
-      set(ref(db, 'truck'), backup.truck)
+      set(ref(db, 'truck'), backup.truck),
+      set(ref(db, 'loans'), backup.loans)
     ])
       .then(() => showToast('Backup ripristinato'))
       .catch(err => {
@@ -2471,6 +2580,7 @@ function renderAll() {
   if (currentPage === 'costi') renderFinance();
   if (currentPage === 'ordini') renderOrders();
   if (currentPage === 'camion') renderTruck();
+  if (currentPage === 'prestiti') renderLoans();
   if (currentPage === 'disponibilita') renderDisponibilita();
   if (currentPage === 'team') renderTeam();
   if (currentPage === 'qrcodes') renderQrCodes();
@@ -2494,8 +2604,7 @@ function updateHeaderStats() {
 }
 
 // ==================== MAGAZZINO ====================
-function getItemsBusy(itemId) {
-  // Returns qty currently out in active services
+function getItemsBusyInActiveServices(itemId) {
   let busy = 0;
   Object.values(services).forEach(svc => {
     if (svc.stato === 'active' && svc.items) {
@@ -2504,6 +2613,36 @@ function getItemsBusy(itemId) {
     }
   });
   return busy;
+}
+
+function isLoanOpen(loan) {
+  return (loan?.status || 'open') !== 'returned';
+}
+
+function getOpenLoanQty(itemId) {
+  return Object.values(loans || {}).reduce((sum, loan) => {
+    if (loan.itemId === itemId && isLoanOpen(loan)) return sum + (parseInt(loan.qty, 10) || 0);
+    return sum;
+  }, 0);
+}
+
+function getLoanQtyOnDate(itemId, dateStr) {
+  if (!isValidYmd(dateStr)) return 0;
+  const target = new Date(dateStr);
+  return Object.values(loans || {}).reduce((sum, loan) => {
+    if (loan.itemId !== itemId) return sum;
+    const start = new Date(loan.date || loan.createdDate || '');
+    if (Number.isNaN(start.getTime()) || target < start) return sum;
+    if (!isLoanOpen(loan)) {
+      const end = new Date(loan.returnedAt || '');
+      if (!Number.isNaN(end.getTime()) && target > end) return sum;
+    }
+    return sum + (parseInt(loan.qty, 10) || 0);
+  }, 0);
+}
+
+function getItemsBusy(itemId) {
+  return getItemsBusyInActiveServices(itemId) + getOpenLoanQty(itemId);
 }
 
 function getItemsBusyOnDate(itemId, dateStr) {
@@ -2518,7 +2657,7 @@ function getItemsBusyOnDate(itemId, dateStr) {
       if (found) busy += (found.qty || 0);
     }
   });
-  return busy;
+  return busy + getLoanQtyOnDate(itemId, dateStr);
 }
 
 function renderMagazzino() {
@@ -2565,7 +2704,9 @@ function hl(text, q) {
 
 function renderItemCard(item) {
   const q = magSearch;
-  const busy = getItemsBusy(item.id);
+  const eventBusy = getItemsBusyInActiveServices(item.id);
+  const loanBusy = getOpenLoanQty(item.id);
+  const busy = eventBusy + loanBusy;
   const avail = Math.max(0, item.qty - busy);
   const dotClass = item.qty === 0 ? 'dot-zero' : avail <= 0 ? 'dot-zero' : avail <= 2 ? 'dot-low' : 'dot-ok';
   const availClass = avail === 0 ? 'none' : avail <= 2 ? 'low' : '';
@@ -2586,7 +2727,8 @@ function renderItemCard(item) {
         ${item.seriale?`<span class="tag tag-serial">S/N: ${hl(item.seriale,q)}</span>`:''}
         <span class="tag ${typeMeta.cls}">${isConsumableItem(item) ? '🧾' : '↩'} ${typeMeta.shortLabel}</span>
         ${getItemPrice(item)>0?`<span class="tag" style="background:rgba(240,165,0,0.08);color:var(--accent);border:1px solid rgba(240,165,0,0.2);">💶 ${formatMoney(item.prezzo)}</span>`:''}
-        ${busy>0?`<span class="tag tag-busy">🚚 ${busy} in evento</span>`:''}
+        ${eventBusy>0?`<span class="tag tag-busy">🚚 ${eventBusy} in evento</span>`:''}
+        ${loanBusy>0?`<span class="tag tag-busy">🙋 ${loanBusy} in prestito</span>`:''}
       </div>
       <div class="item-bottom">
         <div>
@@ -3577,6 +3719,7 @@ function getTruckDayLabel(dateStr) {
 }
 
 function renderTruck() {
+  initTruckQuickAdd();
   const container = document.getElementById('mainTruck');
   if (!container) return;
   const arr = getFilteredTruckEntries();
@@ -3616,6 +3759,52 @@ function renderTruckRow(entry) {
   </div>`;
 }
 
+function initTruckQuickAdd() {
+  const dateEl = document.getElementById('truckQuickDate');
+  if (dateEl && !dateEl.value) dateEl.value = getLocalDateKey();
+}
+
+function handleTruckQuickKey(event) {
+  if (event.key !== 'Enter') return;
+  event.preventDefault();
+  saveTruckQuickEntry();
+}
+
+function saveTruckQuickEntry() {
+  const dateEl = document.getElementById('truckQuickDate');
+  const personEl = document.getElementById('truckQuickPerson');
+  const date = dateEl?.value || getLocalDateKey();
+  const person = personEl?.value.trim() || '';
+  if (!date) { showToast('Inserisci la data camion', 'danger'); return; }
+  if (!person) { showToast('Inserisci chi prende il camion', 'danger'); return; }
+  const fb = getFbOrWarn();
+  if (!fb) return;
+
+  const id = uid();
+  const now = Date.now();
+  const obj = {
+    id,
+    date,
+    person,
+    note: '',
+    updatedAt: now,
+    createdAt: now
+  };
+  setSyncing(true);
+  const { db, ref, set } = fb;
+  set(ref(db, `truck/${id}`), obj)
+    .then(() => {
+      showToast('Camion salvato');
+      if (personEl) personEl.value = '';
+      if (dateEl) dateEl.value = date;
+    })
+    .catch(err => {
+      setSyncing(false);
+      console.error('saveTruckQuickEntry failed:', err);
+      showToast('Errore camion: ' + getErrMsg(err), 'danger');
+    });
+}
+
 function openModalTruck(id = null) {
   editTruckId = id;
   const entry = id ? truckLog[id] : null;
@@ -3624,7 +3813,9 @@ function openModalTruck(id = null) {
   document.getElementById('truckPerson').value = entry?.person || '';
   document.getElementById('truckNote').value = entry?.note || '';
   openModal('modalTruck');
-  setTimeout(() => document.getElementById(id ? 'truckPerson' : 'truckDate').focus(), 160);
+  if (!isMobileViewport()) {
+    setTimeout(() => document.getElementById(id ? 'truckPerson' : 'truckDate')?.focus(), 160);
+  }
 }
 
 function saveTruckEntry() {
@@ -3675,6 +3866,239 @@ function deleteTruckEntry(id) {
       console.error('deleteTruckEntry failed:', err);
       showToast('Errore eliminazione camion: ' + getErrMsg(err), 'danger');
     });
+}
+
+// ==================== PRESTITI ====================
+function getLoanEntries() {
+  return Object.values(loans || {}).sort((a, b) => {
+    const openCmp = Number(isLoanOpen(b)) - Number(isLoanOpen(a));
+    if (openCmp !== 0) return openCmp;
+    return String(b.date || '').localeCompare(String(a.date || ''));
+  });
+}
+
+function getLoanPersonName(loan) {
+  if (!loan) return '';
+  if (loan.memberId && members?.[loan.memberId]?.nome) return members[loan.memberId].nome;
+  return loan.person || 'Senza nome';
+}
+
+function loanMatchesSearch(loan) {
+  const q = loanSearch.trim().toLowerCase();
+  if (loanFilter === 'open' && !isLoanOpen(loan)) return false;
+  if (loanFilter === 'returned' && isLoanOpen(loan)) return false;
+  if (!q) return true;
+  const item = items?.[loan.itemId];
+  return [
+    getLoanPersonName(loan),
+    getItemDisplayName(item),
+    item?.categoria,
+    item?.brand,
+    item?.modello,
+    loan.note
+  ].some(v => String(v || '').toLowerCase().includes(q));
+}
+
+function initLoanForm() {
+  const dateEl = document.getElementById('loanDate');
+  if (dateEl && !dateEl.value) dateEl.value = getLocalDateKey();
+  populateLoanPersonSelect();
+  populateLoanItemSelect();
+}
+
+function populateLoanPersonSelect() {
+  const sel = document.getElementById('loanPerson');
+  if (!sel) return;
+  const current = sel.value;
+  const memberArr = Object.values(members || {}).sort((a, b) => String(a.nome || '').localeCompare(String(b.nome || ''), 'it'));
+  sel.innerHTML = memberArr.length
+    ? memberArr.map(m => `<option value="${m.id}">${escHtml(m.nome || 'Membro')}${m.ruolo ? ' - ' + escHtml(m.ruolo) : ''}</option>`).join('')
+    : '<option value="">Nessun membro team</option>';
+  if (current && [...sel.options].some(o => o.value === current)) sel.value = current;
+}
+
+function populateLoanItemSelect() {
+  const sel = document.getElementById('loanItem');
+  if (!sel) return;
+  const current = sel.value;
+  const q = loanItemSearch.trim().toLowerCase();
+  const arr = Object.values(items || {})
+    .filter(item => {
+      if (!q) return true;
+      return [item.nome, item.brand, item.modello, item.categoria, item.posizione].some(v => String(v || '').toLowerCase().includes(q));
+    })
+    .sort((a, b) => {
+      const catCmp = String(a.categoria || '').localeCompare(String(b.categoria || ''), 'it');
+      if (catCmp !== 0) return catCmp;
+      return getItemDisplayName(a).localeCompare(getItemDisplayName(b), 'it');
+    });
+  sel.innerHTML = arr.length
+    ? arr.map(item => {
+      const busy = getItemsBusy(item.id);
+      const avail = Math.max(0, (parseInt(item.qty, 10) || 0) - busy);
+      return `<option value="${item.id}" ${avail <= 0 ? 'disabled' : ''}>${getCategoryIcon(item.categoria)} ${escHtml(getItemDisplayName(item))} (${avail}/${parseInt(item.qty, 10) || 0} disp.)</option>`;
+    }).join('')
+    : '<option value="">Nessun articolo trovato</option>';
+  if (current && [...sel.options].some(o => o.value === current && !o.disabled)) sel.value = current;
+}
+
+function setLoanItemSearch(value) {
+  loanItemSearch = value || '';
+  populateLoanItemSelect();
+}
+
+function setLoanFilter(filter) {
+  loanFilter = filter || 'open';
+  document.querySelectorAll('#filterTabsLoans .tab').forEach(t => t.classList.toggle('active', t.dataset.filter === loanFilter));
+  renderLoans();
+}
+
+function handleLoanQuickKey(event) {
+  if (event.key !== 'Enter') return;
+  event.preventDefault();
+  saveLoan();
+}
+
+function saveLoan() {
+  const memberId = document.getElementById('loanPerson')?.value || '';
+  const itemId = document.getElementById('loanItem')?.value || '';
+  const qty = Math.max(1, parseInt(document.getElementById('loanQty')?.value, 10) || 1);
+  const date = document.getElementById('loanDate')?.value || getLocalDateKey();
+  const note = document.getElementById('loanNote')?.value.trim() || '';
+  const member = members?.[memberId];
+  const item = items?.[itemId];
+
+  if (!member) { showToast('Seleziona un membro del team', 'danger'); return; }
+  if (!item) { showToast('Seleziona un articolo', 'danger'); return; }
+  if (!date) { showToast('Inserisci la data', 'danger'); return; }
+  const available = Math.max(0, (parseInt(item.qty, 10) || 0) - getItemsBusy(itemId));
+  if (qty > available) {
+    showToast(`Disponibili solo ${available} pezzi`, 'danger');
+    return;
+  }
+
+  const fb = getFbOrWarn();
+  if (!fb) return;
+  const id = uid();
+  const now = Date.now();
+  const obj = {
+    id,
+    memberId,
+    person: member.nome || '',
+    itemId,
+    itemName: getItemDisplayName(item),
+    qty,
+    date,
+    note,
+    status: 'open',
+    updatedAt: now,
+    createdAt: now
+  };
+  setSyncing(true);
+  const { db, ref, set } = fb;
+  set(ref(db, `loans/${id}`), obj)
+    .then(() => {
+      showToast('Prestito registrato');
+      document.getElementById('loanNote').value = '';
+      document.getElementById('loanQty').value = 1;
+      populateLoanItemSelect();
+    })
+    .catch(err => {
+      setSyncing(false);
+      console.error('saveLoan failed:', err);
+      showToast('Errore prestito: ' + getErrMsg(err), 'danger');
+    });
+}
+
+function returnLoan(id) {
+  const loan = loans?.[id];
+  if (!loan || !isLoanOpen(loan)) return;
+  const item = items?.[loan.itemId];
+  const ok = confirm(`Segnare come riconsegnato?\n\n${getLoanPersonName(loan)} - ${getItemDisplayName(item)} x${loan.qty || 1}`);
+  if (!ok) return;
+  const fb = getFbOrWarn();
+  if (!fb) return;
+  setSyncing(true);
+  const { db, ref, update } = fb;
+  update(ref(db, `loans/${id}`), {
+    status: 'returned',
+    returnedAt: getLocalDateKey(),
+    updatedAt: Date.now()
+  })
+    .then(() => showToast('Materiale riconsegnato'))
+    .catch(err => {
+      setSyncing(false);
+      console.error('returnLoan failed:', err);
+      showToast('Errore riconsegna: ' + getErrMsg(err), 'danger');
+    });
+}
+
+function deleteLoan(id) {
+  const loan = loans?.[id];
+  if (!loan || !confirm(`Eliminare questo prestito?\n\n${getLoanPersonName(loan)}`)) return;
+  const fb = getFbOrWarn();
+  if (!fb) return;
+  setSyncing(true);
+  const { db, ref, remove } = fb;
+  remove(ref(db, `loans/${id}`))
+    .then(() => showToast('Prestito eliminato'))
+    .catch(err => {
+      setSyncing(false);
+      console.error('deleteLoan failed:', err);
+      showToast('Errore eliminazione prestito: ' + getErrMsg(err), 'danger');
+    });
+}
+
+function renderLoans() {
+  initLoanForm();
+  const container = document.getElementById('mainLoans');
+  if (!container) return;
+  const all = getLoanEntries();
+  const open = all.filter(isLoanOpen);
+  const pieces = open.reduce((sum, loan) => sum + (parseInt(loan.qty, 10) || 0), 0);
+  const filtered = all.filter(loanMatchesSearch);
+
+  container.innerHTML = `
+    <div class="finance-summary">
+      ${renderFinanceSummaryCard('Prestiti aperti', open.length, 'var(--accent)', false)}
+      ${renderFinanceSummaryCard('Pezzi fuori', pieces, 'var(--warning)', false)}
+      ${renderFinanceSummaryCard('Storico totale', all.length, 'var(--text)', false)}
+    </div>
+    ${filtered.length === 0
+      ? `<div class="empty-state"><div class="icon">🙋</div><p>${all.length === 0 ? 'Nessun prestito registrato.' : 'Nessun risultato.'}</p></div>`
+      : `<div class="loan-section-title">${loanFilter === 'open' ? 'Prestiti aperti' : loanFilter === 'returned' ? 'Riconsegnati' : 'Tutti i prestiti'}</div>
+         <div class="finance-list">${filtered.map(renderLoanRow).join('')}</div>`}
+  `;
+}
+
+function renderLoanRow(loan) {
+  const item = items?.[loan.itemId];
+  const open = isLoanOpen(loan);
+  const qty = parseInt(loan.qty, 10) || 1;
+  return `<div class="loan-row ${open ? '' : 'returned'}">
+    <div>
+      <div class="loan-date">${formatDate(loan.date)}</div>
+      <div class="loan-date-sub">${open ? 'Aperto' : `Rientrato ${formatDate(loan.returnedAt)}`}</div>
+    </div>
+    <div>
+      <div class="loan-title">${escHtml(getItemDisplayName(item || { nome: loan.itemName || 'Articolo rimosso' }))} <span style="color:var(--accent);font-family:'IBM Plex Mono',monospace;">x${qty}</span></div>
+      <div class="loan-meta">
+        ${item?.categoria ? `<span class="tag tag-loc">${getCategoryIcon(item.categoria)} ${escHtml(item.categoria)}</span>` : ''}
+        ${item ? `<span class="tag ${getItemTypeMeta(item).cls}">${getItemTypeMeta(item).shortLabel}</span>` : '<span class="tag tag-serial">Articolo rimosso</span>'}
+      </div>
+      ${loan.note ? `<div class="loan-note">${escHtml(loan.note)}</div>` : ''}
+    </div>
+    <div>
+      <div class="loan-person">${escHtml(getLoanPersonName(loan))}</div>
+      <div class="loan-date-sub">${open ? 'lo ha ora' : 'chiuso'}</div>
+    </div>
+    <div class="loan-actions">
+      ${open ? `<button class="btn btn-primary btn-sm" onclick="returnLoan('${loan.id}')">Riconsegnato</button>` : ''}
+      <button class="icon-btn del" onclick="deleteLoan('${loan.id}')" title="Elimina">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+      </button>
+    </div>
+  </div>`;
 }
 
 // ==================== DISPONIBILITA ====================
@@ -4589,6 +5013,7 @@ document.getElementById('searchQuotes').addEventListener('input', e => { quoteSe
 document.getElementById('searchFinance').addEventListener('input', e => { financeSearch = e.target.value.trim(); renderFinance(); });
 document.getElementById('searchOrders').addEventListener('input', e => { orderSearch = e.target.value.trim(); renderOrders(); });
 document.getElementById('searchTruck').addEventListener('input', e => { truckSearch = e.target.value.trim(); renderTruck(); });
+document.getElementById('searchLoans').addEventListener('input', e => { loanSearch = e.target.value.trim(); renderLoans(); });
 
 // ==================== EXPORT ====================
 function exportCSV() {
@@ -5721,6 +6146,16 @@ function refreshFabForCurrentPage() {
     return;
   }
 
+  if (currentPage === 'prestiti') {
+    fab.textContent = '+';
+    fab.setAttribute('aria-label', 'Nuovo prestito');
+    fab.onclick = () => {
+      document.getElementById('loanPerson')?.focus();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+    return;
+  }
+
   if (currentPage === 'team') {
     fab.textContent = '👤';
     fab.setAttribute('aria-label', 'Aggiungi membro');
@@ -5779,6 +6214,7 @@ function switchPage(page) {
   }
   if (page === 'ordini') renderOrders();
   if (page === 'camion') renderTruck();
+  if (page === 'prestiti') renderLoans();
   if (page === 'disponibilita') {
     if (!document.getElementById('availDate').value)
       document.getElementById('availDate').value = new Date().toISOString().slice(0,10);
