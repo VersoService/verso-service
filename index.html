@@ -204,6 +204,14 @@ main { padding: 1.5rem 2rem 5rem; }
 .dashboard-empty { font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; color: var(--text-faint); text-align: center; padding: 1rem; border: 1px dashed var(--border); border-radius: 4px; }
 .dashboard-actions { display: flex; flex-wrap: wrap; gap: 0.55rem; }
 .dashboard-actions .btn { justify-content: center; }
+.backup-guide { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: 6px; padding: 1rem; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 1rem; align-items: center; }
+.backup-guide.warn { border-left-color: var(--warning); background: rgba(255,149,0,0.05); }
+.backup-guide.danger { border-left-color: var(--danger); background: rgba(255,68,68,0.06); }
+.backup-guide-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.15rem; letter-spacing: 0.1em; color: var(--text); }
+.backup-guide-meta { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--text-dim); line-height: 1.55; margin-top: 0.35rem; }
+.backup-guide-counts { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.65rem; }
+.backup-guide-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: flex-end; }
+.backup-guide-actions .btn { justify-content: center; }
 
 /* ===== MAGAZZINO ===== */
 .category-section { margin-bottom: 2.5rem; }
@@ -618,6 +626,9 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
   .dashboard-row { grid-template-columns: 1fr; align-items: stretch; }
   .dashboard-row-side { text-align: left; }
   .dashboard-actions .btn { flex: 1 1 100%; }
+  .backup-guide { grid-template-columns: 1fr; }
+  .backup-guide-actions { justify-content: stretch; }
+  .backup-guide-actions .btn { flex: 1 1 100%; }
   .team-layout { grid-template-columns: 1fr; padding: 0.8rem 0.8rem 6rem; }
   .assigned-member-row { flex-wrap: wrap; align-items: center; }
   .assigned-hours-wrap { margin-left: 0; width: 100%; justify-content: flex-end; }
@@ -840,7 +851,7 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
         </div>
       </div>
       <div class="header-actions">
-        <button class="header-action" type="button" onclick="exportBackup()">Backup</button>
+        <button class="header-action" type="button" onclick="exportBackup()">Backup JSON</button>
         <button class="header-action" type="button" onclick="openBackupImport()">Ripristina</button>
         <button class="header-action danger" type="button" onclick="logout()">Esci</button>
       </div>
@@ -940,7 +951,7 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
         </button>
       </div>
       <div class="mobile-nav-actions">
-        <button class="mobile-nav-action" type="button" onclick="exportBackup(); toggleMobileMenu(false)">Backup</button>
+        <button class="mobile-nav-action" type="button" onclick="exportBackup(); toggleMobileMenu(false)">Backup JSON</button>
         <button class="mobile-nav-action" type="button" onclick="openBackupImport(); toggleMobileMenu(false)">Ripristina</button>
         <button class="mobile-nav-action danger" type="button" onclick="logout(); toggleMobileMenu(false)">Esci</button>
       </div>
@@ -1562,6 +1573,7 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
 // ==================== COSTANTI ====================
 const SESSION_USER_KEY = 'vs_auth_user_v1';
 const LAST_BACKUP_KEY = 'vs_last_backup_download_v1';
+const LAST_BACKUP_DRIVE_KEY = 'vs_last_backup_drive_confirm_v1';
 const BACKUP_CONFIRM_WORD = 'RIPRISTINA';
 const DATA_BRANCHES = ['inventario', 'services', 'team', 'categories', 'finance', 'orders', 'truck', 'loans'];
 const CAT_ICONS = { 'Luci':'🔦','Audio':'🔊','Cavi & Connettori':'🔌','Strutture & Truss':'🏗️','Consolle & Controller':'🎛️','Consumabili':'🎊','Accessori':'🔧','Altro':'📦' };
@@ -2408,14 +2420,70 @@ function getLastBackupDate() {
   }
 }
 
+function getLastDriveBackupDate() {
+  try {
+    const value = localStorage.getItem(LAST_BACKUP_DRIVE_KEY);
+    if (!value) return null;
+    const d = new Date(value);
+    return Number.isNaN(d.getTime()) ? null : d;
+  } catch (err) {
+    return null;
+  }
+}
+
+function getDaysSince(date) {
+  if (!date) return null;
+  return Math.max(0, Math.floor((Date.now() - date.getTime()) / (24 * 60 * 60 * 1000)));
+}
+
+function formatRelativeBackupDate(date) {
+  if (!date) return 'mai';
+  const days = getDaysSince(date);
+  if (days === 0) return 'oggi';
+  if (days === 1) return 'ieri';
+  return `${days} giorni fa`;
+}
+
+function getBackupHealth() {
+  const downloaded = getLastBackupDate();
+  const drive = getLastDriveBackupDate();
+  const best = [downloaded, drive].filter(Boolean).sort((a, b) => b.getTime() - a.getTime())[0] || null;
+  const days = getDaysSince(best);
+  const level = days === null || days >= 30 ? 'danger' : days >= 14 ? 'warn' : 'ok';
+  return { downloaded, drive, best, days, level };
+}
+
+function markBackupSavedToDrive() {
+  try {
+    localStorage.setItem(LAST_BACKUP_DRIVE_KEY, new Date().toISOString());
+    showToast('Segnato: backup salvato su Drive');
+    renderDashboard();
+  } catch (err) {
+    console.warn('drive backup date not saved:', err);
+    showToast('Non riesco a salvare il promemoria backup', 'danger');
+  }
+}
+
+function buildBackupCountsHtml(counts) {
+  return [
+    ['Articoli', counts.inventario],
+    ['Eventi', counts.services],
+    ['Team', counts.team],
+    ['Categorie', counts.categories],
+    ['Costi', counts.finance],
+    ['Ordini', counts.orders],
+    ['Camion', counts.truck],
+    ['Prestiti', counts.loans]
+  ].map(([label, value]) => `<span class="tag tag-serial">${label}: ${value}</span>`).join('');
+}
+
 function maybeShowBackupReminder() {
   if (backupReminderShown) return;
   backupReminderShown = true;
-  const last = getLastBackupDate();
-  if (last) {
-    const days = Math.floor((Date.now() - last.getTime()) / (24 * 60 * 60 * 1000));
-    if (days < 14) return;
-    showToast(`Backup consigliato: ultimo export ${days} giorni fa`, days >= 30 ? 'danger' : 'ok');
+  const health = getBackupHealth();
+  if (health.best) {
+    if (health.days < 14) return;
+    showToast(`Backup consigliato: ultimo controllo ${health.days} giorni fa`, health.days >= 30 ? 'danger' : 'ok');
     return;
   }
   showToast('Backup consigliato: scarica una copia JSON fuori da Firebase');
@@ -2427,8 +2495,14 @@ function exportBackup() {
     return;
   }
   if (!ensureBackupDataReady()) return;
-  downloadBackupSnapshot('verso_backup', 'manual');
-  showToast('Backup JSON scaricato. Conservalo fuori da Firebase');
+  const counts = getBackupCounts(getBackupData());
+  const filename = downloadBackupSnapshot('verso_backup', 'manual');
+  showToast(`Backup scaricato: ${counts.inventario} articoli, ${counts.services} eventi`);
+  setTimeout(() => {
+    const ok = confirm(`Backup scaricato:\n\n${filename}\n\nContenuto:\nArticoli: ${counts.inventario}\nEventi: ${counts.services}\nMembri team: ${counts.team}\nCosti: ${counts.finance}\nOrdini: ${counts.orders}\nCamion: ${counts.truck}\nPrestiti: ${counts.loans}\n\nOra salvalo anche su Google Drive o in una cartella sicura.\n\nHai gia copiato/salvato il file su Drive?`);
+    if (ok) markBackupSavedToDrive();
+    else renderDashboard();
+  }, 250);
 }
 
 function openBackupImport() {
@@ -2737,6 +2811,34 @@ function renderDashboardCard(title, page, rows, emptyText) {
   </div>`;
 }
 
+function renderBackupGuide() {
+  const health = getBackupHealth();
+  const counts = getBackupCounts(getBackupData());
+  const cls = health.level === 'danger' ? 'danger' : health.level === 'warn' ? 'warn' : '';
+  const status = health.level === 'danger'
+    ? 'Backup da fare'
+    : health.level === 'warn'
+      ? 'Backup consigliato'
+      : 'Backup ok';
+  const lastDownload = formatRelativeBackupDate(health.downloaded);
+  const lastDrive = formatRelativeBackupDate(health.drive);
+  return `<div class="backup-guide ${cls}">
+    <div>
+      <div class="backup-guide-title">${status}</div>
+      <div class="backup-guide-meta">
+        Ultimo download: <b>${lastDownload}</b> · Salvato su Drive: <b>${lastDrive}</b><br>
+        Consiglio: scarica il JSON e tienine una copia fuori da Firebase almeno una volta al mese.
+      </div>
+      <div class="backup-guide-counts">${buildBackupCountsHtml(counts)}</div>
+    </div>
+    <div class="backup-guide-actions">
+      <button class="btn btn-primary" onclick="exportBackup()">Backup</button>
+      <button class="btn btn-ghost" onclick="markBackupSavedToDrive()">Salvato su Drive</button>
+      <button class="btn btn-ghost" onclick="openBackupImport()">Ripristina</button>
+    </div>
+  </div>`;
+}
+
 function renderDashboard() {
   const container = document.getElementById('mainDashboard');
   if (!container) return;
@@ -2790,6 +2892,7 @@ function renderDashboard() {
   ));
 
   container.innerHTML = `
+    ${renderBackupGuide()}
     <div class="dashboard-summary">
       ${renderDashboardMetric('Eventi oggi', eventsToday.length, eventsToday.length ? 'var(--accent)' : 'var(--text)')}
       ${renderDashboardMetric('Eventi attivi', activeEvents.length, activeEvents.length ? 'var(--warning)' : 'var(--text)')}
