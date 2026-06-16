@@ -152,10 +152,12 @@ header { background: var(--surface); border-bottom: 2px solid var(--accent); pad
 .mobile-nav-actions { margin-top: auto; padding: 0.6rem; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 0.35rem; }
 .mobile-nav-action { width: 100%; min-height: 42px; border-radius: 4px; border: 1px solid var(--border); background: var(--surface2); color: var(--text-dim); font-family: 'IBM Plex Mono', monospace; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; }
 .mobile-nav-action.danger { color: var(--danger); border-color: rgba(255,68,68,0.25); }
+.mobile-bottom-nav { display: none; }
+.mobile-bottom-nav-btn { border: none; background: transparent; color: var(--text-dim); font-family: 'IBM Plex Mono', monospace; font-size: 0.58rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; cursor: pointer; }
 body.mobile-nav-open { overflow: hidden; }
 
 @media (min-width: 641px) {
-  .mobile-menu-btn, .mobile-page-name, .mobile-nav-overlay { display: none !important; }
+  .mobile-menu-btn, .mobile-page-name, .mobile-nav-overlay, .mobile-bottom-nav { display: none !important; }
 }
 
 /* PAGE SECTIONS */
@@ -364,6 +366,13 @@ main { padding: 1.5rem 2rem 5rem; }
 .service-picker-row { display: flex; gap: 0.6rem; margin-bottom: 0.6rem; flex-wrap: wrap; }
 .service-picker-row select { flex: 1; min-width: 180px; }
 .service-picker-row input { width: 70px; font-family: 'IBM Plex Mono', monospace; text-align: center; }
+.picker-qty-stepper { display: grid; grid-template-columns: 34px 64px 34px; align-items: stretch; border: 1px solid var(--border); border-radius: 3px; overflow: hidden; background: var(--surface2); flex-shrink: 0; }
+.picker-qty-stepper button { border: 0; background: rgba(255,255,255,0.04); color: var(--text); cursor: pointer; font-family: 'IBM Plex Mono', monospace; font-size: 1rem; font-weight: 700; line-height: 1; }
+.picker-qty-stepper button:hover { background: rgba(240,165,0,0.14); color: var(--accent); }
+.service-picker-row .picker-qty-stepper input { width: 64px; border: 0; border-left: 1px solid var(--border); border-right: 1px solid var(--border); border-radius: 0; background: transparent; padding: 0.5rem 0.2rem; }
+#pickerQty { appearance: textfield; }
+#pickerQty::-webkit-outer-spin-button,
+#pickerQty::-webkit-inner-spin-button { appearance: none; margin: 0; }
 .service-picker-hint { font-family: 'IBM Plex Mono', monospace; font-size: 0.66rem; color: var(--text-faint); letter-spacing: 0.08em; margin: -0.25rem 0 0.55rem; }
 .item-picker-list { display: flex; flex-direction: column; gap: 0.4rem; max-height: 200px; overflow-y: auto; }
 .item-picker-row { display: flex; align-items: center; gap: 0.7rem; padding: 0.5rem 0.7rem; background: var(--surface2); border: 1px solid var(--border); border-radius: 3px; cursor: pointer; transition: border-color 0.15s; }
@@ -675,6 +684,17 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
 /* ===== MOBILE ===== */
 @media (max-width: 640px) {
   input, select, textarea { font-size: 16px !important; }
+  .field input, .field select, .field textarea,
+  .service-picker-controls select,
+  .service-picker-controls input,
+  .service-picker-row select,
+  .service-picker-row input,
+  .loan-quick-add input,
+  .loan-quick-add select,
+  .truck-quick-add input,
+  .pricing-input-wrap input,
+  .team-report-month,
+  .search-input { min-height: 46px; }
   header { padding: 0.6rem 0.8rem; height: auto; min-height: 52px; }
   .header-brand { min-width: 0; }
   .logo { font-size: 1.3rem; }
@@ -696,6 +716,38 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
   .mobile-menu-btn, .mobile-nav-close { min-width: 44px; min-height: 44px; }
   .mobile-nav-drawer { height: 100dvh; max-height: 100dvh; padding-bottom: env(safe-area-inset-bottom); }
   .mobile-nav-link, .mobile-nav-action { min-height: 44px; }
+  .mobile-bottom-nav {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 700;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0;
+    min-height: calc(62px + env(safe-area-inset-bottom));
+    padding: 0.38rem 0.45rem calc(0.42rem + env(safe-area-inset-bottom));
+    background: rgba(18,18,18,0.97);
+    border-top: 1px solid var(--border-bright);
+    box-shadow: 0 -10px 30px rgba(0,0,0,0.38);
+  }
+  .mobile-bottom-nav-btn {
+    min-width: 0;
+    min-height: 50px;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.18rem;
+    color: var(--text-dim);
+    transition: background 0.15s, color 0.15s;
+  }
+  .mobile-bottom-nav-btn .ico { font-size: 1.05rem; line-height: 1; }
+  .mobile-bottom-nav-btn.active {
+    color: var(--accent);
+    background: rgba(240,165,0,0.1);
+  }
   .header-actions { display: none; }
   .header-stats { gap: 0.38rem; }
   .stat-chip {
@@ -741,6 +793,7 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
   .item-bottom { flex-direction: column; align-items: stretch; gap: 0.7rem; }
   .item-actions { justify-content: flex-end; }
   .item-quick-actions .btn { flex: 1 1 calc(50% - 0.3rem); min-height: 44px; }
+  .item-quick-actions .item-quick-secondary { display: none; }
   .qty-btn { width: 40px; height: 40px; font-size: 1.3rem; }
   .qty-val { width: 52px; height: 40px; font-size: 1.1rem; }
   .icon-btn { width: 44px; height: 44px; }
@@ -751,6 +804,25 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
   .modal-actions { position: sticky; bottom: calc(-1.5rem - env(safe-area-inset-bottom)); background: linear-gradient(to bottom, rgba(22,22,22,0), rgba(22,22,22,0.95) 18%, rgba(22,22,22,1)); padding-top: 1rem; margin-top: 1rem; }
   .modal-actions .btn { flex: 1; justify-content: center; }
   .modal-actions .btn, .service-picker-row .btn, .scan-action-btn { min-height: 48px; }
+  .add-item-section {
+    margin-top: 1rem;
+    padding: 0.85rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: rgba(255,255,255,0.025);
+  }
+  .service-picker-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(92px, 104px);
+    gap: 0.6rem;
+    align-items: stretch;
+  }
+  .service-picker-row select { width: 100%; min-width: 0; }
+  .picker-qty-stepper { width: 100%; grid-template-columns: 30px minmax(0, 1fr) 30px; }
+  .service-picker-row .picker-qty-stepper input { width: 100%; min-height: 46px; }
+  .service-picker-row .btn { grid-column: 1 / -1; justify-content: center; }
+  .service-picker-hint { line-height: 1.4; }
+  .item-picker-row { align-items: flex-start; }
   .form-grid { grid-template-columns: 1fr; }
   .form-grid .full { grid-column: 1; }
   .avail-grid { grid-template-columns: 1fr; }
@@ -776,8 +848,8 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
   .qr-grid { grid-template-columns: 1fr; }
   .login-logo { font-size: 2.8rem; }
   .login-form { padding: 1.5rem; }
-  #fabAdd { right: 1rem; bottom: calc(1rem + env(safe-area-inset-bottom)); }
-  .toast { left: 0.8rem; right: 0.8rem; bottom: calc(0.8rem + env(safe-area-inset-bottom)); transform: translateY(130%); }
+  #fabAdd { right: 1rem; bottom: calc(5.35rem + env(safe-area-inset-bottom)); }
+  .toast { left: 0.8rem; right: 0.8rem; bottom: calc(5.2rem + env(safe-area-inset-bottom)); transform: translateY(130%); }
   .toast.show { transform: translateY(0); }
 }
 </style>
@@ -957,6 +1029,29 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
       </div>
     </aside>
   </div>
+
+  <nav class="mobile-bottom-nav" id="mobileBottomNav" aria-label="Navigazione rapida mobile">
+    <button class="mobile-bottom-nav-btn active" type="button" data-page="dashboard" onclick="switchPage('dashboard')">
+      <span class="ico">📊</span>
+      <span>Oggi</span>
+    </button>
+    <button class="mobile-bottom-nav-btn" type="button" data-page="magazzino" onclick="switchPage('magazzino')">
+      <span class="ico">📦</span>
+      <span>Mag.</span>
+    </button>
+    <button class="mobile-bottom-nav-btn" type="button" data-page="service" onclick="switchPage('service')">
+      <span class="ico">🎪</span>
+      <span>Eventi</span>
+    </button>
+    <button class="mobile-bottom-nav-btn" type="button" data-page="scanner" onclick="switchPage('scanner')">
+      <span class="ico">📷</span>
+      <span>Scan</span>
+    </button>
+    <button class="mobile-bottom-nav-btn" type="button" data-page="menu" onclick="toggleMobileMenu(true)">
+      <span class="ico">☰</span>
+      <span>Menu</span>
+    </button>
+  </nav>
 
   <div id="configWarning">
     ⚠️ <strong>Accesso Firebase non riuscito.</strong> Controlla Firebase Auth e le regole del Realtime Database.
@@ -1471,7 +1566,11 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
       <div id="servicePickerHint" class="service-picker-hint"></div>
       <div class="service-picker-row">
         <select id="pickerSelect"></select>
-        <input type="number" id="pickerQty" min="1" value="1">
+        <div class="picker-qty-stepper" aria-label="Quantita materiale">
+          <button type="button" aria-label="Diminuisci quantita" onclick="stepPickerQty(-1)">−</button>
+          <input type="number" id="pickerQty" min="1" value="1">
+          <button type="button" aria-label="Aumenta quantita" onclick="stepPickerQty(1)">+</button>
+        </div>
         <button class="btn btn-ghost btn-sm" onclick="addItemToService()">+ Aggiungi</button>
       </div>
       <div id="serviceSuggestedItems"></div>
@@ -2704,6 +2803,9 @@ function syncMobileNavUi() {
   document.querySelectorAll('.mobile-nav-link').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.page === currentPage);
   });
+  document.querySelectorAll('.mobile-bottom-nav-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.page === currentPage);
+  });
 }
 
 function toggleMobileMenu(forceOpen) {
@@ -2714,6 +2816,9 @@ function toggleMobileMenu(forceOpen) {
   document.body.classList.toggle('mobile-nav-open', shouldOpen);
   const menuBtn = document.getElementById('mobileMenuBtn');
   if (menuBtn) menuBtn.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+  document.querySelectorAll('.mobile-bottom-nav-btn').forEach(btn => {
+    btn.classList.toggle('active', shouldOpen ? btn.dataset.page === 'menu' : btn.dataset.page === currentPage);
+  });
 }
 
 function handleMobileNavBackdrop(e) {
@@ -3050,10 +3155,10 @@ function renderItemCard(item) {
         ${loanBusy>0?`<span class="tag tag-busy">🙋 ${loanBusy} in prestito</span>`:''}
       </div>
       <div class="item-quick-actions">
-        <button class="btn btn-ghost btn-sm" onclick="quickEventWithItem('${item.id}')">Evento</button>
-        <button class="btn btn-ghost btn-sm" onclick="quickLoanItem('${item.id}')">Presta</button>
-        <button class="btn btn-ghost btn-sm" onclick="showQrModal('${item.id}')">QR</button>
-        <button class="btn btn-ghost btn-sm" onclick="openModalItem('${item.id}')">Modifica</button>
+        <button class="btn btn-ghost btn-sm item-quick-primary" onclick="quickEventWithItem('${item.id}')">Evento</button>
+        <button class="btn btn-ghost btn-sm item-quick-primary" onclick="quickLoanItem('${item.id}')">Presta</button>
+        <button class="btn btn-ghost btn-sm item-quick-secondary" onclick="showQrModal('${item.id}')">QR</button>
+        <button class="btn btn-ghost btn-sm item-quick-secondary" onclick="openModalItem('${item.id}')">Modifica</button>
       </div>
       <div class="item-bottom">
         <div>
@@ -5378,6 +5483,13 @@ function addItemToService() {
   if (suggestions.length > 0) showToast('Suggerimenti accessori disponibili');
   document.getElementById('pickerSelect').value='';
   document.getElementById('pickerQty').value=1;
+}
+
+function stepPickerQty(delta) {
+  const input = document.getElementById('pickerQty');
+  if (!input) return;
+  const current = Math.max(1, parseInt(input.value, 10) || 1);
+  input.value = Math.max(1, current + delta);
 }
 
 function renderSvcSelectedItems() {
