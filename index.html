@@ -2245,6 +2245,14 @@ function cssEscapeValue(value) {
   return String(value).replace(/["\\]/g, '\\$&');
 }
 
+function clonePlain(value) {
+  try {
+    return JSON.parse(JSON.stringify(value ?? null));
+  } catch (_) {
+    return value;
+  }
+}
+
 function normalizeMoney(value) {
   const n = Number(String(value ?? '').replace(',', '.'));
   if (!Number.isFinite(n) || n < 0) return 0;
@@ -3682,6 +3690,7 @@ function renderServiceCard(svc) {
         ${hasFinanceSource('event_income', svcId) ? `<button class="btn btn-ghost btn-sm" onclick="switchPage('costi')">💰 Incasso registrato</button>` : `<button class="btn btn-ghost btn-sm" onclick="recordEventIncome('${svcId}')">💰 Registra incasso</button>`}
         <button class="btn btn-ghost btn-sm" onclick="openGoogleCalendarForService('${svcId}')">📆 Google Calendar</button>
         <button class="btn btn-ghost btn-sm" onclick="downloadServiceIcs('${svcId}')">ICS</button>
+        <button class="btn btn-ghost btn-sm" onclick="duplicateService('${svcId}')">📄 Duplica</button>
         <button class="btn btn-ghost btn-sm" onclick="openModalService('${svcId}')">✏️ Modifica</button>
         <button class="btn btn-danger btn-sm" onclick="deleteService('${svcId}')">Elimina</button>
       </div>
@@ -5436,6 +5445,31 @@ function deleteService(id) {
     });
 }
 
+function duplicateService(id) {
+  const svc = services[id];
+  if (!svc) return;
+  openModalService();
+  editSvcId = null;
+  document.getElementById('modalServiceTitle').textContent = 'Duplica Evento';
+  document.getElementById('sNome').value = `Copia di ${svc.nome || 'Evento'}`;
+  document.getElementById('sLuogo').value = svc.luogo || '';
+  document.getElementById('sDataOut').value = '';
+  document.getElementById('sDataIn').value = '';
+  document.getElementById('sStato').value = 'planned';
+  document.getElementById('sCliente').value = svc.cliente || '';
+  document.getElementById('sNote').value = svc.note || '';
+  svcSelectedItems = svc.items ? Object.values(svc.items).map(entry => ({
+    id: entry.id,
+    qty: Math.max(1, parseInt(entry.qty, 10) || 1)
+  })) : [];
+  const copiedQuote = clonePlain(svc.quote || {});
+  const modal = document.getElementById('modalService');
+  if (modal) modal.dataset.duplicateQuote = JSON.stringify(copiedQuote || {});
+  renderSvcSelectedItems();
+  populateItemPicker();
+  showToast('Evento duplicato in bozza: imposta nome e date, poi salva');
+}
+
 // ==================== MODAL ARTICOLO ====================
 function openModalItem(id = null) {
   editItemId = id;
@@ -5574,6 +5608,8 @@ function removeSuggestionLink(idx) {
 function openModalService(id = null) {
   editSvcId = id;
   svcSelectedItems = [];
+  const serviceModal = document.getElementById('modalService');
+  if (serviceModal) delete serviceModal.dataset.duplicateQuote;
   document.getElementById('modalServiceTitle').textContent = id ? 'Modifica Evento' : 'Nuovo Evento';
 
   if (id && services[id]) {
@@ -5889,6 +5925,15 @@ function saveService() {
 
   const id = editSvcId || uid();
   const existing = services[id] || {};
+  const duplicateQuoteRaw = document.getElementById('modalService')?.dataset.duplicateQuote;
+  let duplicateQuote = {};
+  if (!editSvcId && duplicateQuoteRaw) {
+    try {
+      duplicateQuote = JSON.parse(duplicateQuoteRaw) || {};
+    } catch (_) {
+      duplicateQuote = {};
+    }
+  }
   const itemsObj = {};
   svcSelectedItems.forEach(si => { itemsObj[si.id] = { id: si.id, qty: Math.max(1, parseInt(si.qty, 10) || 1) }; });
   const selectedStatus = document.getElementById('sStato').value || 'planned';
@@ -5903,8 +5948,8 @@ function saveService() {
     cliente: document.getElementById('sCliente').value.trim(),
     note: document.getElementById('sNote').value.trim(),
     items: itemsObj,
-    team: existing.team || {},
-    quote: existing.quote || {},
+    team: editSvcId ? (existing.team || {}) : {},
+    quote: editSvcId ? (existing.quote || {}) : duplicateQuote,
     updatedAt: Date.now()
   };
 
@@ -5938,6 +5983,7 @@ function closeModal(id) {
     svcSelectedItems = [];
     servicePickerCategory = 'all';
     servicePickerSearch = '';
+    delete document.getElementById(id).dataset.duplicateQuote;
   }
   if (id === 'modalFinance') editFinanceId = null;
   if (id === 'modalOrder') editOrderId = null;
