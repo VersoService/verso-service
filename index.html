@@ -614,6 +614,20 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
 .quote-line-qty, .quote-line-unit, .quote-line-total { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; text-align: right; }
 .quote-line-total { color: var(--accent); font-weight: 700; }
 .quote-line-unit.missing, .quote-line-total.missing { color: var(--warning); }
+.quote-duration-note { padding: 0.62rem 0.75rem; border: 1px solid rgba(0,212,255,0.16); border-left: 3px solid var(--accent2); border-radius: 4px; background: rgba(0,212,255,0.05); font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--text-dim); line-height: 1.45; }
+.quote-rentals-card { border: 1px solid var(--border); border-radius: 5px; background: rgba(255,255,255,0.02); overflow: hidden; }
+.quote-rentals-head { padding: 0.72rem 0.85rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; flex-wrap: wrap; }
+.quote-rentals-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.66rem; color: var(--text-dim); letter-spacing: 0.12em; text-transform: uppercase; }
+.quote-rentals-hint { font-family: 'IBM Plex Mono', monospace; font-size: 0.62rem; color: var(--text-faint); }
+.quote-rental-list { display: flex; flex-direction: column; gap: 1px; background: var(--border); }
+.quote-rental-empty { padding: 0.85rem; background: var(--surface); font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; color: var(--text-faint); text-align: center; letter-spacing: 0.08em; }
+.quote-rental-row { display: grid; grid-template-columns: minmax(180px, 1fr) minmax(130px, 0.8fr) 70px 110px 120px 36px; gap: 0.55rem; align-items: end; padding: 0.72rem 0.85rem; background: var(--surface); }
+.quote-rental-row input, .quote-rental-add-grid input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 0.52rem 0.65rem; color: var(--text); font-family: 'IBM Plex Sans', sans-serif; font-size: 0.84rem; outline: none; }
+.quote-rental-row input:focus, .quote-rental-add-grid input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(240,165,0,0.12); }
+.quote-rental-field label { display: block; margin-bottom: 0.28rem; font-family: 'IBM Plex Mono', monospace; font-size: 0.56rem; color: var(--text-faint); letter-spacing: 0.1em; text-transform: uppercase; }
+.quote-rental-remove { width: 34px; height: 34px; border: 1px solid rgba(255,68,68,0.25); border-radius: 4px; background: transparent; color: var(--danger); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.quote-rental-add { padding: 0.8rem 0.85rem; border-top: 1px solid var(--border); background: rgba(13,13,13,0.2); }
+.quote-rental-add-grid { display: grid; grid-template-columns: minmax(160px, 1fr) minmax(120px, 0.8fr) 70px 110px 120px auto; gap: 0.55rem; align-items: end; }
 .quote-extra-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 0.8rem; }
 .quote-extra-field { display: flex; flex-direction: column; gap: 0.32rem; }
 .quote-extra-field label { font-family: 'IBM Plex Mono', monospace; font-size: 0.62rem; color: var(--text-dim); letter-spacing: 0.12em; text-transform: uppercase; }
@@ -678,6 +692,8 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
   .quote-head-side, .quote-actions-row { width: 100%; justify-content: stretch; }
   .quote-actions-row .btn { flex: 1 1 100%; justify-content: center; }
   .quote-mini-summary { width: 100%; text-align: left; }
+  .quote-rental-row, .quote-rental-add-grid { grid-template-columns: 1fr; align-items: stretch; }
+  .quote-rental-remove { width: 100%; min-height: 42px; }
   .quote-card-head, .quote-card-body, .pricing-category-head { padding-left: 0.9rem; padding-right: 0.9rem; }
   .service-hint-row { align-items: flex-start; }
 }
@@ -694,6 +710,8 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
   .truck-quick-add input,
   .pricing-input-wrap input,
   .team-report-month,
+  .quote-rental-row input,
+  .quote-rental-add-grid input,
   .search-input { min-height: 46px; }
   header { padding: 0.6rem 0.8rem; height: auto; min-height: 52px; }
   .header-brand { min-width: 0; }
@@ -1681,6 +1699,8 @@ const ITEM_TYPES = {
   reusable: { label: 'Riutilizzabile', shortLabel: 'Riutilizzabile', cls: 'tag-reusable' },
   consumable: { label: 'Consumabile', shortLabel: 'Consumo', cls: 'tag-consumable' }
 };
+const DEFAULT_QUOTE_FIRST_DAY_PERCENT = 100;
+const DEFAULT_QUOTE_EXTRA_DAY_PERCENT = 50;
 
 // ==================== STATE ====================
 let items = {};       // magazzino
@@ -2220,6 +2240,11 @@ function escHtml(s) {
   return String(s ?? '').replace(/[&<>"']/g, ch => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[ch]));
 }
 
+function cssEscapeValue(value) {
+  if (window.CSS?.escape) return CSS.escape(String(value));
+  return String(value).replace(/["\\]/g, '\\$&');
+}
+
 function normalizeMoney(value) {
   const n = Number(String(value ?? '').replace(',', '.'));
   if (!Number.isFinite(n) || n < 0) return 0;
@@ -2318,24 +2343,98 @@ function getServiceQuoteConfig(svc) {
     extraLabel: String(quote.extraLabel || 'Extra').trim() || 'Extra',
     extraAmount: normalizeMoney(quote.extraAmount || 0),
     discount: normalizeMoney(quote.discount || 0),
+    durationFirstPercent: normalizeQuotePercent(quote.durationFirstPercent, DEFAULT_QUOTE_FIRST_DAY_PERCENT),
+    durationExtraPercent: normalizeQuotePercent(quote.durationExtraPercent, DEFAULT_QUOTE_EXTRA_DAY_PERCENT),
+    externalRentals: normalizeQuoteExternalRentals(quote.externalRentals),
     notes: String(quote.notes || '').trim()
   };
 }
 
-function getServiceQuoteLines(svc) {
+function normalizeQuotePercent(value, fallback) {
+  const n = Number(String(value ?? '').replace(',', '.'));
+  if (!Number.isFinite(n) || n < 0) return fallback;
+  return Math.round(n * 100) / 100;
+}
+
+function getServiceDurationDays(svc) {
+  const start = svc?.dataOut || '';
+  const end = svc?.dataIn || start;
+  if (!isValidYmd(start) || !isValidYmd(end) || end < start) return 1;
+  const [sy, sm, sd] = start.split('-').map(Number);
+  const [ey, em, ed] = end.split('-').map(Number);
+  const startUtc = Date.UTC(sy, sm - 1, sd);
+  const endUtc = Date.UTC(ey, em - 1, ed);
+  return Math.max(1, Math.round((endUtc - startUtc) / 86400000) + 1);
+}
+
+function getQuoteDurationMultiplier(svc, config) {
+  const days = getServiceDurationDays(svc);
+  const first = normalizeQuotePercent(config?.durationFirstPercent, DEFAULT_QUOTE_FIRST_DAY_PERCENT) / 100;
+  const extra = normalizeQuotePercent(config?.durationExtraPercent, DEFAULT_QUOTE_EXTRA_DAY_PERCENT) / 100;
+  return normalizeMoney(first + Math.max(0, days - 1) * extra);
+}
+
+function normalizeQuoteExternalRentals(raw) {
+  const arr = Array.isArray(raw) ? raw : raw && typeof raw === 'object' ? Object.values(raw) : [];
+  return arr
+    .map(entry => ({
+      id: normalizeLocalId(entry?.id, 'rent'),
+      label: String(entry?.label || entry?.name || '').trim(),
+      supplier: String(entry?.supplier || '').trim(),
+      qty: Math.max(1, parseInt(entry?.qty, 10) || 1),
+      cost: normalizeMoney(entry?.cost || 0),
+      price: normalizeMoney(entry?.price ?? entry?.amount ?? entry?.cost ?? 0),
+      notes: String(entry?.notes || '').trim()
+    }))
+    .filter(entry => entry.label);
+}
+
+function makeLocalId(prefix = 'id') {
+  return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function normalizeLocalId(value, prefix = 'id') {
+  const cleaned = String(value || '').trim().replace(/[^A-Za-z0-9_-]/g, '_');
+  return cleaned || makeLocalId(prefix);
+}
+
+function getServiceQuoteLines(svc, config = getServiceQuoteConfig(svc)) {
   const svcItems = svc?.items ? Object.values(svc.items) : [];
+  const durationMultiplier = getQuoteDurationMultiplier(svc, config);
   return svcItems.map(entry => {
     const item = items[entry.id];
     const qty = Math.max(1, parseInt(entry.qty, 10) || 1);
     const unitPrice = getItemPrice(item);
+    const baseTotal = normalizeMoney(unitPrice * qty);
     return {
       id: entry.id,
+      source: 'inventory',
       item,
       qty,
       label: getItemDisplayName(item),
       unitPrice,
-      total: normalizeMoney(unitPrice * qty),
+      baseTotal,
+      durationMultiplier,
+      total: normalizeMoney(baseTotal * durationMultiplier),
       missingPrice: !item || unitPrice <= 0
+    };
+  }).sort((a, b) => a.label.localeCompare(b.label, 'it'));
+}
+
+function getServiceExternalQuoteLines(config) {
+  return normalizeQuoteExternalRentals(config?.externalRentals).map(entry => {
+    const unitPrice = normalizeMoney(entry.price || entry.cost || 0);
+    return {
+      id: entry.id,
+      source: 'external',
+      qty: entry.qty,
+      label: entry.label,
+      supplier: entry.supplier,
+      unitPrice,
+      cost: entry.cost,
+      total: normalizeMoney(unitPrice * entry.qty),
+      missingPrice: unitPrice <= 0,
+      notes: entry.notes
     };
   }).sort((a, b) => a.label.localeCompare(b.label, 'it'));
 }
@@ -2348,14 +2447,29 @@ function getServiceQuoteSummary(svc, configOverride = null) {
     extraLabel: String(configOverride.extraLabel ?? (baseConfig.extraLabel || 'Extra')).trim() || 'Extra',
     extraAmount: normalizeMoney(configOverride.extraAmount ?? baseConfig.extraAmount),
     discount: normalizeMoney(configOverride.discount ?? baseConfig.discount),
+    durationFirstPercent: normalizeQuotePercent(configOverride.durationFirstPercent ?? baseConfig.durationFirstPercent, DEFAULT_QUOTE_FIRST_DAY_PERCENT),
+    durationExtraPercent: normalizeQuotePercent(configOverride.durationExtraPercent ?? baseConfig.durationExtraPercent, DEFAULT_QUOTE_EXTRA_DAY_PERCENT),
+    externalRentals: normalizeQuoteExternalRentals(configOverride.externalRentals ?? baseConfig.externalRentals),
     notes: String(configOverride.notes ?? (baseConfig.notes || '')).trim()
   } : baseConfig;
-  const lines = getServiceQuoteLines(svc);
+  const inventoryLines = getServiceQuoteLines(svc, config);
+  const externalLines = getServiceExternalQuoteLines(config);
+  const lines = [...inventoryLines, ...externalLines];
+  const durationDays = getServiceDurationDays(svc);
+  const durationMultiplier = getQuoteDurationMultiplier(svc, config);
+  const inventorySubtotal = normalizeMoney(inventoryLines.reduce((sum, line) => sum + line.total, 0));
+  const externalSubtotal = normalizeMoney(externalLines.reduce((sum, line) => sum + line.total, 0));
   const gearSubtotal = normalizeMoney(lines.reduce((sum, line) => sum + line.total, 0));
   const total = normalizeMoney(Math.max(0, gearSubtotal + config.transport + config.labor + config.extraAmount - config.discount));
   return {
     config,
     lines,
+    inventoryLines,
+    externalLines,
+    durationDays,
+    durationMultiplier,
+    inventorySubtotal,
+    externalSubtotal,
     gearSubtotal,
     total,
     missingCount: lines.filter(line => line.missingPrice).length
@@ -2740,7 +2854,12 @@ function downloadAllServicesIcs() {
 function buildQuoteText(svc, configOverride = null) {
   const summary = getServiceQuoteSummary(svc, configOverride);
   const linesText = summary.lines.length
-    ? summary.lines.map(line => `- ${line.label} x${line.qty} · ${formatMoney(line.unitPrice)} = ${formatMoney(line.total)}`).join('\n')
+    ? summary.lines.map(line => {
+        const suffix = line.source === 'external'
+          ? ` · noleggio terzi${line.supplier ? ` (${line.supplier})` : ''}`
+          : summary.durationMultiplier !== 1 ? ` · fattore giorni ${summary.durationMultiplier}x` : '';
+        return `- ${line.label} x${line.qty} · ${formatMoney(line.unitPrice)} = ${formatMoney(line.total)}${suffix}`;
+      }).join('\n')
     : '- Nessun materiale assegnato';
   const extraLines = [
     summary.config.transport > 0 ? `Trasporto: ${formatMoney(summary.config.transport)}` : '',
@@ -2756,6 +2875,8 @@ function buildQuoteText(svc, configOverride = null) {
     '',
     'Materiale:',
     linesText,
+    '',
+    `Regola giorni: ${getQuoteDurationText(summary)}`,
     '',
     `Subtotale materiale: ${formatMoney(summary.gearSubtotal)}`,
     ...extraLines,
@@ -4802,6 +4923,115 @@ function saveItemPrice(itemId) {
 }
 
 // ==================== PREVENTIVI ====================
+function getQuoteDurationText(summary) {
+  const cfg = summary.config;
+  if (summary.durationDays <= 1) return '1 giorno conteggiato al 100% del materiale.';
+  return `${summary.durationDays} giorni: primo giorno ${cfg.durationFirstPercent}%, giorni successivi ${cfg.durationExtraPercent}% · fattore materiale ${summary.durationMultiplier}x.`;
+}
+
+function renderQuoteLine(line, svcId) {
+  if (line.source === 'external') {
+    return `
+      <div class="quote-line-row">
+        <div class="quote-line-name">
+          <div class="quote-line-title">🏷️ ${escHtml(line.label)}</div>
+          <div class="quote-line-sub">Noleggio terzi${line.supplier ? ' · ' + escHtml(line.supplier) : ''}${line.cost > 0 ? ' · costo interno ' + formatMoney(line.cost) : ''}</div>
+        </div>
+        <div class="quote-line-qty">x${line.qty}</div>
+        <div class="quote-line-unit${line.missingPrice ? ' missing' : ''}">${formatMoney(line.unitPrice)}</div>
+        <div class="quote-line-total${line.missingPrice ? ' missing' : ''}">${formatMoney(line.total)}</div>
+      </div>`;
+  }
+  return `
+    <div class="quote-line-row">
+      <div class="quote-line-name">
+        <div class="quote-line-title">${escHtml(line.label)}</div>
+        <div class="quote-line-sub">${line.item?.brand ? escHtml(line.item.brand) + ' · ' : ''}${line.item?.categoria ? escHtml(line.item.categoria) : 'Articolo'}${line.durationMultiplier !== 1 ? ` · fattore giorni ${line.durationMultiplier}x` : ''}</div>
+      </div>
+      <div class="quote-line-qty">x${line.qty}</div>
+      <div class="quote-line-unit${line.missingPrice ? ' missing' : ''}">${formatMoney(line.unitPrice)}</div>
+      <div class="quote-line-total${line.missingPrice ? ' missing' : ''}" data-quote-line-total="${escHtml(svcId)}" data-base-total="${line.baseTotal}">${formatMoney(line.total)}</div>
+    </div>`;
+}
+
+function renderQuoteRentalRows(svcId, rentals) {
+  const rows = normalizeQuoteExternalRentals(rentals);
+  if (rows.length === 0) return '<div class="quote-rental-empty">Nessun noleggio terzi aggiunto</div>';
+  return rows.map(entry => renderQuoteRentalRow(svcId, entry)).join('');
+}
+
+function renderQuoteRentalRow(svcId, entry) {
+  const id = normalizeLocalId(entry.id, 'rent');
+  return `
+    <div class="quote-rental-row" data-rental-row="1" data-rental-id="${escHtml(id)}">
+      <div class="quote-rental-field">
+        <label>Materiale</label>
+        <input data-rental-field="label" type="text" value="${escHtml(entry.label)}" placeholder="es. Ledwall 3x2" oninput="refreshQuoteDraftPreview('${svcId}')">
+      </div>
+      <div class="quote-rental-field">
+        <label>Fornitore</label>
+        <input data-rental-field="supplier" type="text" value="${escHtml(entry.supplier)}" placeholder="es. Service partner" oninput="refreshQuoteDraftPreview('${svcId}')">
+      </div>
+      <div class="quote-rental-field">
+        <label>Qta</label>
+        <input data-rental-field="qty" type="number" min="1" step="1" value="${entry.qty}" oninput="refreshQuoteDraftPreview('${svcId}')">
+      </div>
+      <div class="quote-rental-field">
+        <label>Costo interno</label>
+        <input data-rental-field="cost" type="number" min="0" step="0.01" value="${entry.cost}" oninput="syncRentalPriceFallback(this); refreshQuoteDraftPreview('${svcId}')">
+      </div>
+      <div class="quote-rental-field">
+        <label>Prezzo prev.</label>
+        <input data-rental-field="price" type="number" min="0" step="0.01" value="${entry.price || entry.cost}" oninput="refreshQuoteDraftPreview('${svcId}')">
+      </div>
+      <button class="quote-rental-remove" type="button" title="Rimuovi noleggio" onclick="removeQuoteRentalRow('${svcId}', '${escHtml(id)}')">✕</button>
+    </div>`;
+}
+
+function syncRentalPriceFallback(costInput) {
+  const row = costInput?.closest('[data-rental-row]');
+  const priceInput = row?.querySelector('[data-rental-field="price"]');
+  if (!priceInput || normalizeMoney(priceInput.value) > 0) return;
+  priceInput.value = normalizeMoney(costInput.value);
+}
+
+function addQuoteRentalRow(svcId) {
+  const read = field => document.getElementById(`quote_rental_new_${field}_${svcId}`)?.value || '';
+  const label = read('label').trim();
+  if (!label) { showToast('Inserisci il nome del materiale noleggiato', 'danger'); return; }
+  const cost = normalizeMoney(read('cost'));
+  const price = normalizeMoney(read('price') || cost);
+  const entry = {
+    id: makeLocalId('rent'),
+    label,
+    supplier: read('supplier').trim(),
+    qty: Math.max(1, parseInt(read('qty'), 10) || 1),
+    cost,
+    price
+  };
+  const list = document.getElementById(`quote_rentals_${svcId}`);
+  if (!list) return;
+  if (list.querySelector('.quote-rental-empty')) list.innerHTML = '';
+  list.insertAdjacentHTML('beforeend', renderQuoteRentalRow(svcId, entry));
+  ['label', 'supplier', 'cost', 'price'].forEach(field => {
+    const el = document.getElementById(`quote_rental_new_${field}_${svcId}`);
+    if (el) el.value = '';
+  });
+  const qty = document.getElementById(`quote_rental_new_qty_${svcId}`);
+  if (qty) qty.value = 1;
+  refreshQuoteDraftPreview(svcId);
+}
+
+function removeQuoteRentalRow(svcId, rentalId) {
+  const list = document.getElementById(`quote_rentals_${svcId}`);
+  const row = list?.querySelector(`[data-rental-id="${cssEscapeValue(rentalId)}"]`);
+  if (row) row.remove();
+  if (list && !list.querySelector('[data-rental-row]')) {
+    list.innerHTML = '<div class="quote-rental-empty">Nessun noleggio terzi aggiunto</div>';
+  }
+  refreshQuoteDraftPreview(svcId);
+}
+
 function renderQuotes() {
   const arr = Object.values(services).sort((a, b) => new Date(a.dataOut) - new Date(b.dataOut));
   const q = quoteSearch.trim().toLowerCase();
@@ -4834,6 +5064,7 @@ function renderQuotes() {
               ${svc.cliente ? `<span>👤 ${escHtml(svc.cliente)}</span>` : ''}
               <span>${statusLabel}</span>
               <span>📦 ${summary.lines.length} righe / ${totalQty} pz</span>
+              ${summary.externalLines.length ? `<span>🏷️ ${summary.externalLines.length} noleggi terzi</span>` : ''}
               ${summary.missingCount ? `<span style="color:var(--warning);">⚠ ${summary.missingCount} senza prezzo</span>` : ''}
             </div>
           </div>
@@ -4857,20 +5088,19 @@ function renderQuotes() {
           <div class="quote-lines">
             ${summary.lines.length === 0
               ? '<div class="service-empty-items">Nessun materiale assegnato a questo evento</div>'
-              : summary.lines.map(line => `
-                  <div class="quote-line-row">
-                    <div class="quote-line-name">
-                      <div class="quote-line-title">${escHtml(line.label)}</div>
-                      <div class="quote-line-sub">${line.item?.brand ? escHtml(line.item.brand) + ' · ' : ''}${line.item?.categoria ? escHtml(line.item.categoria) : 'Articolo'}</div>
-                    </div>
-                    <div class="quote-line-qty">x${line.qty}</div>
-                    <div class="quote-line-unit${line.missingPrice ? ' missing' : ''}">${formatMoney(line.unitPrice)}</div>
-                    <div class="quote-line-total${line.missingPrice ? ' missing' : ''}">${formatMoney(line.total)}</div>
-                  </div>
-                `).join('')
+              : summary.lines.map(line => renderQuoteLine(line, svc.id)).join('')
             }
           </div>
+          <div class="quote-duration-note" id="quote_duration_note_${svc.id}">${getQuoteDurationText(summary)}</div>
           <div class="quote-extra-grid">
+            <div class="quote-extra-field">
+              <label for="quote_duration_first_${svc.id}">Primo giorno (%)</label>
+              <input id="quote_duration_first_${svc.id}" type="number" min="0" step="1" value="${cfg.durationFirstPercent}" oninput="refreshQuoteDraftPreview('${svc.id}')">
+            </div>
+            <div class="quote-extra-field">
+              <label for="quote_duration_extra_${svc.id}">Giorni successivi (%)</label>
+              <input id="quote_duration_extra_${svc.id}" type="number" min="0" step="1" value="${cfg.durationExtraPercent}" oninput="refreshQuoteDraftPreview('${svc.id}')">
+            </div>
             <div class="quote-extra-field">
               <label for="quote_transport_${svc.id}">Trasporto</label>
               <input id="quote_transport_${svc.id}" type="number" min="0" step="0.01" value="${cfg.transport}" oninput="refreshQuoteDraftPreview('${svc.id}')">
@@ -4894,6 +5124,28 @@ function renderQuotes() {
             <div class="quote-extra-field" style="grid-column:1/-1;">
               <label for="quote_notes_${svc.id}">Note preventivo</label>
               <textarea id="quote_notes_${svc.id}" oninput="refreshQuoteDraftPreview('${svc.id}')">${escHtml(cfg.notes)}</textarea>
+            </div>
+          </div>
+          <div class="quote-rentals-card">
+            <div class="quote-rentals-head">
+              <div>
+                <div class="quote-rentals-title">Noleggi terzi</div>
+                <div class="quote-rentals-hint">Materiale fuori magazzino: entra nel preventivo, non modifica disponibilità.</div>
+              </div>
+              <div class="quote-rentals-hint" id="quote_external_total_${svc.id}">${formatMoney(summary.externalSubtotal)}</div>
+            </div>
+            <div class="quote-rental-list" id="quote_rentals_${svc.id}">
+              ${renderQuoteRentalRows(svc.id, cfg.externalRentals)}
+            </div>
+            <div class="quote-rental-add">
+              <div class="quote-rental-add-grid">
+                <input id="quote_rental_new_label_${svc.id}" type="text" placeholder="Materiale noleggiato">
+                <input id="quote_rental_new_supplier_${svc.id}" type="text" placeholder="Fornitore">
+                <input id="quote_rental_new_qty_${svc.id}" type="number" min="1" step="1" value="1" placeholder="Qta">
+                <input id="quote_rental_new_cost_${svc.id}" type="number" min="0" step="0.01" placeholder="Costo interno">
+                <input id="quote_rental_new_price_${svc.id}" type="number" min="0" step="0.01" placeholder="Prezzo prev.">
+                <button class="btn btn-ghost btn-sm" type="button" onclick="addQuoteRentalRow('${svc.id}')">+ Noleggio</button>
+              </div>
             </div>
           </div>
           <div class="quote-summary">
@@ -4949,12 +5201,29 @@ function getQuoteDraftValues(svcId) {
     const el = document.getElementById(id);
     return el ? el.value : fallback;
   };
+  const rentalList = document.getElementById(`quote_rentals_${svcId}`);
+  const externalRentals = rentalList
+    ? [...rentalList.querySelectorAll('[data-rental-row]')].map(row => {
+        const field = name => row.querySelector(`[data-rental-field="${name}"]`)?.value || '';
+        return {
+          id: normalizeLocalId(row.dataset.rentalId, 'rent'),
+          label: field('label').trim(),
+          supplier: field('supplier').trim(),
+          qty: Math.max(1, parseInt(field('qty'), 10) || 1),
+          cost: normalizeMoney(field('cost')),
+          price: normalizeMoney(field('price') || field('cost'))
+        };
+      }).filter(entry => entry.label)
+    : saved.externalRentals;
   return {
     transport: normalizeMoney(read(`quote_transport_${svcId}`, saved.transport)),
     labor: normalizeMoney(read(`quote_labor_${svcId}`, saved.labor)),
     extraLabel: String(read(`quote_extra_label_${svcId}`, saved.extraLabel)).trim() || 'Extra',
     extraAmount: normalizeMoney(read(`quote_extra_${svcId}`, saved.extraAmount)),
     discount: normalizeMoney(read(`quote_discount_${svcId}`, saved.discount)),
+    durationFirstPercent: normalizeQuotePercent(read(`quote_duration_first_${svcId}`, saved.durationFirstPercent), DEFAULT_QUOTE_FIRST_DAY_PERCENT),
+    durationExtraPercent: normalizeQuotePercent(read(`quote_duration_extra_${svcId}`, saved.durationExtraPercent), DEFAULT_QUOTE_EXTRA_DAY_PERCENT),
+    externalRentals,
     notes: String(read(`quote_notes_${svcId}`, saved.notes)).trim()
   };
 }
@@ -4971,6 +5240,12 @@ function refreshQuoteDraftPreview(svcId) {
   setText(`quote_extras_${svcId}`, formatMoney(summary.config.transport + summary.config.labor + summary.config.extraAmount));
   setText(`quote_discount_val_${svcId}`, formatMoney(summary.config.discount));
   setText(`quote_total_${svcId}`, formatMoney(summary.total));
+  setText(`quote_duration_note_${svcId}`, getQuoteDurationText(summary));
+  setText(`quote_external_total_${svcId}`, formatMoney(summary.externalSubtotal));
+  document.querySelectorAll(`[data-quote-line-total="${cssEscapeValue(svcId)}"]`).forEach(el => {
+    const baseTotal = normalizeMoney(el.dataset.baseTotal || 0);
+    el.textContent = formatMoney(baseTotal * summary.durationMultiplier);
+  });
 }
 
 function saveQuoteSettings(svcId) {
@@ -5011,7 +5286,10 @@ function buildQuoteDocumentHtml(svc, configOverride = null) {
   const cfg = summary.config;
   const linesHtml = summary.lines.length
     ? summary.lines.map(line => `<tr>
-        <td style="padding:10px 12px;border-bottom:1px solid #e6e0d2;">${escHtml(line.label)}</td>
+        <td style="padding:10px 12px;border-bottom:1px solid #e6e0d2;">
+          <div>${escHtml(line.label)}</div>
+          <div style="font-size:12px;color:#8a7760;margin-top:2px;">${line.source === 'external' ? `Noleggio terzi${line.supplier ? ' - ' + escHtml(line.supplier) : ''}` : summary.durationMultiplier !== 1 ? `Tariffa giorni ${summary.durationMultiplier}x` : 'Magazzino'}</div>
+        </td>
         <td style="padding:10px 12px;border-bottom:1px solid #e6e0d2;text-align:right;">${line.qty}</td>
         <td style="padding:10px 12px;border-bottom:1px solid #e6e0d2;text-align:right;color:${line.missingPrice ? '#c07800' : '#222'};">${formatMoney(line.unitPrice)}</td>
         <td style="padding:10px 12px;border-bottom:1px solid #e6e0d2;text-align:right;font-weight:700;color:${line.missingPrice ? '#c07800' : '#222'};">${formatMoney(line.total)}</td>
@@ -5058,6 +5336,7 @@ function buildQuoteDocumentHtml(svc, configOverride = null) {
       </table>
       <div style="display:grid;grid-template-columns:1fr 260px;gap:24px;align-items:start;">
         <div>
+          <div style="margin-bottom:16px;padding:12px 14px;background:#eef8fb;border-left:3px solid #00a8c8;color:#33535c;font-size:14px;">${escHtml(getQuoteDurationText(summary))}</div>
           ${cfg.notes ? `<div style="font-size:12px;letter-spacing:0.15em;text-transform:uppercase;color:#8a7760;margin-bottom:8px;">Note</div><div style="white-space:pre-wrap;line-height:1.6;color:#493f31;">${escHtml(cfg.notes)}</div>` : ''}
           ${summary.missingCount > 0 ? `<div style="margin-top:18px;padding:12px 14px;background:#fff4df;border-left:3px solid #d28b00;color:#7a5f25;font-size:14px;">Attenzione: ${summary.missingCount} ${summary.missingCount === 1 ? 'articolo non ha un prezzo impostato' : 'articoli non hanno un prezzo impostato'}.</div>` : ''}
         </div>
