@@ -435,7 +435,7 @@ main { padding: 1.5rem 2rem 5rem; }
 @media print {
   header, nav, .toolbar, #fabAdd, .sync-bar, #loginScreen, #loadingScreen, .mobile-nav-overlay { display: none !important; }
   .page { display: block !important; }
-  #page-dashboard, #page-magazzino, #page-service, #page-prezzi, #page-preventivi, #page-costi, #page-ordini, #page-camion, #page-scanner, #page-prestiti, #page-disponibilita, #page-team { display: none !important; }
+  #page-dashboard, #page-magazzino, #page-service, #page-prezzi, #page-preventivi, #page-costi, #page-camion, #page-scanner, #page-prestiti, #page-disponibilita, #page-team { display: none !important; }
   #page-qrcodes { display: block !important; }
   .qr-grid { grid-template-columns: repeat(4, 1fr); gap: 0.5rem; }
   .qr-card { border: 1px solid #ccc; break-inside: avoid; }
@@ -528,7 +528,7 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
 .pricing-link-tag { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.18rem 0.45rem; border-radius: 999px; background: rgba(0,212,255,0.08); border: 1px solid rgba(0,212,255,0.18); font-family: 'IBM Plex Mono', monospace; font-size: 0.62rem; color: var(--accent2); }
 .pricing-empty-links { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--text-faint); }
 
-/* ===== COSTI / ORDINI ===== */
+/* ===== SPESE ===== */
 .finance-layout { padding: 1.5rem 2rem 5rem; display: flex; flex-direction: column; gap: 1rem; }
 .finance-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 0.9rem; }
 .finance-summary-card { background: var(--surface); border: 1px solid var(--border); border-top: 2px solid var(--accent2); border-radius: 6px; padding: 1rem 1.1rem; }
@@ -969,9 +969,6 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
     <button class="nav-tab" onclick="switchPage('costi')" id="tab-costi">
       💰 Costi
     </button>
-    <button class="nav-tab" onclick="switchPage('ordini')" id="tab-ordini">
-      🛒 Ordini
-    </button>
     <button class="nav-tab" onclick="switchPage('camion')" id="tab-camion">
       🚚 Camion
     </button>
@@ -1017,9 +1014,6 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
         </button>
         <button class="mobile-nav-link" data-page="costi" onclick="switchPage('costi')">
           <span class="mobile-nav-link-main">💰 Costi</span>
-        </button>
-        <button class="mobile-nav-link" data-page="ordini" onclick="switchPage('ordini')">
-          <span class="mobile-nav-link-main">🛒 Ordini</span>
         </button>
         <button class="mobile-nav-link" data-page="camion" onclick="switchPage('camion')">
           <span class="mobile-nav-link-main">🚚 Camion</span>
@@ -1082,14 +1076,14 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
         <button class="btn btn-primary" onclick="openModalService()">+ Evento</button>
         <button class="btn btn-ghost" onclick="switchPage('magazzino')">Magazzino</button>
         <button class="btn btn-ghost" onclick="switchPage('prestiti')">Prestiti</button>
-        <button class="btn btn-ghost" onclick="switchPage('ordini')">Ordini</button>
+        <button class="btn btn-ghost" onclick="switchPage('costi')">Spese</button>
       </div>
     </div>
     <div class="info-banner" id="infoBannerDashboard">
       <div class="info-banner-icon">📊</div>
       <div class="info-banner-text">
         <strong>Oggi</strong>
-        Vista rapida operativa: eventi, materiale fuori, camion, ordini e criticità disponibilità da controllare.
+        Vista rapida operativa: eventi, materiale fuori, camion, spese da rimborsare e criticità disponibilità da controllare.
       </div>
       <button class="info-banner-close" onclick="closeBanner('infoBannerDashboard')">✕</button>
     </div>
@@ -1205,18 +1199,13 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
     <div class="toolbar">
       <div class="search-wrap">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-        <input type="text" id="searchFinance" class="search-input" placeholder="Cerca movimento, categoria, metodo..." autocomplete="off">
+        <input type="text" id="searchFinance" class="search-input" placeholder="Cerca spesa, categoria, nota..." autocomplete="off">
       </div>
       <input type="month" id="financeMonth" class="avail-date-input" oninput="setFinanceMonth(this.value)">
-      <div class="filter-tabs finance-filter-tabs" id="filterTabsFinance">
-        <button class="tab active" data-filter="all" onclick="setFinanceFilter('all')">Tutti</button>
-        <button class="tab" data-filter="income" onclick="setFinanceFilter('income')">Entrate</button>
-        <button class="tab" data-filter="expense" onclick="setFinanceFilter('expense')">Spese</button>
-        <button class="tab" data-filter="reimburse-open" onclick="setFinanceFilter('reimburse-open')">Rimborsi aperti</button>
-      </div>
+      <select id="financeMemberFilter" class="avail-date-input" onchange="setFinanceMemberFilter(this.value)" aria-label="Filtra per membro"></select>
       <button class="btn btn-primary" onclick="openModalFinance()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-        Movimento
+        Spesa
       </button>
       <button class="btn btn-ghost" onclick="exportFinanceCsv()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -1227,46 +1216,11 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
       <div class="info-banner-icon">💰</div>
       <div class="info-banner-text">
         <strong>Costi</strong>
-        Registra entrate e spese operative, collega incassi agli eventi e spese agli ordini. Se un membro del team anticipa soldi, segnalo qui e chiudi il rimborso quando viene pagato.
+        Registro semplice delle spese del team: data, cosa e importo. Se qualcuno anticipa di tasca propria, seleziona il membro e chiudi il rimborso quando viene pagato.
       </div>
       <button class="info-banner-close" onclick="closeBanner('infoBannerFinance')">✕</button>
     </div>
     <div class="finance-layout" id="mainFinance"></div>
-  </div>
-
-  <!-- ===== PAGINA ORDINI ===== -->
-  <div id="page-ordini" class="page">
-    <div class="toolbar">
-      <div class="search-wrap">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-        <input type="text" id="searchOrders" class="search-input" placeholder="Cerca ordine, fornitore, riferimento..." autocomplete="off">
-      </div>
-      <div class="filter-tabs" id="filterTabsOrders">
-        <button class="tab active" data-filter="all" onclick="setOrderFilter('all')">Tutti</button>
-        <button class="tab" data-filter="pending" onclick="setOrderFilter('pending')">Da effettuare</button>
-        <button class="tab" data-filter="ordered" onclick="setOrderFilter('ordered')">Ordinati</button>
-        <button class="tab" data-filter="paid" onclick="setOrderFilter('paid')">Pagati</button>
-        <button class="tab" data-filter="received" onclick="setOrderFilter('received')">Arrivati</button>
-        <button class="tab" data-filter="cancelled" onclick="setOrderFilter('cancelled')">Annullati</button>
-      </div>
-      <button class="btn btn-primary" onclick="openModalOrder()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-        Ordine
-      </button>
-      <button class="btn btn-ghost" onclick="exportOrdersCsv()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        CSV
-      </button>
-    </div>
-    <div class="info-banner" id="infoBannerOrders">
-      <div class="info-banner-icon">🛒</div>
-      <div class="info-banner-text">
-        <strong>Ordini</strong>
-        Segna gli acquisti fatti o da seguire, con fornitore, importo, stato e riferimento. Qui tieni separati gli ordini dal registro costi generale.
-      </div>
-      <button class="info-banner-close" onclick="closeBanner('infoBannerOrders')">✕</button>
-    </div>
-    <div class="finance-layout" id="mainOrders"></div>
   </div>
 
   <!-- ===== PAGINA CAMION ===== -->
@@ -1601,26 +1555,17 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
   </div>
 </div>
 
-<!-- MODAL COSTO / ENTRATA -->
+<!-- MODAL SPESA -->
 <div class="modal-overlay" id="modalFinance" onclick="handleOverlay(event,'modalFinance')">
   <div class="modal">
-    <div class="modal-title" id="modalFinanceTitle">Nuovo Movimento</div>
+    <div class="modal-title" id="modalFinanceTitle">Nuova Spesa</div>
     <div class="form-grid">
-      <div class="field">
-        <label>Tipo *</label>
-        <select id="finType">
-          <option value="income">Entrata</option>
-          <option value="expense">Spesa</option>
-        </select>
-      </div>
       <div class="field"><label>Data *</label><input type="date" id="finDate"></div>
-      <div class="field full"><label>Descrizione *</label><input type="text" id="finDescription" placeholder="es. Acconto evento / carburante / noleggio"></div>
-      <div class="field"><label>Categoria</label><input type="text" id="finCategory" placeholder="es. Evento, Trasporti, Materiale"></div>
+      <div class="field"><label>Pagato da</label><select id="finPaidBy" onchange="handleFinancePaidByChange()"></select></div>
+      <div class="field full"><label>Descrizione *</label><input type="text" id="finDescription" placeholder="es. Carburante, noleggio, minuteria"></div>
+      <div class="field"><label>Categoria</label><input type="text" id="finCategory" placeholder="es. Trasporti, Materiale, Vitto"></div>
       <div class="field"><label>Importo (€) *</label><input type="number" id="finAmount" min="0" step="0.01" value="0"></div>
       <div class="field"><label>Metodo</label><input type="text" id="finPayment" placeholder="es. Bonifico, contanti, carta"></div>
-      <div class="field"><label>Evento collegato</label><select id="finEventId"></select></div>
-      <div class="field"><label>Ordine collegato</label><select id="finOrderId"></select></div>
-      <div class="field"><label>Pagato da</label><select id="finPaidBy"></select></div>
       <div class="field">
         <label>Rimborso</label>
         <select id="finReimbursementStatus">
@@ -1633,37 +1578,7 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
     </div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeModal('modalFinance')">Annulla</button>
-      <button class="btn btn-primary" onclick="saveFinanceEntry()">Salva Movimento</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL ORDINE -->
-<div class="modal-overlay" id="modalOrder" onclick="handleOverlay(event,'modalOrder')">
-  <div class="modal">
-    <div class="modal-title" id="modalOrderTitle">Nuovo Ordine</div>
-    <div class="form-grid">
-      <div class="field"><label>Data *</label><input type="date" id="ordDate"></div>
-      <div class="field">
-        <label>Stato</label>
-        <select id="ordStatus">
-          <option value="pending">Da effettuare</option>
-          <option value="ordered">Ordinato</option>
-          <option value="paid">Pagato</option>
-          <option value="received">Arrivato</option>
-          <option value="cancelled">Annullato</option>
-        </select>
-      </div>
-      <div class="field"><label>Fornitore</label><input type="text" id="ordSupplier" placeholder="es. Thomann, Amazon, service partner"></div>
-      <div class="field"><label>Riferimento</label><input type="text" id="ordReference" placeholder="es. numero ordine / fattura"></div>
-      <div class="field full"><label>Oggetto *</label><input type="text" id="ordItem" placeholder="es. Cavi XLR, lampade, flight case"></div>
-      <div class="field"><label>Quantità</label><input type="number" id="ordQty" min="1" value="1"></div>
-      <div class="field"><label>Costo totale (€) *</label><input type="number" id="ordAmount" min="0" step="0.01" value="0"></div>
-      <div class="field full"><label>Note</label><textarea id="ordNote" placeholder="Tracking, tempi, note interne..."></textarea></div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal('modalOrder')">Annulla</button>
-      <button class="btn btn-primary" onclick="saveOrder()">Salva Ordine</button>
+      <button class="btn btn-primary" onclick="saveFinanceEntry()">Salva Spesa</button>
     </div>
   </div>
 </div>
@@ -1692,7 +1607,7 @@ const SESSION_USER_KEY = 'vs_auth_user_v1';
 const LAST_BACKUP_KEY = 'vs_last_backup_download_v1';
 const LAST_BACKUP_DRIVE_KEY = 'vs_last_backup_drive_confirm_v1';
 const BACKUP_CONFIRM_WORD = 'RIPRISTINA';
-const DATA_BRANCHES = ['inventario', 'services', 'team', 'categories', 'finance', 'orders', 'truck', 'loans'];
+const DATA_BRANCHES = ['inventario', 'services', 'team', 'categories', 'finance', 'truck', 'loans'];
 const CAT_ICONS = { 'Luci':'🔦','Audio':'🔊','Cavi & Connettori':'🔌','Strutture & Truss':'🏗️','Consolle & Controller':'🎛️','Consumabili':'🎊','Accessori':'🔧','Altro':'📦' };
 const DEFAULT_CATEGORIES = Object.entries(CAT_ICONS).map(([name, icon], order) => ({ name, icon, order, builtin: true }));
 const ITEM_TYPES = {
@@ -1715,23 +1630,19 @@ let svcSearch = '';
 let priceSearch = '';
 let quoteSearch = '';
 let financeSearch = '';
-let financeFilter = 'all';
-let orderSearch = '';
+let financeMemberFilter = 'all';
 let truckSearch = '';
 let loanSearch = '';
 let loanFilter = 'open';
 let loanItemSearch = '';
-let orderFilter = 'all';
 let currentUser = null;
 let firebaseUnsubscribers = [];
-let firebaseDataLoaded = { inventario: false, services: false, team: false, categories: false, finance: false, orders: false, truck: false, loans: false };
+let firebaseDataLoaded = { inventario: false, services: false, team: false, categories: false, finance: false, truck: false, loans: false };
 let categories = {};
 let financeEntries = {};
-let orders = {};
 let truckLog = {};
 let loans = {};
 let editFinanceId = null;
-let editOrderId = null;
 let editTruckId = null;
 let backupReminderShown = false;
 let expandedServiceCards = new Set();
@@ -1752,7 +1663,6 @@ const PAGE_LABELS = {
   prezzi: 'Prezzi',
   preventivi: 'Preventivi',
   costi: 'Costi',
-  ordini: 'Ordini',
   camion: 'Camion',
   prestiti: 'Prestiti',
   disponibilita: 'Disponibilita',
@@ -1901,13 +1811,6 @@ function startFirebaseDataListeners() {
     if (currentPage === 'costi') renderFinance();
   }, () => { setSyncing(false); showToast('Errore lettura costi', 'danger'); }));
 
-  firebaseUnsubscribers.push(onValue(ref(db, 'orders'), snap => {
-    setSyncing(false);
-    orders = snap.val() || {};
-    markFirebaseDataLoaded('orders');
-    if (currentPage === 'ordini') renderOrders();
-  }, () => { setSyncing(false); showToast('Errore lettura ordini', 'danger'); }));
-
   firebaseUnsubscribers.push(onValue(ref(db, 'truck'), snap => {
     setSyncing(false);
     truckLog = snap.val() || {};
@@ -1954,7 +1857,7 @@ function isBackupDataReady() {
 }
 
 function getPendingBackupBranches() {
-  const labels = { inventario: 'magazzino', services: 'eventi', team: 'team', categories: 'categorie', finance: 'costi', orders: 'ordini', truck: 'camion', loans: 'prestiti' };
+  const labels = { inventario: 'magazzino', services: 'eventi', team: 'team', categories: 'categorie', finance: 'spese', truck: 'camion', loans: 'prestiti' };
   return DATA_BRANCHES
     .filter(key => !firebaseDataLoaded[key])
     .map(key => labels[key] || key);
@@ -2572,7 +2475,6 @@ function getBackupData() {
     team: members || {},
     categories: categories || {},
     finance: financeEntries || {},
-    orders: orders || {},
     truck: truckLog || {},
     loans: loans || {}
   };
@@ -2585,7 +2487,6 @@ function getBackupCounts(data) {
     team: Object.keys(data?.team || {}).length,
     categories: Object.keys(data?.categories || {}).length,
     finance: Object.keys(data?.finance || {}).length,
-    orders: Object.keys(data?.orders || {}).length,
     truck: Object.keys(data?.truck || {}).length,
     loans: Object.keys(data?.loans || {}).length
   };
@@ -2691,8 +2592,7 @@ function buildBackupCountsHtml(counts) {
     ['Eventi', counts.services],
     ['Team', counts.team],
     ['Categorie', counts.categories],
-    ['Costi', counts.finance],
-    ['Ordini', counts.orders],
+    ['Spese', counts.finance],
     ['Camion', counts.truck],
     ['Prestiti', counts.loans]
   ].map(([label, value]) => `<span class="tag tag-serial">${label}: ${value}</span>`).join('');
@@ -2720,7 +2620,7 @@ function exportBackup() {
   const filename = downloadBackupSnapshot('verso_backup', 'manual');
   showToast(`Backup scaricato: ${counts.inventario} articoli, ${counts.services} eventi`);
   setTimeout(() => {
-    const ok = confirm(`Backup scaricato:\n\n${filename}\n\nContenuto:\nArticoli: ${counts.inventario}\nEventi: ${counts.services}\nMembri team: ${counts.team}\nCosti: ${counts.finance}\nOrdini: ${counts.orders}\nCamion: ${counts.truck}\nPrestiti: ${counts.loans}\n\nOra salvalo anche su Google Drive o in una cartella sicura.\n\nHai gia copiato/salvato il file su Drive?`);
+    const ok = confirm(`Backup scaricato:\n\n${filename}\n\nContenuto:\nArticoli: ${counts.inventario}\nEventi: ${counts.services}\nMembri team: ${counts.team}\nSpese: ${counts.finance}\nCamion: ${counts.truck}\nPrestiti: ${counts.loans}\n\nOra salvalo anche su Google Drive o in una cartella sicura.\n\nHai gia copiato/salvato il file su Drive?`);
     if (ok) markBackupSavedToDrive();
     else renderDashboard();
   }, 250);
@@ -2756,7 +2656,6 @@ function normalizeBackupRoot(parsed) {
     team: root.team,
     categories: optionalBranch('categories', categories),
     finance: optionalBranch('finance', financeEntries),
-    orders: optionalBranch('orders', orders),
     truck: optionalBranch('truck', truckLog),
     loans: optionalBranch('loans', loans),
     preservedBranches,
@@ -2798,7 +2697,7 @@ function handleBackupFile(input) {
     const preservedMsg = backup.preservedBranches?.length
       ? `\n\nRami non presenti nel backup e mantenuti attuali: ${backup.preservedBranches.join(', ')}`
       : '';
-    const ok = confirm(`Ripristinare questo backup?\n\nBackup: ${formatBackupExportedAt(backup.exportedAt)}\nArticoli: ${counts.inventario}\nEventi: ${counts.services}\nMembri team: ${counts.team}\nCategorie: ${counts.categories}\nMovimenti costi: ${counts.finance}\nOrdini: ${counts.orders}\nCamion: ${counts.truck}\nPrestiti: ${counts.loans}\n\nDati attuali:\nArticoli: ${currentCounts.inventario}\nEventi: ${currentCounts.services}\nMembri team: ${currentCounts.team}\nCategorie: ${currentCounts.categories}\nMovimenti costi: ${currentCounts.finance}\nOrdini: ${currentCounts.orders}\nCamion: ${currentCounts.truck}\nPrestiti: ${currentCounts.loans}${preservedMsg}\n\nPrima del ripristino verra scaricata una copia dello stato attuale. Poi i dati Firebase verranno sovrascritti.`);
+    const ok = confirm(`Ripristinare questo backup?\n\nBackup: ${formatBackupExportedAt(backup.exportedAt)}\nArticoli: ${counts.inventario}\nEventi: ${counts.services}\nMembri team: ${counts.team}\nCategorie: ${counts.categories}\nSpese: ${counts.finance}\nCamion: ${counts.truck}\nPrestiti: ${counts.loans}\n\nDati attuali:\nArticoli: ${currentCounts.inventario}\nEventi: ${currentCounts.services}\nMembri team: ${currentCounts.team}\nCategorie: ${currentCounts.categories}\nSpese: ${currentCounts.finance}\nCamion: ${currentCounts.truck}\nPrestiti: ${currentCounts.loans}${preservedMsg}\n\nPrima del ripristino verra scaricata una copia dello stato attuale. Poi i dati Firebase verranno sovrascritti.`);
     if (!ok) return;
     const typed = prompt(`Conferma finale: digita ${BACKUP_CONFIRM_WORD} per sovrascrivere i dati.`);
     if (typed !== BACKUP_CONFIRM_WORD) {
@@ -2817,7 +2716,6 @@ function handleBackupFile(input) {
       set(ref(db, 'team'), backup.team),
       set(ref(db, 'categories'), backup.categories),
       set(ref(db, 'finance'), backup.finance),
-      set(ref(db, 'orders'), backup.orders),
       set(ref(db, 'truck'), backup.truck),
       set(ref(db, 'loans'), backup.loans)
     ])
@@ -2967,7 +2865,6 @@ function renderAll() {
   if (currentPage === 'prezzi') renderPrices();
   if (currentPage === 'preventivi') renderQuotes();
   if (currentPage === 'costi') renderFinance();
-  if (currentPage === 'ordini') renderOrders();
   if (currentPage === 'camion') renderTruck();
   if (currentPage === 'prestiti') renderLoans();
   if (currentPage === 'disponibilita') renderDisponibilita();
@@ -3081,7 +2978,6 @@ function renderDashboard() {
   const activeEvents = Object.values(services || {}).filter(svc => svc.stato === 'active');
   const openLoans = Object.values(loans || {}).filter(isLoanOpen);
   const availabilityIssues = getServicesWithAvailabilityIssues();
-  const pendingOrders = Object.values(orders || {}).filter(order => order.status === 'pending' || order.status === 'ordered');
   const reimbursements = Object.values(financeEntries || {}).filter(isFinanceReimbursementOpen);
   const truckToday = Object.values(truckLog || {}).filter(entry => entry.date === getLocalDateKey());
 
@@ -3115,7 +3011,6 @@ function renderDashboard() {
 
   const opsRows = [
     ...truckToday.map(entry => renderDashboardRow(`Camion: ${escHtml(entry.person || 'Senza nome')}`, entry.note ? escHtml(entry.note) : 'Oggi', '')),
-    ...pendingOrders.slice(0, 3).map(order => renderDashboardRow(escHtml(order.item || 'Ordine'), `${escHtml(order.supplier || 'Fornitore non impostato')} · ${formatDate(order.date)}`, order.status === 'pending' ? 'Da fare' : 'Ordinato')),
     ...reimbursements.slice(0, 3).map(entry => renderDashboardRow(escHtml(entry.description || 'Rimborso'), `${escHtml(getMemberName(entry.paidByMemberId))} · ${formatMoney(entry.amount)}`, 'Rimborso'))
   ];
 
@@ -3137,7 +3032,7 @@ function renderDashboard() {
       ${renderDashboardCard('Eventi oggi', 'service', todayRows, 'Nessun evento oggi.')}
       ${renderDashboardCard('Disponibilita', 'service', issueRows, 'Nessun problema materiale rilevato.')}
       ${renderDashboardCard('Materiale fuori', 'prestiti', loanRows, 'Nessun prestito aperto.')}
-      ${renderDashboardCard('Operativo', 'ordini', opsRows, 'Nessuna urgenza operativa.')}
+      ${renderDashboardCard('Operativo', 'costi', opsRows, 'Nessuna urgenza operativa.')}
       ${renderDashboardCard('Prossimi eventi', 'service', upcomingRows, 'Nessun evento pianificato.')}
     </div>
   `;
@@ -3687,7 +3582,6 @@ function renderServiceCard(svc) {
         ${svcStatus==='returned' && shouldOfferConsumableDeduction(svc) ? `<button class="btn btn-sm" style="background:rgba(255,149,0,0.1);color:var(--warning);border:1px solid rgba(255,149,0,0.28);" onclick="deductServiceConsumables('${svcId}')">🧾 Scala consumabili</button>` : ''}
         <button class="btn btn-ghost btn-sm" onclick="downloadServiceLoadList('${svcId}')">📋 Lista carico</button>
         <button class="btn btn-ghost btn-sm" onclick="openQuoteForService('${svcId}')">🧾 Preventivo</button>
-        ${hasFinanceSource('event_income', svcId) ? `<button class="btn btn-ghost btn-sm" onclick="switchPage('costi')">💰 Incasso registrato</button>` : `<button class="btn btn-ghost btn-sm" onclick="recordEventIncome('${svcId}')">💰 Registra incasso</button>`}
         <button class="btn btn-ghost btn-sm" onclick="openGoogleCalendarForService('${svcId}')">📆 Google Calendar</button>
         <button class="btn btn-ghost btn-sm" onclick="downloadServiceIcs('${svcId}')">ICS</button>
         <button class="btn btn-ghost btn-sm" onclick="duplicateService('${svcId}')">📄 Duplica</button>
@@ -3735,7 +3629,9 @@ function setServiceStato(id, stato) {
 
 // ==================== COSTI ====================
 function getFinanceArray() {
-  return Object.values(financeEntries || {}).sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
+  return Object.values(financeEntries || {})
+    .filter(entry => entry.type !== 'income')
+    .sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
 }
 
 function getMemberName(memberId) {
@@ -3743,35 +3639,25 @@ function getMemberName(memberId) {
   return members?.[memberId]?.nome || members?.[memberId]?.name || memberId;
 }
 
-function getServiceName(serviceId) {
-  return services?.[serviceId]?.nome || '';
-}
-
-function getOrderName(orderId) {
-  return orders?.[orderId]?.item || '';
+function getFinanceMemberKey(entry) {
+  return entry?.paidByMemberId || 'company';
 }
 
 function isFinanceReimbursementOpen(entry) {
   return entry.type === 'expense' && !!entry.paidByMemberId && entry.reimbursementStatus === 'open';
 }
 
-function hasFinanceSource(sourceType, sourceId) {
-  return Object.values(financeEntries || {}).some(entry => entry.sourceType === sourceType && entry.sourceId === sourceId);
-}
-
 function financeMatchesSearch(entry) {
   const q = financeSearch.trim().toLowerCase();
   if (!q) return true;
-  return [entry.description, entry.category, entry.payment, entry.note, entry.type, getMemberName(entry.paidByMemberId), getServiceName(entry.eventId), getOrderName(entry.orderId)]
+  return [entry.description, entry.category, entry.payment, entry.note, getMemberName(entry.paidByMemberId)]
     .some(value => String(value || '').toLowerCase().includes(q));
 }
 
 function getFilteredFinanceEntries() {
   return getFinanceArray().filter(entry => {
     if (financeMonth && String(entry.date || '').slice(0, 7) !== financeMonth) return false;
-    if (financeFilter === 'income' && entry.type !== 'income') return false;
-    if (financeFilter === 'expense' && entry.type === 'income') return false;
-    if (financeFilter === 'reimburse-open' && !isFinanceReimbursementOpen(entry)) return false;
+    if (financeMemberFilter !== 'all' && getFinanceMemberKey(entry) !== financeMemberFilter) return false;
     return financeMatchesSearch(entry);
   });
 }
@@ -3781,46 +3667,59 @@ function setFinanceMonth(value) {
   renderFinance();
 }
 
-function setFinanceFilter(filter) {
-  financeFilter = filter || 'all';
-  document.querySelectorAll('#filterTabsFinance .tab').forEach(t => t.classList.toggle('active', t.dataset.filter === financeFilter));
+function setFinanceMemberFilter(value) {
+  financeMemberFilter = value || 'all';
   renderFinance();
+}
+
+function populateFinanceMemberFilter() {
+  const select = document.getElementById('financeMemberFilter');
+  if (!select) return;
+  const current = financeMemberFilter || 'all';
+  select.innerHTML = '<option value="all">Tutti i membri</option><option value="company">Azienda / cassa</option>';
+  Object.values(members || {})
+    .sort((a, b) => String(a.nome || '').localeCompare(String(b.nome || ''), 'it'))
+    .forEach(member => {
+      const opt = document.createElement('option');
+      opt.value = member.id;
+      opt.textContent = member.nome || member.id;
+      select.appendChild(opt);
+    });
+  select.value = [...select.options].some(opt => opt.value === current) ? current : 'all';
+  financeMemberFilter = select.value;
 }
 
 function renderFinance() {
   const monthInput = document.getElementById('financeMonth');
   if (monthInput && monthInput.value !== financeMonth) monthInput.value = financeMonth;
+  populateFinanceMemberFilter();
   const container = document.getElementById('mainFinance');
   if (!container) return;
 
   const entries = getFilteredFinanceEntries();
-  const income = entries.filter(e => e.type === 'income').reduce((sum, e) => sum + normalizeMoney(e.amount), 0);
-  const expense = entries.filter(e => e.type !== 'income').reduce((sum, e) => sum + normalizeMoney(e.amount), 0);
-  const balance = income - expense;
-  const openReimbursements = Object.values(financeEntries || {})
-    .filter(isFinanceReimbursementOpen)
-    .reduce((sum, e) => sum + normalizeMoney(e.amount), 0);
+  const expense = entries.reduce((sum, e) => sum + normalizeMoney(e.amount), 0);
+  const openRows = entries.filter(isFinanceReimbursementOpen);
+  const openReimbursements = openRows.reduce((sum, e) => sum + normalizeMoney(e.amount), 0);
+  const membersInRows = new Set(entries.map(getFinanceMemberKey)).size;
+
+  const summaryHtml = `
+    <div class="finance-summary">
+      ${renderFinanceSummaryCard('Spese', expense, 'var(--danger)')}
+      ${renderFinanceSummaryCard('Da rimborsare', openReimbursements, openReimbursements > 0 ? 'var(--warning)' : 'var(--text)')}
+      ${renderFinanceSummaryCard('Righe', entries.length, 'var(--text)', false)}
+      ${renderFinanceSummaryCard('Membri', entries.length ? membersInRows : 0, 'var(--accent2)', false)}
+    </div>`;
 
   if (entries.length === 0) {
     container.innerHTML = `
-      <div class="finance-summary">
-        ${renderFinanceSummaryCard('Entrate', income, 'var(--success)')}
-        ${renderFinanceSummaryCard('Spese', expense, 'var(--danger)')}
-        ${renderFinanceSummaryCard('Saldo', balance, balance >= 0 ? 'var(--success)' : 'var(--danger)')}
-        ${renderFinanceSummaryCard('Rimborsi aperti', openReimbursements, openReimbursements > 0 ? 'var(--warning)' : 'var(--text)')}
-      </div>
+      ${summaryHtml}
       ${renderFinanceChart()}
-      <div class="empty-state"><div class="icon">💰</div><p>Nessun movimento per questo filtro.</p></div>`;
+      <div class="empty-state"><div class="icon">💰</div><p>Nessuna spesa per questo filtro.</p></div>`;
     return;
   }
 
   container.innerHTML = `
-    <div class="finance-summary">
-      ${renderFinanceSummaryCard('Entrate', income, 'var(--success)')}
-      ${renderFinanceSummaryCard('Spese', expense, 'var(--danger)')}
-      ${renderFinanceSummaryCard('Saldo', balance, balance >= 0 ? 'var(--success)' : 'var(--danger)')}
-      ${renderFinanceSummaryCard('Rimborsi aperti', openReimbursements, openReimbursements > 0 ? 'var(--warning)' : 'var(--text)')}
-    </div>
+    ${summaryHtml}
     ${renderFinanceChart()}
     <div class="finance-list">
       ${entries.map(renderFinanceRow).join('')}
@@ -3831,31 +3730,35 @@ function renderFinanceChart() {
   const year = (financeMonth || getLocalDateKey()).slice(0, 4);
   const months = Array.from({ length: 12 }, (_, idx) => {
     const key = `${year}-${String(idx + 1).padStart(2, '0')}`;
-    const entries = Object.values(financeEntries || {}).filter(e => String(e.date || '').slice(0, 7) === key);
-    const income = entries.filter(e => e.type === 'income').reduce((sum, e) => sum + normalizeMoney(e.amount), 0);
-    const expense = entries.filter(e => e.type !== 'income').reduce((sum, e) => sum + normalizeMoney(e.amount), 0);
-    return { key, label: new Date(Number(year), idx, 1).toLocaleDateString('it-IT', { month: 'short' }), income, expense };
+    const entries = getFinanceArray().filter(e => {
+      if (String(e.date || '').slice(0, 7) !== key) return false;
+      if (financeMemberFilter !== 'all' && getFinanceMemberKey(e) !== financeMemberFilter) return false;
+      return true;
+    });
+    const expense = entries.reduce((sum, e) => sum + normalizeMoney(e.amount), 0);
+    return { key, label: new Date(Number(year), idx, 1).toLocaleDateString('it-IT', { month: 'short' }), expense };
   });
-  const max = Math.max(1, ...months.map(m => Math.max(m.income, m.expense)));
-  const totalIncome = months.reduce((sum, m) => sum + m.income, 0);
+  const max = Math.max(1, ...months.map(m => m.expense));
   const totalExpense = months.reduce((sum, m) => sum + m.expense, 0);
+  const openExpense = getFinanceArray()
+    .filter(e => String(e.date || '').slice(0, 4) === year)
+    .filter(e => financeMemberFilter === 'all' || getFinanceMemberKey(e) === financeMemberFilter)
+    .filter(isFinanceReimbursementOpen)
+    .reduce((sum, e) => sum + normalizeMoney(e.amount), 0);
   return `<div class="finance-chart">
     <div class="finance-chart-head">
-      <div class="finance-chart-title">Andamento ${year}</div>
+      <div class="finance-chart-title">Spese ${year}</div>
       <div class="finance-meta">
-        <span class="tag tag-consumable">Entrate ${formatMoney(totalIncome)}</span>
-        <span class="tag tag-serial">Spese ${formatMoney(totalExpense)}</span>
-        <span class="tag">Saldo ${formatMoney(totalIncome - totalExpense)}</span>
+        <span class="tag tag-serial">Totale ${formatMoney(totalExpense)}</span>
+        <span class="tag tag-consumable">Da rimborsare ${formatMoney(openExpense)}</span>
       </div>
     </div>
     <div class="finance-chart-bars">
       ${months.map(m => {
-        const incH = Math.max(2, Math.round((m.income / (max * 2)) * 100));
-        const expH = Math.max(2, Math.round((m.expense / (max * 2)) * 100));
-        return `<div class="finance-chart-col" title="${m.label}: entrate ${formatMoney(m.income)} / spese ${formatMoney(m.expense)}">
+        const expH = Math.round((m.expense / max) * 100);
+        return `<div class="finance-chart-col" title="${m.label}: spese ${formatMoney(m.expense)}">
           <div class="finance-chart-stack">
-            <div class="finance-bar income" style="height:${incH}%;"></div>
-            <div class="finance-bar expense" style="height:${expH}%;"></div>
+            <div class="finance-bar expense" style="height:${expH}%;${m.expense ? '' : 'opacity:0;'}"></div>
           </div>
           <div class="finance-chart-month">${escHtml(m.label)}</div>
         </div>`;
@@ -3872,28 +3775,23 @@ function renderFinanceSummaryCard(label, value, color, money = true) {
 }
 
 function renderFinanceRow(entry) {
-  const isIncome = entry.type === 'income';
   const amount = normalizeMoney(entry.amount);
   const memberName = getMemberName(entry.paidByMemberId);
-  const eventName = getServiceName(entry.eventId);
-  const orderName = getOrderName(entry.orderId);
   return `<div class="finance-row">
     <div class="finance-date">${formatDate(entry.date)}</div>
     <div>
-      <div class="finance-title">${escHtml(entry.description || 'Movimento')}</div>
+      <div class="finance-title">${escHtml(entry.description || 'Spesa')}</div>
       <div class="finance-meta">
-        <span class="status-pill ${isIncome ? 'status-received' : 'status-cancelled'}">${isIncome ? 'Entrata' : 'Spesa'}</span>
+        <span class="status-pill status-cancelled">Spesa</span>
         ${entry.category ? `<span class="tag tag-loc">${escHtml(entry.category)}</span>` : ''}
         ${entry.payment ? `<span class="tag tag-serial">${escHtml(entry.payment)}</span>` : ''}
-        ${entry.eventId ? `<span class="tag">Evento: ${escHtml(eventName || entry.eventId)}</span>` : ''}
-        ${entry.orderId ? `<span class="tag">Ordine: ${escHtml(orderName || entry.orderId)}</span>` : ''}
-        ${entry.paidByMemberId ? `<span class="tag tag-consumable">Pagato da ${escHtml(memberName)}</span>` : ''}
+        <span class="tag tag-consumable">Pagato da ${escHtml(memberName)}</span>
         ${entry.reimbursementStatus === 'open' ? `<span class="tag tag-consumable">Da rimborsare</span>` : ''}
         ${entry.reimbursementStatus === 'paid' ? `<span class="tag tag-reusable">Rimborsato</span>` : ''}
         ${entry.note ? `<span class="tag">${escHtml(entry.note)}</span>` : ''}
       </div>
     </div>
-    <div class="finance-amount ${isIncome ? 'income' : 'expense'}">${isIncome ? '+' : '-'} ${formatMoney(amount)}</div>
+    <div class="finance-amount expense">- ${formatMoney(amount)}</div>
     <div class="finance-actions">
       ${isFinanceReimbursementOpen(entry) ? `<button class="icon-btn" onclick="markFinanceReimbursed('${entry.id}')" title="Segna rimborsato">✓</button>` : ''}
       <button class="icon-btn" onclick="openModalFinance('${entry.id}')" title="Modifica">
@@ -3906,37 +3804,8 @@ function renderFinanceRow(entry) {
   </div>`;
 }
 
-function populateFinanceLinkSelects(entry = null) {
-  const eventSelect = document.getElementById('finEventId');
-  const orderSelect = document.getElementById('finOrderId');
+function populateFinanceMemberSelect(entry = null) {
   const paidBySelect = document.getElementById('finPaidBy');
-
-  if (eventSelect) {
-    eventSelect.innerHTML = '<option value="">Nessun evento</option>';
-    Object.values(services || {})
-      .sort((a, b) => String(b.dataOut || '').localeCompare(String(a.dataOut || '')))
-      .forEach(svc => {
-        const opt = document.createElement('option');
-        opt.value = svc.id;
-        opt.textContent = `${svc.nome || 'Evento'} · ${formatDate(svc.dataOut)}`;
-        eventSelect.appendChild(opt);
-      });
-    eventSelect.value = entry?.eventId || '';
-  }
-
-  if (orderSelect) {
-    orderSelect.innerHTML = '<option value="">Nessun ordine</option>';
-    Object.values(orders || {})
-      .sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')))
-      .forEach(order => {
-        const opt = document.createElement('option');
-        opt.value = order.id;
-        opt.textContent = `${order.item || 'Ordine'} · ${formatDate(order.date)}`;
-        orderSelect.appendChild(opt);
-      });
-    orderSelect.value = entry?.orderId || '';
-  }
-
   if (paidBySelect) {
     paidBySelect.innerHTML = '<option value="">Azienda / cassa</option>';
     Object.values(members || {})
@@ -3951,25 +3820,37 @@ function populateFinanceLinkSelects(entry = null) {
   }
 }
 
+function handleFinancePaidByChange() {
+  const paidBySelect = document.getElementById('finPaidBy');
+  const statusSelect = document.getElementById('finReimbursementStatus');
+  if (!paidBySelect || !statusSelect) return;
+  if (!paidBySelect.value) {
+    statusSelect.value = '';
+    statusSelect.disabled = true;
+    return;
+  }
+  statusSelect.disabled = false;
+  if (!statusSelect.value) statusSelect.value = 'open';
+}
+
 function openModalFinance(id = null) {
   editFinanceId = id;
-  document.getElementById('modalFinanceTitle').textContent = id ? 'Modifica Movimento' : 'Nuovo Movimento';
+  document.getElementById('modalFinanceTitle').textContent = id ? 'Modifica Spesa' : 'Nuova Spesa';
   const entry = id ? financeEntries[id] : null;
-  populateFinanceLinkSelects(entry);
-  document.getElementById('finType').value = entry?.type || 'expense';
+  populateFinanceMemberSelect(entry);
   document.getElementById('finDate').value = entry?.date || getLocalDateKey();
   document.getElementById('finDescription').value = entry?.description || '';
   document.getElementById('finCategory').value = entry?.category || '';
   document.getElementById('finAmount').value = normalizeMoney(entry?.amount || 0);
   document.getElementById('finPayment').value = entry?.payment || '';
-  document.getElementById('finReimbursementStatus').value = entry?.reimbursementStatus || '';
+  document.getElementById('finReimbursementStatus').value = entry?.reimbursementStatus || (entry?.paidByMemberId ? 'open' : '');
   document.getElementById('finNote').value = entry?.note || '';
+  handleFinancePaidByChange();
   openModal('modalFinance');
   setTimeout(() => document.getElementById('finDescription').focus(), 160);
 }
 
 function saveFinanceEntry() {
-  const type = document.getElementById('finType').value === 'income' ? 'income' : 'expense';
   const date = document.getElementById('finDate').value;
   const description = document.getElementById('finDescription').value.trim();
   const amount = normalizeMoney(document.getElementById('finAmount').value);
@@ -3981,19 +3862,16 @@ function saveFinanceEntry() {
 
   const id = editFinanceId || uid();
   const now = Date.now();
-  const paidByMemberId = type === 'expense' ? (document.getElementById('finPaidBy').value || '') : '';
+  const paidByMemberId = document.getElementById('finPaidBy').value || '';
   const reimbursementStatus = paidByMemberId ? (document.getElementById('finReimbursementStatus').value || 'open') : '';
   const obj = {
-    ...(financeEntries[id] || {}),
     id,
-    type,
+    type: 'expense',
     date,
     description,
     category: document.getElementById('finCategory').value.trim(),
     amount,
     payment: document.getElementById('finPayment').value.trim(),
-    eventId: document.getElementById('finEventId').value || '',
-    orderId: document.getElementById('finOrderId').value || '',
     paidByMemberId,
     reimbursementStatus,
     reimbursedAt: reimbursementStatus === 'paid' ? (financeEntries[id]?.reimbursedAt || now) : null,
@@ -4006,13 +3884,13 @@ function saveFinanceEntry() {
   set(ref(db, `finance/${id}`), obj)
     .then(() => {
       financeMonth = date.slice(0, 7);
-      showToast(editFinanceId ? 'Movimento aggiornato' : 'Movimento salvato');
+      showToast(editFinanceId ? 'Spesa aggiornata' : 'Spesa salvata');
       closeModal('modalFinance');
     })
     .catch(err => {
       setSyncing(false);
       console.error('saveFinanceEntry failed:', err);
-      showToast('Errore movimento: ' + getErrMsg(err), 'danger');
+      showToast('Errore spesa: ' + getErrMsg(err), 'danger');
     });
 }
 
@@ -4037,115 +3915,19 @@ function markFinanceReimbursed(id) {
     });
 }
 
-function createFinanceEntryFromSource(sourceType, sourceId, data) {
-  if (hasFinanceSource(sourceType, sourceId)) {
-    showToast('Movimento gia registrato nei costi');
-    switchPage('costi');
-    return Promise.resolve(false);
-  }
-  const fb = getFbOrWarn();
-  if (!fb) return Promise.resolve(false);
-  const id = uid();
-  const now = Date.now();
-  const obj = {
-    id,
-    sourceType,
-    sourceId,
-    type: data.type,
-    date: data.date || getLocalDateKey(),
-    description: data.description,
-    category: data.category || '',
-    amount: normalizeMoney(data.amount),
-    payment: data.payment || '',
-    eventId: data.eventId || '',
-    orderId: data.orderId || '',
-    paidByMemberId: data.paidByMemberId || '',
-    reimbursementStatus: data.reimbursementStatus || '',
-    note: data.note || '',
-    createdAt: now,
-    updatedAt: now
-  };
-  if (obj.amount <= 0) {
-    showToast('Importo non valido', 'danger');
-    return Promise.resolve(false);
-  }
-  setSyncing(true);
-  const { db, ref, set } = fb;
-  return set(ref(db, `finance/${id}`), obj)
-    .then(() => {
-      financeMonth = obj.date.slice(0, 7);
-      showToast(data.successMessage || 'Movimento registrato nei costi');
-      return true;
-    })
-    .catch(err => {
-      setSyncing(false);
-      console.error('createFinanceEntryFromSource failed:', err);
-      showToast('Errore movimento: ' + getErrMsg(err), 'danger');
-      return false;
-    });
-}
-
-function recordEventIncome(svcId) {
-  const svc = services[svcId];
-  if (!svc) return;
-  const summary = getServiceQuoteSummary(svc, getQuoteDraftValues(svcId));
-  const amount = normalizeMoney(summary.total);
-  if (amount <= 0) {
-    showToast('Preventivo a zero: niente incasso da registrare', 'danger');
-    return;
-  }
-  if (!confirm(`Registrare incasso evento "${svc.nome}" per ${formatMoney(amount)}?`)) return;
-  createFinanceEntryFromSource('event_income', svcId, {
-    type: 'income',
-    date: getLocalDateKey(),
-    description: `Incasso evento - ${svc.nome || 'Evento'}`,
-    category: 'Evento',
-    amount,
-    eventId: svcId,
-    note: svc.cliente ? `Cliente: ${svc.cliente}` : '',
-    successMessage: 'Incasso evento registrato nei costi'
-  }).then(ok => {
-    if (ok) switchPage('costi');
-  });
-}
-
-function recordOrderExpense(orderId, orderOverride = null) {
-  const order = orderOverride || orders[orderId];
-  if (!order) return;
-  const amount = normalizeMoney(order.amount);
-  if (amount <= 0) {
-    showToast('Ordine senza costo valido', 'danger');
-    return;
-  }
-  if (!confirm(`Registrare spesa ordine "${order.item || 'ordine'}" per ${formatMoney(amount)}?`)) return;
-  createFinanceEntryFromSource('order_expense', orderId, {
-    type: 'expense',
-    date: order.date || getLocalDateKey(),
-    description: `Ordine - ${order.item || 'materiale'}`,
-    category: 'Ordini',
-    amount,
-    orderId,
-    payment: order.supplier || '',
-    note: order.reference ? `Rif: ${order.reference}` : '',
-    successMessage: 'Spesa ordine registrata nei costi'
-  }).then(ok => {
-    if (ok) switchPage('costi');
-  });
-}
-
 function deleteFinanceEntry(id) {
   const entry = financeEntries[id];
-  if (!entry || !confirm(`Eliminare il movimento "${entry.description || id}"?`)) return;
+  if (!entry || !confirm(`Eliminare la spesa "${entry.description || id}"?`)) return;
   const fb = getFbOrWarn();
   if (!fb) return;
   setSyncing(true);
   const { db, ref, remove } = fb;
   remove(ref(db, `finance/${id}`))
-    .then(() => showToast('Movimento eliminato', 'danger'))
+    .then(() => showToast('Spesa eliminata', 'danger'))
     .catch(err => {
       setSyncing(false);
       console.error('deleteFinanceEntry failed:', err);
-      showToast('Errore eliminazione movimento: ' + getErrMsg(err), 'danger');
+      showToast('Errore eliminazione spesa: ' + getErrMsg(err), 'danger');
     });
 }
 
@@ -4155,194 +3937,19 @@ function csvCell(value) {
 
 function exportFinanceCsv() {
   const entries = getFilteredFinanceEntries();
-  const cols = ['Data', 'Tipo', 'Descrizione', 'Categoria', 'Importo', 'Metodo', 'Evento', 'Ordine', 'Pagato da', 'Rimborso', 'Note'];
+  const cols = ['Data', 'Pagato da', 'Descrizione', 'Categoria', 'Importo', 'Metodo', 'Rimborso', 'Note'];
   const rows = entries.map(e => [
     e.date,
-    e.type === 'income' ? 'Entrata' : 'Spesa',
+    getMemberName(e.paidByMemberId),
     e.description,
     e.category,
     normalizeMoney(e.amount),
     e.payment,
-    getServiceName(e.eventId),
-    getOrderName(e.orderId),
-    getMemberName(e.paidByMemberId),
     e.reimbursementStatus === 'open' ? 'Da rimborsare' : e.reimbursementStatus === 'paid' ? 'Rimborsato' : '',
     e.note
   ].map(csvCell).join(','));
   downloadTextFile(`costi_verso_service_${financeMonth || getLocalDateKey()}.csv`, '\ufeff' + [cols.join(','), ...rows].join('\n'), 'text/csv;charset=utf-8;');
-  showToast('CSV costi esportato');
-}
-
-// ==================== ORDINI ====================
-const ORDER_STATUS = {
-  pending: { label: 'Da effettuare', cls: 'status-pending' },
-  ordered: { label: 'Ordinato', cls: 'status-ordered' },
-  paid: { label: 'Pagato', cls: 'status-paid' },
-  received: { label: 'Arrivato', cls: 'status-received' },
-  cancelled: { label: 'Annullato', cls: 'status-cancelled' }
-};
-
-function getOrdersArray() {
-  return Object.values(orders || {}).sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
-}
-
-function orderMatchesSearch(order) {
-  const q = orderSearch.trim().toLowerCase();
-  if (!q) return true;
-  return [order.item, order.supplier, order.reference, order.note, order.status]
-    .some(value => String(value || '').toLowerCase().includes(q));
-}
-
-function getFilteredOrders() {
-  return getOrdersArray().filter(order => {
-    if (orderFilter !== 'all' && order.status !== orderFilter) return false;
-    return orderMatchesSearch(order);
-  });
-}
-
-function renderOrders() {
-  const container = document.getElementById('mainOrders');
-  if (!container) return;
-  const arr = getFilteredOrders();
-  const active = arr.filter(o => o.status !== 'cancelled');
-  const total = active.reduce((sum, o) => sum + normalizeMoney(o.amount), 0);
-  const paid = active.filter(o => o.status === 'paid' || o.status === 'received').reduce((sum, o) => sum + normalizeMoney(o.amount), 0);
-  const open = active.filter(o => o.status === 'pending' || o.status === 'ordered').length;
-
-  container.innerHTML = `
-    <div class="finance-summary">
-      ${renderFinanceSummaryCard('Totale ordini', total, 'var(--accent)')}
-      ${renderFinanceSummaryCard('Pagato/arrivato', paid, 'var(--success)')}
-      ${renderFinanceSummaryCard('Da seguire', open, 'var(--warning)', false)}
-      ${renderFinanceSummaryCard('Righe', arr.length, 'var(--text)', false)}
-    </div>
-    ${arr.length === 0 ? '<div class="empty-state"><div class="icon">🛒</div><p>Nessun ordine per questo filtro.</p></div>' : `<div class="finance-list">${arr.map(renderOrderRow).join('')}</div>`}`;
-}
-
-function renderOrderRow(order) {
-  const status = ORDER_STATUS[order.status] || ORDER_STATUS.pending;
-  const canRecordExpense = (order.status === 'paid' || order.status === 'received') && !hasFinanceSource('order_expense', order.id);
-  return `<div class="finance-row">
-    <div class="finance-date">${formatDate(order.date)}</div>
-    <div>
-      <div class="finance-title">${escHtml(order.item || 'Ordine')}</div>
-      <div class="finance-meta">
-        <span class="status-pill ${status.cls}">${status.label}</span>
-        ${order.supplier ? `<span class="tag tag-loc">${escHtml(order.supplier)}</span>` : ''}
-        ${order.reference ? `<span class="tag tag-serial">${escHtml(order.reference)}</span>` : ''}
-        <span class="tag">${parseInt(order.qty, 10) || 1} pz</span>
-        ${order.note ? `<span class="tag">${escHtml(order.note)}</span>` : ''}
-      </div>
-    </div>
-    <div class="finance-amount">${formatMoney(order.amount || 0)}</div>
-    <div class="finance-actions">
-      ${canRecordExpense ? `<button class="icon-btn" onclick="recordOrderExpense('${order.id}')" title="Registra spesa nei costi">€</button>` : ''}
-      <button class="icon-btn" onclick="openModalOrder('${order.id}')" title="Modifica">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-      </button>
-      <button class="icon-btn del" onclick="deleteOrder('${order.id}')" title="Elimina">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-      </button>
-    </div>
-  </div>`;
-}
-
-function openModalOrder(id = null) {
-  editOrderId = id;
-  document.getElementById('modalOrderTitle').textContent = id ? 'Modifica Ordine' : 'Nuovo Ordine';
-  const order = id ? orders[id] : null;
-  document.getElementById('ordDate').value = order?.date || getLocalDateKey();
-  document.getElementById('ordStatus').value = order?.status || 'pending';
-  document.getElementById('ordSupplier').value = order?.supplier || '';
-  document.getElementById('ordReference').value = order?.reference || '';
-  document.getElementById('ordItem').value = order?.item || '';
-  document.getElementById('ordQty').value = parseInt(order?.qty, 10) || 1;
-  document.getElementById('ordAmount').value = normalizeMoney(order?.amount || 0);
-  document.getElementById('ordNote').value = order?.note || '';
-  openModal('modalOrder');
-  setTimeout(() => document.getElementById('ordItem').focus(), 160);
-}
-
-function saveOrder() {
-  const date = document.getElementById('ordDate').value;
-  const item = document.getElementById('ordItem').value.trim();
-  const amount = normalizeMoney(document.getElementById('ordAmount').value);
-  if (!date) { showToast('Inserisci la data ordine', 'danger'); return; }
-  if (!item) { showToast("Inserisci l'oggetto ordine", 'danger'); return; }
-  if (amount <= 0) { showToast('Inserisci un costo valido', 'danger'); return; }
-  const fb = getFbOrWarn();
-  if (!fb) return;
-
-  const id = editOrderId || uid();
-  const now = Date.now();
-  const obj = {
-    ...(orders[id] || {}),
-    id,
-    date,
-    status: document.getElementById('ordStatus').value || 'pending',
-    supplier: document.getElementById('ordSupplier').value.trim(),
-    reference: document.getElementById('ordReference').value.trim(),
-    item,
-    qty: Math.max(1, parseInt(document.getElementById('ordQty').value, 10) || 1),
-    amount,
-    note: document.getElementById('ordNote').value.trim(),
-    updatedAt: now,
-    createdAt: orders[id]?.createdAt || now
-  };
-  setSyncing(true);
-  const { db, ref, set } = fb;
-  set(ref(db, `orders/${id}`), obj)
-    .then(() => {
-      showToast(editOrderId ? 'Ordine aggiornato' : 'Ordine salvato');
-      closeModal('modalOrder');
-      if ((obj.status === 'paid' || obj.status === 'received') && !hasFinanceSource('order_expense', id)) {
-        setTimeout(() => recordOrderExpense(id, obj), 120);
-      }
-    })
-    .catch(err => {
-      setSyncing(false);
-      console.error('saveOrder failed:', err);
-      showToast('Errore ordine: ' + getErrMsg(err), 'danger');
-    });
-}
-
-function deleteOrder(id) {
-  const order = orders[id];
-  if (!order || !confirm(`Eliminare l'ordine "${order.item || id}"?`)) return;
-  const fb = getFbOrWarn();
-  if (!fb) return;
-  setSyncing(true);
-  const { db, ref, remove } = fb;
-  remove(ref(db, `orders/${id}`))
-    .then(() => showToast('Ordine eliminato', 'danger'))
-    .catch(err => {
-      setSyncing(false);
-      console.error('deleteOrder failed:', err);
-      showToast('Errore eliminazione ordine: ' + getErrMsg(err), 'danger');
-    });
-}
-
-function setOrderFilter(filter) {
-  orderFilter = filter;
-  document.querySelectorAll('#filterTabsOrders .tab').forEach(t => t.classList.toggle('active', t.dataset.filter === filter));
-  renderOrders();
-}
-
-function exportOrdersCsv() {
-  const arr = getFilteredOrders();
-  const cols = ['Data', 'Stato', 'Fornitore', 'Riferimento', 'Oggetto', 'Quantita', 'Costo', 'Note'];
-  const rows = arr.map(o => [
-    o.date,
-    ORDER_STATUS[o.status]?.label || o.status,
-    o.supplier,
-    o.reference,
-    o.item,
-    o.qty,
-    normalizeMoney(o.amount),
-    o.note
-  ].map(csvCell).join(','));
-  downloadTextFile(`ordini_verso_service_${getLocalDateKey()}.csv`, '\ufeff' + [cols.join(','), ...rows].join('\n'), 'text/csv;charset=utf-8;');
-  showToast('CSV ordini esportato');
+  showToast('CSV spese esportato');
 }
 
 // ==================== CAMION ====================
@@ -5177,7 +4784,6 @@ function renderQuotes() {
           </div>
           <div class="quote-actions-row">
             <button class="btn btn-primary btn-sm" onclick="saveQuoteSettings('${svc.id}')">Salva preventivo</button>
-            ${hasFinanceSource('event_income', svc.id) ? `<button class="btn btn-ghost btn-sm" onclick="switchPage('costi')">Incasso registrato</button>` : `<button class="btn btn-ghost btn-sm" onclick="recordEventIncome('${svc.id}')">Registra incasso</button>`}
             <button class="btn btn-ghost btn-sm" onclick="copyQuoteText('${svc.id}')">Copia testo</button>
             <button class="btn btn-ghost btn-sm" onclick="printQuote('${svc.id}')">Stampa</button>
           </div>
@@ -5986,7 +5592,6 @@ function closeModal(id) {
     delete document.getElementById(id).dataset.duplicateQuote;
   }
   if (id === 'modalFinance') editFinanceId = null;
-  if (id === 'modalOrder') editOrderId = null;
   if (id === 'modalTruck') editTruckId = null;
   editItemId = null; editSvcId = null;
 }
@@ -6004,7 +5609,6 @@ document.getElementById('searchSvc').addEventListener('input', e => { svcSearch 
 document.getElementById('searchPrices').addEventListener('input', e => { priceSearch = e.target.value.trim(); renderPrices(); });
 document.getElementById('searchQuotes').addEventListener('input', e => { quoteSearch = e.target.value.trim(); renderQuotes(); });
 document.getElementById('searchFinance').addEventListener('input', e => { financeSearch = e.target.value.trim(); renderFinance(); });
-document.getElementById('searchOrders').addEventListener('input', e => { orderSearch = e.target.value.trim(); renderOrders(); });
 document.getElementById('searchTruck').addEventListener('input', e => { truckSearch = e.target.value.trim(); renderTruck(); });
 document.getElementById('searchLoans').addEventListener('input', e => { loanSearch = e.target.value.trim(); renderLoans(); });
 
@@ -7127,15 +6731,8 @@ function refreshFabForCurrentPage() {
 
   if (currentPage === 'costi') {
     fab.textContent = '+';
-    fab.setAttribute('aria-label', 'Nuovo movimento');
+    fab.setAttribute('aria-label', 'Nuova spesa');
     fab.onclick = openModalFinance;
-    return;
-  }
-
-  if (currentPage === 'ordini') {
-    fab.textContent = '+';
-    fab.setAttribute('aria-label', 'Nuovo ordine');
-    fab.onclick = openModalOrder;
     return;
   }
 
@@ -7213,7 +6810,6 @@ function switchPage(page) {
     if (monthInput && !monthInput.value) monthInput.value = financeMonth;
     renderFinance();
   }
-  if (page === 'ordini') renderOrders();
   if (page === 'camion') renderTruck();
   if (page === 'prestiti') renderLoans();
   if (page === 'disponibilita') {
