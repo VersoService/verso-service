@@ -1083,7 +1083,7 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
       <div class="info-banner-icon">📊</div>
       <div class="info-banner-text">
         <strong>Oggi</strong>
-        Vista rapida operativa: eventi, materiale fuori, camion, spese da rimborsare e criticità disponibilità da controllare.
+        Vista rapida operativa: eventi, materiale fuori, camion, spese recenti e criticità disponibilità da controllare.
       </div>
       <button class="info-banner-close" onclick="closeBanner('infoBannerDashboard')">✕</button>
     </div>
@@ -1199,7 +1199,7 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
     <div class="toolbar">
       <div class="search-wrap">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-        <input type="text" id="searchFinance" class="search-input" placeholder="Cerca spesa, categoria, nota..." autocomplete="off">
+        <input type="text" id="searchFinance" class="search-input" placeholder="Cerca spesa o membro..." autocomplete="off">
       </div>
       <input type="month" id="financeMonth" class="avail-date-input" oninput="setFinanceMonth(this.value)">
       <select id="financeMemberFilter" class="avail-date-input" onchange="setFinanceMemberFilter(this.value)" aria-label="Filtra per membro"></select>
@@ -1216,7 +1216,7 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
       <div class="info-banner-icon">💰</div>
       <div class="info-banner-text">
         <strong>Costi</strong>
-        Registro semplice delle spese del team: data, cosa e importo. Se qualcuno anticipa di tasca propria, seleziona il membro e chiudi il rimborso quando viene pagato.
+        Registro semplice delle spese del team: chi ha pagato, quando, cosa e quanto. Il resto resta fuori da qui.
       </div>
       <button class="info-banner-close" onclick="closeBanner('infoBannerFinance')">✕</button>
     </div>
@@ -1561,20 +1561,9 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
     <div class="modal-title" id="modalFinanceTitle">Nuova Spesa</div>
     <div class="form-grid">
       <div class="field"><label>Data *</label><input type="date" id="finDate"></div>
-      <div class="field"><label>Pagato da</label><select id="finPaidBy" onchange="handleFinancePaidByChange()"></select></div>
+      <div class="field"><label>Pagato da</label><select id="finPaidBy"></select></div>
       <div class="field full"><label>Descrizione *</label><input type="text" id="finDescription" placeholder="es. Carburante, noleggio, minuteria"></div>
-      <div class="field"><label>Categoria</label><input type="text" id="finCategory" placeholder="es. Trasporti, Materiale, Vitto"></div>
       <div class="field"><label>Importo (€) *</label><input type="number" id="finAmount" min="0" step="0.01" value="0"></div>
-      <div class="field"><label>Metodo</label><input type="text" id="finPayment" placeholder="es. Bonifico, contanti, carta"></div>
-      <div class="field">
-        <label>Rimborso</label>
-        <select id="finReimbursementStatus">
-          <option value="">Non serve</option>
-          <option value="open">Da rimborsare</option>
-          <option value="paid">Rimborsato</option>
-        </select>
-      </div>
-      <div class="field full"><label>Note</label><textarea id="finNote" placeholder="Dettagli interni..."></textarea></div>
     </div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeModal('modalFinance')">Annulla</button>
@@ -2978,7 +2967,7 @@ function renderDashboard() {
   const activeEvents = Object.values(services || {}).filter(svc => svc.stato === 'active');
   const openLoans = Object.values(loans || {}).filter(isLoanOpen);
   const availabilityIssues = getServicesWithAvailabilityIssues();
-  const reimbursements = Object.values(financeEntries || {}).filter(isFinanceReimbursementOpen);
+  const recentExpenses = getFinanceArray().slice(0, 3);
   const truckToday = Object.values(truckLog || {}).filter(entry => entry.date === getLocalDateKey());
 
   const todayRows = eventsToday.slice(0, 5).map(svc => {
@@ -3011,7 +3000,7 @@ function renderDashboard() {
 
   const opsRows = [
     ...truckToday.map(entry => renderDashboardRow(`Camion: ${escHtml(entry.person || 'Senza nome')}`, entry.note ? escHtml(entry.note) : 'Oggi', '')),
-    ...reimbursements.slice(0, 3).map(entry => renderDashboardRow(escHtml(entry.description || 'Rimborso'), `${escHtml(getMemberName(entry.paidByMemberId))} · ${formatMoney(entry.amount)}`, 'Rimborso'))
+    ...recentExpenses.map(entry => renderDashboardRow(`Spesa: ${escHtml(entry.description || 'Senza descrizione')}`, `${escHtml(getMemberName(entry.paidByMemberId))} · ${formatMoney(entry.amount)}`, formatDate(entry.date)))
   ];
 
   const upcomingRows = getDashboardUpcomingEvents().map(svc => renderDashboardRow(
@@ -3643,14 +3632,10 @@ function getFinanceMemberKey(entry) {
   return entry?.paidByMemberId || 'company';
 }
 
-function isFinanceReimbursementOpen(entry) {
-  return entry.type === 'expense' && !!entry.paidByMemberId && entry.reimbursementStatus === 'open';
-}
-
 function financeMatchesSearch(entry) {
   const q = financeSearch.trim().toLowerCase();
   if (!q) return true;
-  return [entry.description, entry.category, entry.payment, entry.note, getMemberName(entry.paidByMemberId)]
+  return [entry.description, getMemberName(entry.paidByMemberId)]
     .some(value => String(value || '').toLowerCase().includes(q));
 }
 
@@ -3698,14 +3683,11 @@ function renderFinance() {
 
   const entries = getFilteredFinanceEntries();
   const expense = entries.reduce((sum, e) => sum + normalizeMoney(e.amount), 0);
-  const openRows = entries.filter(isFinanceReimbursementOpen);
-  const openReimbursements = openRows.reduce((sum, e) => sum + normalizeMoney(e.amount), 0);
   const membersInRows = new Set(entries.map(getFinanceMemberKey)).size;
 
   const summaryHtml = `
     <div class="finance-summary">
       ${renderFinanceSummaryCard('Spese', expense, 'var(--danger)')}
-      ${renderFinanceSummaryCard('Da rimborsare', openReimbursements, openReimbursements > 0 ? 'var(--warning)' : 'var(--text)')}
       ${renderFinanceSummaryCard('Righe', entries.length, 'var(--text)', false)}
       ${renderFinanceSummaryCard('Membri', entries.length ? membersInRows : 0, 'var(--accent2)', false)}
     </div>`;
@@ -3740,17 +3722,11 @@ function renderFinanceChart() {
   });
   const max = Math.max(1, ...months.map(m => m.expense));
   const totalExpense = months.reduce((sum, m) => sum + m.expense, 0);
-  const openExpense = getFinanceArray()
-    .filter(e => String(e.date || '').slice(0, 4) === year)
-    .filter(e => financeMemberFilter === 'all' || getFinanceMemberKey(e) === financeMemberFilter)
-    .filter(isFinanceReimbursementOpen)
-    .reduce((sum, e) => sum + normalizeMoney(e.amount), 0);
   return `<div class="finance-chart">
     <div class="finance-chart-head">
       <div class="finance-chart-title">Spese ${year}</div>
       <div class="finance-meta">
         <span class="tag tag-serial">Totale ${formatMoney(totalExpense)}</span>
-        <span class="tag tag-consumable">Da rimborsare ${formatMoney(openExpense)}</span>
       </div>
     </div>
     <div class="finance-chart-bars">
@@ -3783,17 +3759,11 @@ function renderFinanceRow(entry) {
       <div class="finance-title">${escHtml(entry.description || 'Spesa')}</div>
       <div class="finance-meta">
         <span class="status-pill status-cancelled">Spesa</span>
-        ${entry.category ? `<span class="tag tag-loc">${escHtml(entry.category)}</span>` : ''}
-        ${entry.payment ? `<span class="tag tag-serial">${escHtml(entry.payment)}</span>` : ''}
         <span class="tag tag-consumable">Pagato da ${escHtml(memberName)}</span>
-        ${entry.reimbursementStatus === 'open' ? `<span class="tag tag-consumable">Da rimborsare</span>` : ''}
-        ${entry.reimbursementStatus === 'paid' ? `<span class="tag tag-reusable">Rimborsato</span>` : ''}
-        ${entry.note ? `<span class="tag">${escHtml(entry.note)}</span>` : ''}
       </div>
     </div>
     <div class="finance-amount expense">- ${formatMoney(amount)}</div>
     <div class="finance-actions">
-      ${isFinanceReimbursementOpen(entry) ? `<button class="icon-btn" onclick="markFinanceReimbursed('${entry.id}')" title="Segna rimborsato">✓</button>` : ''}
       <button class="icon-btn" onclick="openModalFinance('${entry.id}')" title="Modifica">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
       </button>
@@ -3820,19 +3790,6 @@ function populateFinanceMemberSelect(entry = null) {
   }
 }
 
-function handleFinancePaidByChange() {
-  const paidBySelect = document.getElementById('finPaidBy');
-  const statusSelect = document.getElementById('finReimbursementStatus');
-  if (!paidBySelect || !statusSelect) return;
-  if (!paidBySelect.value) {
-    statusSelect.value = '';
-    statusSelect.disabled = true;
-    return;
-  }
-  statusSelect.disabled = false;
-  if (!statusSelect.value) statusSelect.value = 'open';
-}
-
 function openModalFinance(id = null) {
   editFinanceId = id;
   document.getElementById('modalFinanceTitle').textContent = id ? 'Modifica Spesa' : 'Nuova Spesa';
@@ -3840,12 +3797,7 @@ function openModalFinance(id = null) {
   populateFinanceMemberSelect(entry);
   document.getElementById('finDate').value = entry?.date || getLocalDateKey();
   document.getElementById('finDescription').value = entry?.description || '';
-  document.getElementById('finCategory').value = entry?.category || '';
   document.getElementById('finAmount').value = normalizeMoney(entry?.amount || 0);
-  document.getElementById('finPayment').value = entry?.payment || '';
-  document.getElementById('finReimbursementStatus').value = entry?.reimbursementStatus || (entry?.paidByMemberId ? 'open' : '');
-  document.getElementById('finNote').value = entry?.note || '';
-  handleFinancePaidByChange();
   openModal('modalFinance');
   setTimeout(() => document.getElementById('finDescription').focus(), 160);
 }
@@ -3863,19 +3815,13 @@ function saveFinanceEntry() {
   const id = editFinanceId || uid();
   const now = Date.now();
   const paidByMemberId = document.getElementById('finPaidBy').value || '';
-  const reimbursementStatus = paidByMemberId ? (document.getElementById('finReimbursementStatus').value || 'open') : '';
   const obj = {
     id,
     type: 'expense',
     date,
     description,
-    category: document.getElementById('finCategory').value.trim(),
     amount,
-    payment: document.getElementById('finPayment').value.trim(),
     paidByMemberId,
-    reimbursementStatus,
-    reimbursedAt: reimbursementStatus === 'paid' ? (financeEntries[id]?.reimbursedAt || now) : null,
-    note: document.getElementById('finNote').value.trim(),
     updatedAt: now,
     createdAt: financeEntries[id]?.createdAt || now
   };
@@ -3891,27 +3837,6 @@ function saveFinanceEntry() {
       setSyncing(false);
       console.error('saveFinanceEntry failed:', err);
       showToast('Errore spesa: ' + getErrMsg(err), 'danger');
-    });
-}
-
-function markFinanceReimbursed(id) {
-  const entry = financeEntries[id];
-  if (!entry) return;
-  const fb = getFbOrWarn();
-  if (!fb) return;
-  if (!confirm(`Segnare come rimborsato "${entry.description || 'movimento'}" a ${getMemberName(entry.paidByMemberId)}?`)) return;
-  setSyncing(true);
-  const { db, ref, update } = fb;
-  update(ref(db, `finance/${id}`), {
-    reimbursementStatus: 'paid',
-    reimbursedAt: Date.now(),
-    updatedAt: Date.now()
-  })
-    .then(() => showToast('Rimborso segnato come pagato'))
-    .catch(err => {
-      setSyncing(false);
-      console.error('markFinanceReimbursed failed:', err);
-      showToast('Errore rimborso: ' + getErrMsg(err), 'danger');
     });
 }
 
@@ -3937,16 +3862,12 @@ function csvCell(value) {
 
 function exportFinanceCsv() {
   const entries = getFilteredFinanceEntries();
-  const cols = ['Data', 'Pagato da', 'Descrizione', 'Categoria', 'Importo', 'Metodo', 'Rimborso', 'Note'];
+  const cols = ['Data', 'Pagato da', 'Descrizione', 'Importo'];
   const rows = entries.map(e => [
     e.date,
     getMemberName(e.paidByMemberId),
     e.description,
-    e.category,
-    normalizeMoney(e.amount),
-    e.payment,
-    e.reimbursementStatus === 'open' ? 'Da rimborsare' : e.reimbursementStatus === 'paid' ? 'Rimborsato' : '',
-    e.note
+    normalizeMoney(e.amount)
   ].map(csvCell).join(','));
   downloadTextFile(`costi_verso_service_${financeMonth || getLocalDateKey()}.csv`, '\ufeff' + [cols.join(','), ...rows].join('\n'), 'text/csv;charset=utf-8;');
   showToast('CSV spese esportato');

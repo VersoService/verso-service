@@ -23,7 +23,7 @@
     "finance": {
       ".read": "auth != null",
       ".write": "auth != null",
-      ".indexOn": ["date", "paidByMemberId", "reimbursementStatus", "category"]
+      ".indexOn": ["date", "paidByMemberId"]
     },
     "truck": {
       ".read": "auth != null",
