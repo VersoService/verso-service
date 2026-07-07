@@ -521,9 +521,13 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
 .pricing-item-brand { font-family: 'IBM Plex Mono', monospace; font-size: 0.66rem; color: var(--accent); letter-spacing: 0.08em; text-transform: uppercase; margin-top: 0.2rem; }
 .pricing-item-meta { display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center; }
 .pricing-input-wrap { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
-.pricing-input-wrap input { width: 120px; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 0.55rem 0.7rem; color: var(--text); font-family: 'IBM Plex Mono', monospace; font-size: 0.9rem; }
-.pricing-input-wrap input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(240,165,0,0.12); }
+.pricing-input-wrap input[type="number"] { width: 120px; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 0.55rem 0.7rem; color: var(--text); font-family: 'IBM Plex Mono', monospace; font-size: 0.9rem; }
+.pricing-input-wrap input[type="number"]:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(240,165,0,0.12); }
+.pricing-input-wrap input[type="number"]:disabled { opacity: 0.55; cursor: not-allowed; }
 .pricing-input-wrap label { font-family: 'IBM Plex Mono', monospace; font-size: 0.63rem; color: var(--text-dim); letter-spacing: 0.12em; text-transform: uppercase; }
+.pricing-free-toggle { display: inline-flex; align-items: center; gap: 0.35rem; min-height: 36px; padding: 0.3rem 0.55rem; border: 1px solid var(--border); border-radius: 4px; background: rgba(255,255,255,0.03); color: var(--text-dim); cursor: pointer; }
+.pricing-free-toggle input { width: 14px; height: 14px; accent-color: var(--accent); }
+.pricing-free-toggle:has(input:checked) { color: var(--accent); border-color: rgba(240,165,0,0.35); background: rgba(240,165,0,0.08); }
 .pricing-links { display: flex; flex-wrap: wrap; gap: 0.35rem; }
 .pricing-link-tag { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.18rem 0.45rem; border-radius: 999px; background: rgba(0,212,255,0.08); border: 1px solid rgba(0,212,255,0.18); font-family: 'IBM Plex Mono', monospace; font-size: 0.62rem; color: var(--accent2); }
 .pricing-empty-links { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--text-faint); }
@@ -665,7 +669,8 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
   .pricing-grid { grid-template-columns: 1fr; }
   .pricing-input-wrap { align-items: stretch; }
   .pricing-input-wrap label { flex: 1 1 100%; }
-  .pricing-input-wrap input { width: 100%; flex: 1 1 100%; }
+  .pricing-input-wrap input[type="number"] { width: 100%; flex: 1 1 100%; }
+  .pricing-free-toggle { flex: 1 1 100%; justify-content: center; min-height: 44px; }
   .pricing-input-wrap .btn { flex: 1 1 calc(50% - 0.3rem); justify-content: center; }
   .finance-layout { padding: 0.8rem 0.8rem calc(6rem + env(safe-area-inset-bottom)); }
   .finance-row { grid-template-columns: 1fr; align-items: stretch; gap: 0.65rem; }
@@ -708,7 +713,7 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
   .loan-quick-add input,
   .loan-quick-add select,
   .truck-quick-add input,
-  .pricing-input-wrap input,
+  .pricing-input-wrap input[type="number"],
   .team-report-month,
   .quote-rental-row input,
   .quote-rental-add-grid input,
@@ -1167,7 +1172,7 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
       <div class="info-banner-icon">💶</div>
       <div class="info-banner-text">
         <strong>Prezzi</strong>
-        Qui imposti il <b>prezzo unitario da preventivo</b> per ogni articolo e vedi gli accessori collegati. Se un prezzo manca, il preventivo te lo segnala subito così non parte incompleto.
+        Qui imposti il <b>prezzo unitario da preventivo</b> per ogni articolo e vedi gli accessori collegati. Se un articolo non va fatto pagare, segnalo come <b>non fatturare</b>: resta a zero ma non viene contato come prezzo mancante.
       </div>
       <button class="info-banner-close" onclick="closeBanner('infoBannerPrezzi')">✕</button>
     </div>
@@ -1483,6 +1488,12 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
       </div>
       <div class="field"><label>Quantità *</label><input type="number" id="fQty" min="0" value="1"></div>
       <div class="field"><label>Prezzo unitario preventivo (€)</label><input type="number" id="fPrezzo" min="0" step="0.01" value="0"></div>
+      <div class="field" style="justify-content:end;">
+        <label class="pricing-free-toggle" style="align-self:flex-start;margin-top:1.25rem;">
+          <input type="checkbox" id="fNoCharge" onchange="handleItemNoChargeChange()">
+          Non fatturare
+        </label>
+      </div>
       <div class="field"><label>Posizione in magazzino</label><input type="text" id="fPosizione" placeholder="es. Scaffale A3"></div>
       <div class="field"><label>N° Seriale</label><input type="text" id="fSeriale" placeholder="es. SN-0001"></div>
       <div class="field full"><label>Note</label><textarea id="fNote" placeholder="Condizioni, specifiche tecniche..."></textarea></div>
@@ -2174,8 +2185,22 @@ function getItemTypeMeta(item) {
   return ITEM_TYPES[getItemType(item)] || ITEM_TYPES.reusable;
 }
 
-function getItemPrice(item) {
+function isItemNoCharge(item) {
+  return item?.noCharge === true || item?.nonBillable === true || item?.freeOfCharge === true;
+}
+
+function getItemStoredPrice(item) {
   return normalizeMoney(item?.prezzo || 0);
+}
+
+function getItemPrice(item) {
+  return isItemNoCharge(item) ? 0 : getItemStoredPrice(item);
+}
+
+function getItemPriceLabel(item) {
+  if (isItemNoCharge(item)) return 'Non fatturato';
+  const price = getItemPrice(item);
+  return price > 0 ? formatMoney(price) : 'Prezzo mancante';
 }
 
 function getSuggestedLinks(item) {
@@ -2306,17 +2331,19 @@ function getServiceQuoteLines(svc, config = getServiceQuoteConfig(svc)) {
     const qty = Math.max(1, parseInt(entry.qty, 10) || 1);
     const unitPrice = getItemPrice(item);
     const baseTotal = normalizeMoney(unitPrice * qty);
+    const noCharge = isItemNoCharge(item);
     return {
       id: entry.id,
       source: 'inventory',
       item,
+      noCharge,
       qty,
       label: getItemDisplayName(item),
       unitPrice,
       baseTotal,
       durationMultiplier,
       total: normalizeMoney(baseTotal * durationMultiplier),
-      missingPrice: !item || unitPrice <= 0
+      missingPrice: !item || (!noCharge && unitPrice <= 0)
     };
   }).sort((a, b) => a.label.localeCompare(b.label, 'it'));
 }
@@ -2752,7 +2779,7 @@ function buildQuoteText(svc, configOverride = null) {
     ? summary.lines.map(line => {
         const suffix = line.source === 'external'
           ? ` · noleggio terzi${line.supplier ? ` (${line.supplier})` : ''}`
-          : summary.durationMultiplier !== 1 ? ` · fattore giorni ${summary.durationMultiplier}x` : '';
+          : `${line.noCharge ? ' · non fatturato' : ''}${summary.durationMultiplier !== 1 ? ` · fattore giorni ${summary.durationMultiplier}x` : ''}`;
         return `- ${line.label} x${line.qty} · ${formatMoney(line.unitPrice)} = ${formatMoney(line.total)}${suffix}`;
       }).join('\n')
     : '- Nessun materiale assegnato';
@@ -3163,7 +3190,11 @@ function renderItemCard(item) {
         ${item.posizione?`<span class="tag tag-loc">📍 ${hl(item.posizione,q)}</span>`:''}
         ${item.seriale?`<span class="tag tag-serial">S/N: ${hl(item.seriale,q)}</span>`:''}
         <span class="tag ${typeMeta.cls}">${isConsumableItem(item) ? '🧾' : '↩'} ${typeMeta.shortLabel}</span>
-        ${getItemPrice(item)>0?`<span class="tag" style="background:rgba(240,165,0,0.08);color:var(--accent);border:1px solid rgba(240,165,0,0.2);">💶 ${formatMoney(item.prezzo)}</span>`:''}
+        ${isItemNoCharge(item)
+          ? `<span class="tag" style="background:rgba(0,212,255,0.08);color:var(--accent2);border:1px solid rgba(0,212,255,0.2);">💶 Non fatturato</span>`
+          : getItemPrice(item)>0
+            ? `<span class="tag" style="background:rgba(240,165,0,0.08);color:var(--accent);border:1px solid rgba(240,165,0,0.2);">💶 ${formatMoney(getItemPrice(item))}</span>`
+            : ''}
         ${eventBusy>0?`<span class="tag tag-busy">🚚 ${eventBusy} in evento</span>`:''}
         ${loanBusy>0?`<span class="tag tag-busy">🙋 ${loanBusy} in prestito</span>`:''}
       </div>
@@ -4366,8 +4397,9 @@ function renderPrices() {
     return;
   }
 
-  const pricedItems = arr.filter(item => getItemPrice(item) > 0);
-  const missingPrices = arr.filter(item => getItemPrice(item) <= 0);
+  const pricedItems = arr.filter(item => !isItemNoCharge(item) && getItemPrice(item) > 0);
+  const noChargeItems = arr.filter(isItemNoCharge);
+  const missingPrices = arr.filter(item => !isItemNoCharge(item) && getItemPrice(item) <= 0);
   const catalogValue = arr.reduce((sum, item) => sum + (getItemPrice(item) * (parseInt(item.qty, 10) || 0)), 0);
 
   const groups = {};
@@ -4380,6 +4412,10 @@ function renderPrices() {
       <div class="pricing-summary-card">
         <div class="pricing-summary-label">Articoli con prezzo</div>
         <div class="pricing-summary-value">${pricedItems.length}</div>
+      </div>
+      <div class="pricing-summary-card">
+        <div class="pricing-summary-label">Non fatturati</div>
+        <div class="pricing-summary-value" style="color:var(--accent2);">${noChargeItems.length}</div>
       </div>
       <div class="pricing-summary-card">
         <div class="pricing-summary-label">Prezzi mancanti</div>
@@ -4403,6 +4439,7 @@ function renderPrices() {
           <div class="pricing-grid">
             ${catItems.map(item => {
               const links = getSuggestedLinks(item);
+              const itemNoCharge = isItemNoCharge(item);
               const linkHtml = links.length
                 ? `<div class="pricing-links">${links.map(link => `<span class="pricing-link-tag">${escHtml(getItemDisplayName(items[link.id]))} x${link.qty}</span>`).join('')}</div>`
                 : '<div class="pricing-empty-links">Nessun articolo collegato</div>';
@@ -4418,11 +4455,19 @@ function renderPrices() {
                   <div class="pricing-item-meta">
                     <span class="tag tag-loc">${getCategoryIcon(item.categoria)} ${escHtml(item.categoria || 'Altro')}</span>
                     <span class="tag ${getItemTypeMeta(item).cls}">${getItemTypeMeta(item).shortLabel}</span>
-                    ${getItemPrice(item) > 0 ? `<span class="tag" style="background:rgba(0,204,102,0.08);border:1px solid rgba(0,204,102,0.18);color:var(--success);">${formatMoney(item.prezzo)}</span>` : `<span class="tag" style="background:rgba(255,149,0,0.08);border:1px solid rgba(255,149,0,0.18);color:var(--warning);">Prezzo mancante</span>`}
+                    ${itemNoCharge
+                      ? `<span class="tag" style="background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.18);color:var(--accent2);">Non fatturato</span>`
+                      : getItemPrice(item) > 0
+                        ? `<span class="tag" style="background:rgba(0,204,102,0.08);border:1px solid rgba(0,204,102,0.18);color:var(--success);">${formatMoney(getItemPrice(item))}</span>`
+                        : `<span class="tag" style="background:rgba(255,149,0,0.08);border:1px solid rgba(255,149,0,0.18);color:var(--warning);">Prezzo mancante</span>`}
                   </div>
                   <div class="pricing-input-wrap">
                     <label for="price_${item.id}">Prezzo</label>
-                    <input id="price_${item.id}" type="number" min="0" step="0.01" value="${getItemPrice(item)}">
+                    <input id="price_${item.id}" type="number" min="0" step="0.01" value="${itemNoCharge ? 0 : getItemStoredPrice(item)}" ${itemNoCharge ? 'disabled' : ''}>
+                    <label class="pricing-free-toggle" for="nocharge_${item.id}">
+                      <input id="nocharge_${item.id}" type="checkbox" ${itemNoCharge ? 'checked' : ''} onchange="handlePriceNoChargeToggle('${item.id}')">
+                      Non fatturare
+                    </label>
                     <button class="btn btn-primary btn-sm" onclick="saveItemPrice('${item.id}')">Salva</button>
                     <button class="btn btn-ghost btn-sm" onclick="openModalItem('${item.id}')">Dettaglio</button>
                   </div>
@@ -4438,18 +4483,27 @@ function renderPrices() {
     </div>`;
 }
 
+function handlePriceNoChargeToggle(itemId) {
+  const checked = !!document.getElementById(`nocharge_${itemId}`)?.checked;
+  const input = document.getElementById(`price_${itemId}`);
+  if (!input) return;
+  input.disabled = checked;
+  if (checked) input.value = 0;
+}
+
 function saveItemPrice(itemId) {
   const item = items[itemId];
   const input = document.getElementById(`price_${itemId}`);
   if (!item || !input) return;
   const fb = getFbOrWarn();
   if (!fb) return;
-  const prezzo = normalizeMoney(input.value);
+  const noCharge = !!document.getElementById(`nocharge_${itemId}`)?.checked;
+  const prezzo = noCharge ? 0 : normalizeMoney(input.value);
   setSyncing(true);
   const { db, ref, update } = fb;
-  update(ref(db, `inventario/${itemId}`), { prezzo, updatedAt: Date.now() })
+  update(ref(db, `inventario/${itemId}`), { prezzo, noCharge, updatedAt: Date.now() })
     .then(() => {
-      showToast(`Prezzo aggiornato: ${getItemDisplayName(item)}`);
+      showToast(noCharge ? `Articolo segnato non fatturato: ${getItemDisplayName(item)}` : `Prezzo aggiornato: ${getItemDisplayName(item)}`);
       haptic('success');
     })
     .catch(err => {
@@ -4483,7 +4537,7 @@ function renderQuoteLine(line, svcId) {
     <div class="quote-line-row">
       <div class="quote-line-name">
         <div class="quote-line-title">${escHtml(line.label)}</div>
-        <div class="quote-line-sub">${line.item?.brand ? escHtml(line.item.brand) + ' · ' : ''}${line.item?.categoria ? escHtml(line.item.categoria) : 'Articolo'}${line.durationMultiplier !== 1 ? ` · fattore giorni ${line.durationMultiplier}x` : ''}</div>
+        <div class="quote-line-sub">${line.item?.brand ? escHtml(line.item.brand) + ' · ' : ''}${line.item?.categoria ? escHtml(line.item.categoria) : 'Articolo'}${line.noCharge ? ' · non fatturato' : ''}${line.durationMultiplier !== 1 ? ` · fattore giorni ${line.durationMultiplier}x` : ''}</div>
       </div>
       <div class="quote-line-qty">x${line.qty}</div>
       <div class="quote-line-unit${line.missingPrice ? ' missing' : ''}">${formatMoney(line.unitPrice)}</div>
@@ -4824,7 +4878,7 @@ function buildQuoteDocumentHtml(svc, configOverride = null) {
     ? summary.lines.map(line => `<tr>
         <td style="padding:10px 12px;border-bottom:1px solid #e6e0d2;">
           <div>${escHtml(line.label)}</div>
-          <div style="font-size:12px;color:#8a7760;margin-top:2px;">${line.source === 'external' ? `Noleggio terzi${line.supplier ? ' - ' + escHtml(line.supplier) : ''}` : summary.durationMultiplier !== 1 ? `Tariffa giorni ${summary.durationMultiplier}x` : 'Magazzino'}</div>
+          <div style="font-size:12px;color:#8a7760;margin-top:2px;">${line.source === 'external' ? `Noleggio terzi${line.supplier ? ' - ' + escHtml(line.supplier) : ''}` : line.noCharge ? 'Magazzino - non fatturato' : summary.durationMultiplier !== 1 ? `Tariffa giorni ${summary.durationMultiplier}x` : 'Magazzino'}</div>
         </td>
         <td style="padding:10px 12px;border-bottom:1px solid #e6e0d2;text-align:right;">${line.qty}</td>
         <td style="padding:10px 12px;border-bottom:1px solid #e6e0d2;text-align:right;color:${line.missingPrice ? '#c07800' : '#222'};">${formatMoney(line.unitPrice)}</td>
@@ -4998,6 +5052,14 @@ function duplicateService(id) {
 }
 
 // ==================== MODAL ARTICOLO ====================
+function handleItemNoChargeChange() {
+  const checked = !!document.getElementById('fNoCharge')?.checked;
+  const input = document.getElementById('fPrezzo');
+  if (!input) return;
+  input.disabled = checked;
+  if (checked) input.value = 0;
+}
+
 function openModalItem(id = null) {
   editItemId = id;
   itemSuggestedLinks = [];
@@ -5013,7 +5075,8 @@ function openModalItem(id = null) {
     populateCategorySelect(i.categoria || '');
     document.getElementById('fItemType').value = getItemType(i);
     document.getElementById('fQty').value = i.qty??1;
-    document.getElementById('fPrezzo').value = getItemPrice(i);
+    document.getElementById('fPrezzo').value = isItemNoCharge(i) ? 0 : getItemStoredPrice(i);
+    document.getElementById('fNoCharge').checked = isItemNoCharge(i);
     document.getElementById('fPosizione').value = i.posizione||'';
     document.getElementById('fSeriale').value = i.seriale||'';
     document.getElementById('fNote').value = i.note||'';
@@ -5024,7 +5087,9 @@ function openModalItem(id = null) {
     document.getElementById('fItemType').value='reusable';
     document.getElementById('fQty').value=1;
     document.getElementById('fPrezzo').value=0;
+    document.getElementById('fNoCharge').checked=false;
   }
+  handleItemNoChargeChange();
   populateSuggestionPicker(id);
   renderItemSuggestionLinks();
   openModal('modalItem');
@@ -5040,6 +5105,7 @@ function saveItem() {
   if (!fb) return;
 
   const id = editItemId || uid();
+  const noCharge = !!document.getElementById('fNoCharge')?.checked;
   const suggestedItems = {};
   itemSuggestedLinks.forEach(link => {
     suggestedItems[link.id] = { id: link.id, qty: Math.max(1, parseInt(link.qty, 10) || 1) };
@@ -5053,7 +5119,8 @@ function saveItem() {
     categoria,
     type: document.getElementById('fItemType').value === 'consumable' ? 'consumable' : 'reusable',
     qty: parseInt(document.getElementById('fQty').value, 10) || 0,
-    prezzo: normalizeMoney(document.getElementById('fPrezzo').value),
+    prezzo: noCharge ? 0 : normalizeMoney(document.getElementById('fPrezzo').value),
+    noCharge,
     posizione: document.getElementById('fPosizione').value.trim(),
     seriale: document.getElementById('fSeriale').value.trim(),
     note: document.getElementById('fNote').value.trim(),
@@ -5283,7 +5350,7 @@ function populateItemPicker() {
     const opt = document.createElement('option');
     opt.value = i.id;
     opt.disabled = remaining <= 0;
-    opt.textContent = `${getCategoryIcon(i.categoria)} ${getItemDisplayName(i)}${isConsumableItem(i) ? ' · Consumo' : ''} (${remaining} disp.${selected ? ` · gia x${selected}` : ''} / ${stock} pz · ${formatMoney(i.prezzo || 0)})`;
+    opt.textContent = `${getCategoryIcon(i.categoria)} ${getItemDisplayName(i)}${isConsumableItem(i) ? ' · Consumo' : ''} (${remaining} disp.${selected ? ` · gia x${selected}` : ''} / ${stock} pz · ${getItemPriceLabel(i)})`;
     sel.appendChild(opt);
   });
   if (hint) {
@@ -5536,8 +5603,8 @@ document.getElementById('searchLoans').addEventListener('input', e => { loanSear
 // ==================== EXPORT ====================
 function exportCSV() {
   const arr = Object.values(items);
-  const cols = ['Nome','Brand','Modello','Categoria','Tipo','Quantità','Prezzo Preventivo','Posizione','Seriale','Note'];
-  const rows = arr.map(i=>[i.nome,i.brand,i.modello,i.categoria,getItemTypeMeta(i).label,i.qty,normalizeMoney(i.prezzo || 0),i.posizione,i.seriale,i.note].map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(','));
+  const cols = ['Nome','Brand','Modello','Categoria','Tipo','Quantità','Prezzo Preventivo','Non fatturare','Posizione','Seriale','Note'];
+  const rows = arr.map(i=>[i.nome,i.brand,i.modello,i.categoria,getItemTypeMeta(i).label,i.qty,getItemPrice(i),isItemNoCharge(i) ? 'Sì' : 'No',i.posizione,i.seriale,i.note].map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(','));
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob(['\ufeff'+[cols.join(','),...rows].join('\n')],{type:'text/csv;charset=utf-8;'}));
   a.download = `inventario_verso_service_${new Date().toISOString().slice(0,10)}.csv`;
