@@ -33,7 +33,7 @@
     "loans": {
       ".read": "auth != null",
       ".write": "auth != null",
-      ".indexOn": ["date", "status", "memberId", "itemId"]
+      ".indexOn": ["date", "startDate", "endDate", "status", "memberId", "itemId"]
     },
     ".read": false,
     ".write": false

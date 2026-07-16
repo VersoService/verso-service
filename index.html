@@ -578,12 +578,12 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
 .truck-actions { display: flex; gap: 0.35rem; justify-content: flex-end; }
 .truck-month-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.66rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-dim); margin: 0.45rem 0 0.05rem; }
 .loan-layout { padding: 1.5rem 2rem 5rem; display: flex; flex-direction: column; gap: 0.9rem; }
-.loan-quick-add { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 0.95rem; display: grid; grid-template-columns: repeat(2, minmax(160px, 1fr)) 90px 145px minmax(180px, 1fr) auto; gap: 0.65rem; align-items: end; }
+.loan-quick-add { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 0.95rem; display: grid; grid-template-columns: minmax(160px, 1fr) minmax(220px, 1.35fr) 90px 145px 145px minmax(160px, 1fr) auto; gap: 0.65rem; align-items: end; }
 .loan-quick-field { display: flex; flex-direction: column; gap: 0.32rem; min-width: 0; }
 .loan-quick-field label { font-family: 'IBM Plex Mono', monospace; font-size: 0.6rem; color: var(--text-dim); letter-spacing: 0.12em; text-transform: uppercase; }
 .loan-quick-add input, .loan-quick-add select { background: var(--surface2); border: 1px solid var(--border); border-radius: 3px; padding: 0.62rem 0.75rem; color: var(--text); font-family: 'IBM Plex Sans', sans-serif; font-size: 0.86rem; outline: none; min-width: 0; width: 100%; }
 .loan-quick-add input:focus, .loan-quick-add select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(240,165,0,0.1); }
-.loan-row { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 0.9rem 1rem; display: grid; grid-template-columns: 125px minmax(0, 1fr) minmax(150px, 0.7fr) auto; align-items: center; gap: 0.9rem; }
+.loan-row { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 0.9rem 1rem; display: grid; grid-template-columns: 190px minmax(0, 1fr) minmax(150px, 0.7fr) auto; align-items: center; gap: 0.9rem; }
 .loan-row.returned { opacity: 0.72; }
 .loan-date { font-family: 'Bebas Neue', sans-serif; font-size: 1.28rem; letter-spacing: 0.08em; color: var(--accent); line-height: 1; }
 .loan-date-sub { font-family: 'IBM Plex Mono', monospace; font-size: 0.62rem; color: var(--text-dim); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 0.18rem; }
@@ -1275,7 +1275,7 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
       <div class="info-banner-icon">🙋</div>
       <div class="info-banner-text">
         <strong>Prestiti</strong>
-        Segna quando un membro del team prende materiale per sé o lo tiene fuori magazzino. Finché non viene cliccato <b>Riconsegnato</b>, quei pezzi risultano non disponibili.
+        Segna quando un membro del team prende materiale per sé o lo tiene fuori magazzino. I pezzi risultano non disponibili nel periodo indicato; se non sai il rientro, lascia vuoto <b>Al</b> e chiudi con <b>Riconsegnato</b>.
       </div>
       <button class="info-banner-close" onclick="closeBanner('infoBannerLoans')">✕</button>
     </div>
@@ -1294,8 +1294,12 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
           <input type="number" id="loanQty" min="1" value="1">
         </div>
         <div class="loan-quick-field">
-          <label>Data</label>
-          <input type="date" id="loanDate">
+          <label>Dal</label>
+          <input type="date" id="loanStartDate" onchange="populateLoanItemSelect()">
+        </div>
+        <div class="loan-quick-field">
+          <label>Al</label>
+          <input type="date" id="loanEndDate" onchange="populateLoanItemSelect()">
         </div>
         <div class="loan-quick-field">
           <label>Nota</label>
@@ -3020,7 +3024,7 @@ function renderDashboard() {
     const item = items?.[loan.itemId];
     return renderDashboardRow(
       escHtml(getItemDisplayName(item || { nome: loan.itemName || 'Articolo rimosso' })),
-      `${escHtml(getLoanPersonName(loan))} · dal ${formatDate(loan.date)}`,
+      `${escHtml(getLoanPersonName(loan))} · ${getLoanRangeLabel(loan)}`,
       `x${parseInt(loan.qty, 10) || 1}`
     );
   });
@@ -3070,39 +3074,66 @@ function isLoanOpen(loan) {
   return (loan?.status || 'open') !== 'returned';
 }
 
-function getOpenLoanQty(itemId) {
-  return Object.values(loans || {}).reduce((sum, loan) => {
-    if (loan.itemId === itemId && isLoanOpen(loan)) return sum + (parseInt(loan.qty, 10) || 0);
-    return sum;
-  }, 0);
+function getLoanStartDate(loan) {
+  return loan?.startDate || loan?.date || loan?.createdDate || '';
+}
+
+function getLoanPlannedEndDate(loan) {
+  return loan?.endDate || loan?.dateEnd || loan?.toDate || '';
+}
+
+function getLoanEffectiveEndDate(loan) {
+  const start = getLoanStartDate(loan);
+  if (!isLoanOpen(loan)) return loan?.returnedAt || getLoanPlannedEndDate(loan) || start;
+  return getLoanPlannedEndDate(loan) || '9999-12-31';
+}
+
+function getLoanRangeLabel(loan) {
+  const start = getLoanStartDate(loan);
+  const plannedEnd = getLoanPlannedEndDate(loan);
+  if (!plannedEnd || plannedEnd === start) return formatDate(start);
+  return `${formatDate(start)} → ${formatDate(plannedEnd)}`;
+}
+
+function getLoanStatusLabel(loan) {
+  if (!isLoanOpen(loan)) return `Rientrato ${formatDate(loan.returnedAt)}`;
+  const today = getLocalDateKey();
+  const start = getLoanStartDate(loan);
+  const end = getLoanPlannedEndDate(loan);
+  if (isValidYmd(start) && start > today) return 'Programmato';
+  if (isValidYmd(end) && end < today) return 'Periodo concluso';
+  return 'In corso';
+}
+
+function loanCoversDate(loan, dateStr) {
+  if (!isValidYmd(dateStr)) return false;
+  const start = getLoanStartDate(loan);
+  const end = getLoanEffectiveEndDate(loan);
+  return isValidYmd(start) && isValidYmd(end) && start <= dateStr && end >= dateStr;
 }
 
 function getLoanQtyOnDate(itemId, dateStr) {
-  if (!isValidYmd(dateStr)) return 0;
-  const target = new Date(dateStr);
-  return Object.values(loans || {}).reduce((sum, loan) => {
-    if (loan.itemId !== itemId) return sum;
-    const start = new Date(loan.date || loan.createdDate || '');
-    if (Number.isNaN(start.getTime()) || target < start) return sum;
-    if (!isLoanOpen(loan)) {
-      const end = new Date(loan.returnedAt || '');
-      if (!Number.isNaN(end.getTime()) && target > end) return sum;
-    }
-    return sum + (parseInt(loan.qty, 10) || 0);
-  }, 0);
+  return getLoanQtyForDateRange(itemId, dateStr, dateStr);
 }
 
 function getLoanQtyForDateRange(itemId, startDate, endDate) {
-  if (!isValidYmd(startDate) || !isValidYmd(endDate)) return getOpenLoanQty(itemId);
+  if (!isValidYmd(startDate)) return 0;
+  const rangeEnd = isValidYmd(endDate) ? endDate : '9999-12-31';
+  if (rangeEnd < startDate) return 0;
   return Object.values(loans || {}).reduce((sum, loan) => {
     if (loan.itemId !== itemId) return sum;
-    const loanStart = loan.date || loan.createdDate || '';
+    const loanStart = getLoanStartDate(loan);
     if (!isValidYmd(loanStart)) return sum;
-    const loanEnd = isLoanOpen(loan) ? '9999-12-31' : (loan.returnedAt || loan.date || loanStart);
+    const loanEnd = getLoanEffectiveEndDate(loan);
     if (!isValidYmd(loanEnd)) return sum;
-    if (loanStart <= endDate && loanEnd >= startDate) return sum + (parseInt(loan.qty, 10) || 0);
+    if (loanStart <= rangeEnd && loanEnd >= startDate) return sum + (parseInt(loan.qty, 10) || 0);
     return sum;
   }, 0);
+}
+
+function getOpenLoanQty(itemId) {
+  const today = getLocalDateKey();
+  return getLoanQtyForDateRange(itemId, today, today);
 }
 
 function getItemsBusy(itemId) {
@@ -4098,7 +4129,7 @@ function getLoanEntries() {
   return Object.values(loans || {}).sort((a, b) => {
     const openCmp = Number(isLoanOpen(b)) - Number(isLoanOpen(a));
     if (openCmp !== 0) return openCmp;
-    return String(b.date || '').localeCompare(String(a.date || ''));
+    return String(getLoanStartDate(b) || '').localeCompare(String(getLoanStartDate(a) || ''));
   });
 }
 
@@ -4120,15 +4151,23 @@ function loanMatchesSearch(loan) {
     item?.categoria,
     item?.brand,
     item?.modello,
+    getLoanRangeLabel(loan),
     loan.note
   ].some(v => String(v || '').toLowerCase().includes(q));
 }
 
 function initLoanForm() {
-  const dateEl = document.getElementById('loanDate');
-  if (dateEl && !dateEl.value) dateEl.value = getLocalDateKey();
+  const startEl = document.getElementById('loanStartDate');
+  if (startEl && !startEl.value) startEl.value = getLocalDateKey();
   populateLoanPersonSelect();
   populateLoanItemSelect();
+}
+
+function getLoanFormRange() {
+  const start = document.getElementById('loanStartDate')?.value || getLocalDateKey();
+  const endRaw = document.getElementById('loanEndDate')?.value || '';
+  const end = endRaw || '9999-12-31';
+  return { start, end, endRaw };
 }
 
 function populateLoanPersonSelect() {
@@ -4159,7 +4198,9 @@ function populateLoanItemSelect() {
     });
   sel.innerHTML = arr.length
     ? arr.map(item => {
-      const busy = getItemsBusy(item.id);
+      const range = getLoanFormRange();
+      const hasValidRange = isValidYmd(range.start) && isValidYmd(range.end) && range.end >= range.start;
+      const busy = hasValidRange ? getReservedQtyForServiceRange(item.id, null, range.start, range.end) : getItemsBusy(item.id);
       const avail = Math.max(0, (parseInt(item.qty, 10) || 0) - busy);
       return `<option value="${item.id}" ${avail <= 0 ? 'disabled' : ''}>${getCategoryIcon(item.categoria)} ${escHtml(getItemDisplayName(item))} (${avail}/${parseInt(item.qty, 10) || 0} disp.)</option>`;
     }).join('')
@@ -4188,17 +4229,18 @@ function saveLoan() {
   const memberId = document.getElementById('loanPerson')?.value || '';
   const itemId = document.getElementById('loanItem')?.value || '';
   const qty = Math.max(1, parseInt(document.getElementById('loanQty')?.value, 10) || 1);
-  const date = document.getElementById('loanDate')?.value || getLocalDateKey();
+  const { start: startDate, end, endRaw } = getLoanFormRange();
   const note = document.getElementById('loanNote')?.value.trim() || '';
   const member = members?.[memberId];
   const item = items?.[itemId];
 
   if (!member) { showToast('Seleziona un membro del team', 'danger'); return; }
   if (!item) { showToast('Seleziona un articolo', 'danger'); return; }
-  if (!date) { showToast('Inserisci la data', 'danger'); return; }
-  const available = Math.max(0, (parseInt(item.qty, 10) || 0) - getItemsBusy(itemId));
+  if (!isValidYmd(startDate)) { showToast('Inserisci la data iniziale', 'danger'); return; }
+  if (endRaw && (!isValidYmd(endRaw) || endRaw < startDate)) { showToast('La data finale deve essere uguale o successiva al Dal', 'danger'); return; }
+  const available = Math.max(0, (parseInt(item.qty, 10) || 0) - getReservedQtyForServiceRange(itemId, null, startDate, end));
   if (qty > available) {
-    showToast(`Disponibili solo ${available} pezzi`, 'danger');
+    showToast(`Disponibili solo ${available} pezzi nel periodo scelto`, 'danger');
     return;
   }
 
@@ -4213,7 +4255,9 @@ function saveLoan() {
     itemId,
     itemName: getItemDisplayName(item),
     qty,
-    date,
+    date: startDate,
+    startDate,
+    endDate: endRaw,
     note,
     status: 'open',
     updatedAt: now,
@@ -4280,13 +4324,18 @@ function renderLoans() {
   if (!container) return;
   const all = getLoanEntries();
   const open = all.filter(isLoanOpen);
-  const pieces = open.reduce((sum, loan) => sum + (parseInt(loan.qty, 10) || 0), 0);
+  const today = getLocalDateKey();
+  const unavailableToday = open
+    .filter(loan => loanCoversDate(loan, today))
+    .reduce((sum, loan) => sum + (parseInt(loan.qty, 10) || 0), 0);
+  const scheduled = open.filter(loan => isValidYmd(getLoanStartDate(loan)) && getLoanStartDate(loan) > today).length;
   const filtered = all.filter(loanMatchesSearch);
 
   container.innerHTML = `
     <div class="finance-summary">
       ${renderFinanceSummaryCard('Prestiti aperti', open.length, 'var(--accent)', false)}
-      ${renderFinanceSummaryCard('Pezzi fuori', pieces, 'var(--warning)', false)}
+      ${renderFinanceSummaryCard('Non disponibili oggi', unavailableToday, unavailableToday ? 'var(--warning)' : 'var(--text)', false)}
+      ${renderFinanceSummaryCard('Programmati', scheduled, scheduled ? 'var(--accent2)' : 'var(--text)', false)}
       ${renderFinanceSummaryCard('Storico totale', all.length, 'var(--text)', false)}
     </div>
     ${filtered.length === 0
@@ -4302,8 +4351,8 @@ function renderLoanRow(loan) {
   const qty = parseInt(loan.qty, 10) || 1;
   return `<div class="loan-row ${open ? '' : 'returned'}">
     <div>
-      <div class="loan-date">${formatDate(loan.date)}</div>
-      <div class="loan-date-sub">${open ? 'Aperto' : `Rientrato ${formatDate(loan.returnedAt)}`}</div>
+      <div class="loan-date">${getLoanRangeLabel(loan)}</div>
+      <div class="loan-date-sub">${getLoanStatusLabel(loan)}</div>
     </div>
     <div>
       <div class="loan-title">${escHtml(getItemDisplayName(item || { nome: loan.itemName || 'Articolo rimosso' }))} <span style="color:var(--accent);font-family:'IBM Plex Mono',monospace;">x${qty}</span></div>
@@ -4315,7 +4364,7 @@ function renderLoanRow(loan) {
     </div>
     <div>
       <div class="loan-person">${escHtml(getLoanPersonName(loan))}</div>
-      <div class="loan-date-sub">${open ? 'lo ha ora' : 'chiuso'}</div>
+      <div class="loan-date-sub">${open ? (getLoanStatusLabel(loan) === 'Programmato' ? 'prenotato' : 'aperto') : 'chiuso'}</div>
     </div>
     <div class="loan-actions">
       ${open ? `<button class="btn btn-primary btn-sm" onclick="returnLoan('${loan.id}')">Riconsegnato</button>` : ''}
