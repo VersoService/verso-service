@@ -1305,7 +1305,8 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
           <label>Nota</label>
           <input type="text" id="loanNote" placeholder="opzionale" autocomplete="off" onkeydown="handleLoanQuickKey(event)">
         </div>
-        <button class="btn btn-primary" type="button" onclick="saveLoan()">Registra</button>
+        <button class="btn btn-primary" id="loanSaveBtn" type="button" onclick="saveLoan()">Registra</button>
+        <button class="btn btn-ghost" id="loanCancelEditBtn" type="button" onclick="cancelEditLoan()" style="display:none;">Annulla modifica</button>
         <div class="loan-quick-field" style="grid-column:1 / -1;">
           <label>Articolo</label>
           <select id="loanItem"></select>
@@ -1639,6 +1640,7 @@ let truckSearch = '';
 let loanSearch = '';
 let loanFilter = 'open';
 let loanItemSearch = '';
+let editLoanId = null;
 let currentUser = null;
 let firebaseUnsubscribers = [];
 let firebaseDataLoaded = { inventario: false, services: false, team: false, categories: false, finance: false, truck: false, loans: false };
@@ -3116,11 +3118,12 @@ function getLoanQtyOnDate(itemId, dateStr) {
   return getLoanQtyForDateRange(itemId, dateStr, dateStr);
 }
 
-function getLoanQtyForDateRange(itemId, startDate, endDate) {
+function getLoanQtyForDateRange(itemId, startDate, endDate, excludeLoanId = '') {
   if (!isValidYmd(startDate)) return 0;
   const rangeEnd = isValidYmd(endDate) ? endDate : '9999-12-31';
   if (rangeEnd < startDate) return 0;
   return Object.values(loans || {}).reduce((sum, loan) => {
+    if (excludeLoanId && loan.id === excludeLoanId) return sum;
     if (loan.itemId !== itemId) return sum;
     const loanStart = getLoanStartDate(loan);
     if (!isValidYmd(loanStart)) return sum;
@@ -3278,6 +3281,11 @@ function quickLoanItem(itemId) {
     return;
   }
   switchPage('prestiti');
+  if (editLoanId) {
+    editLoanId = null;
+    clearLoanForm();
+    updateLoanFormMode();
+  }
   loanItemSearch = '';
   const search = document.getElementById('loanItemSearch');
   if (search) search.value = '';
@@ -3330,9 +3338,9 @@ function getServiceMaterialStats(entries) {
   };
 }
 
-function getReservedQtyForServiceRange(itemId, serviceId, startDate, endDate) {
+function getReservedQtyForServiceRange(itemId, serviceId, startDate, endDate, excludeLoanId = '') {
   const hasRange = isValidYmd(startDate) && isValidYmd(endDate) && endDate >= startDate;
-  let busy = hasRange ? getLoanQtyForDateRange(itemId, startDate, endDate) : getOpenLoanQty(itemId);
+  let busy = hasRange ? getLoanQtyForDateRange(itemId, startDate, endDate, excludeLoanId) : getOpenLoanQty(itemId);
   Object.values(services || {}).forEach(svc => {
     if (!svc || svc.id === serviceId || svc.stato === 'returned' || !svc.items?.[itemId]) return;
     const svcOut = svc.dataOut || '';
@@ -4161,6 +4169,7 @@ function initLoanForm() {
   if (startEl && !startEl.value) startEl.value = getLocalDateKey();
   populateLoanPersonSelect();
   populateLoanItemSelect();
+  updateLoanFormMode();
 }
 
 function getLoanFormRange() {
@@ -4168,6 +4177,13 @@ function getLoanFormRange() {
   const endRaw = document.getElementById('loanEndDate')?.value || '';
   const end = endRaw || '9999-12-31';
   return { start, end, endRaw };
+}
+
+function updateLoanFormMode() {
+  const saveBtn = document.getElementById('loanSaveBtn');
+  const cancelBtn = document.getElementById('loanCancelEditBtn');
+  if (saveBtn) saveBtn.textContent = editLoanId ? 'Aggiorna' : 'Registra';
+  if (cancelBtn) cancelBtn.style.display = editLoanId ? '' : 'none';
 }
 
 function populateLoanPersonSelect() {
@@ -4200,7 +4216,7 @@ function populateLoanItemSelect() {
     ? arr.map(item => {
       const range = getLoanFormRange();
       const hasValidRange = isValidYmd(range.start) && isValidYmd(range.end) && range.end >= range.start;
-      const busy = hasValidRange ? getReservedQtyForServiceRange(item.id, null, range.start, range.end) : getItemsBusy(item.id);
+      const busy = hasValidRange ? getReservedQtyForServiceRange(item.id, null, range.start, range.end, editLoanId) : getItemsBusy(item.id);
       const avail = Math.max(0, (parseInt(item.qty, 10) || 0) - busy);
       return `<option value="${item.id}" ${avail <= 0 ? 'disabled' : ''}>${getCategoryIcon(item.categoria)} ${escHtml(getItemDisplayName(item))} (${avail}/${parseInt(item.qty, 10) || 0} disp.)</option>`;
     }).join('')
@@ -4225,6 +4241,46 @@ function handleLoanQuickKey(event) {
   saveLoan();
 }
 
+function clearLoanForm(keepDates = true) {
+  document.getElementById('loanNote').value = '';
+  document.getElementById('loanQty').value = 1;
+  loanItemSearch = '';
+  const search = document.getElementById('loanItemSearch');
+  if (search) search.value = '';
+  if (!keepDates) {
+    document.getElementById('loanStartDate').value = getLocalDateKey();
+    document.getElementById('loanEndDate').value = '';
+  }
+}
+
+function cancelEditLoan() {
+  editLoanId = null;
+  clearLoanForm(false);
+  populateLoanItemSelect();
+  updateLoanFormMode();
+}
+
+function editLoan(id) {
+  const loan = loans?.[id];
+  if (!loan) return;
+  editLoanId = id;
+  loanItemSearch = '';
+  const search = document.getElementById('loanItemSearch');
+  if (search) search.value = '';
+  populateLoanPersonSelect();
+  document.getElementById('loanPerson').value = loan.memberId || '';
+  document.getElementById('loanQty').value = Math.max(1, parseInt(loan.qty, 10) || 1);
+  document.getElementById('loanStartDate').value = getLoanStartDate(loan) || getLocalDateKey();
+  document.getElementById('loanEndDate').value = getLoanPlannedEndDate(loan) || '';
+  document.getElementById('loanNote').value = loan.note || '';
+  populateLoanItemSelect();
+  const itemSelect = document.getElementById('loanItem');
+  if (itemSelect && [...itemSelect.options].some(opt => opt.value === loan.itemId)) itemSelect.value = loan.itemId;
+  updateLoanFormMode();
+  document.getElementById('loanPerson')?.focus();
+  window.scrollTo({ top: document.getElementById('page-prestiti')?.offsetTop || 0, behavior: 'smooth' });
+}
+
 function saveLoan() {
   const memberId = document.getElementById('loanPerson')?.value || '';
   const itemId = document.getElementById('loanItem')?.value || '';
@@ -4238,17 +4294,21 @@ function saveLoan() {
   if (!item) { showToast('Seleziona un articolo', 'danger'); return; }
   if (!isValidYmd(startDate)) { showToast('Inserisci la data iniziale', 'danger'); return; }
   if (endRaw && (!isValidYmd(endRaw) || endRaw < startDate)) { showToast('La data finale deve essere uguale o successiva al Dal', 'danger'); return; }
-  const available = Math.max(0, (parseInt(item.qty, 10) || 0) - getReservedQtyForServiceRange(itemId, null, startDate, end));
-  if (qty > available) {
-    showToast(`Disponibili solo ${available} pezzi nel periodo scelto`, 'danger');
-    return;
+  const existing = editLoanId ? (loans?.[editLoanId] || {}) : {};
+  if (!editLoanId || isLoanOpen(existing)) {
+    const available = Math.max(0, (parseInt(item.qty, 10) || 0) - getReservedQtyForServiceRange(itemId, null, startDate, end, editLoanId));
+    if (qty > available) {
+      showToast(`Disponibili solo ${available} pezzi nel periodo scelto`, 'danger');
+      return;
+    }
   }
 
   const fb = getFbOrWarn();
   if (!fb) return;
-  const id = uid();
+  const id = editLoanId || uid();
   const now = Date.now();
   const obj = {
+    ...existing,
     id,
     memberId,
     person: member.nome || '',
@@ -4259,18 +4319,20 @@ function saveLoan() {
     startDate,
     endDate: endRaw,
     note,
-    status: 'open',
+    status: existing.status || 'open',
+    returnedAt: existing.returnedAt || null,
     updatedAt: now,
-    createdAt: now
+    createdAt: existing.createdAt || now
   };
   setSyncing(true);
   const { db, ref, set } = fb;
   set(ref(db, `loans/${id}`), obj)
     .then(() => {
-      showToast('Prestito registrato');
-      document.getElementById('loanNote').value = '';
-      document.getElementById('loanQty').value = 1;
+      showToast(editLoanId ? 'Prestito aggiornato' : 'Prestito registrato');
+      editLoanId = null;
+      clearLoanForm();
       populateLoanItemSelect();
+      updateLoanFormMode();
     })
     .catch(err => {
       setSyncing(false);
@@ -4294,7 +4356,10 @@ function returnLoan(id) {
     returnedAt: getLocalDateKey(),
     updatedAt: Date.now()
   })
-    .then(() => showToast('Materiale riconsegnato'))
+    .then(() => {
+      if (editLoanId === id) cancelEditLoan();
+      showToast('Materiale riconsegnato');
+    })
     .catch(err => {
       setSyncing(false);
       console.error('returnLoan failed:', err);
@@ -4310,7 +4375,10 @@ function deleteLoan(id) {
   setSyncing(true);
   const { db, ref, remove } = fb;
   remove(ref(db, `loans/${id}`))
-    .then(() => showToast('Prestito eliminato'))
+    .then(() => {
+      if (editLoanId === id) cancelEditLoan();
+      showToast('Prestito eliminato');
+    })
     .catch(err => {
       setSyncing(false);
       console.error('deleteLoan failed:', err);
@@ -4367,6 +4435,9 @@ function renderLoanRow(loan) {
       <div class="loan-date-sub">${open ? (getLoanStatusLabel(loan) === 'Programmato' ? 'prenotato' : 'aperto') : 'chiuso'}</div>
     </div>
     <div class="loan-actions">
+      <button class="icon-btn" onclick="editLoan('${loan.id}')" title="Modifica">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      </button>
       ${open ? `<button class="btn btn-primary btn-sm" onclick="returnLoan('${loan.id}')">Riconsegnato</button>` : ''}
       <button class="icon-btn del" onclick="deleteLoan('${loan.id}')" title="Elimina">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
