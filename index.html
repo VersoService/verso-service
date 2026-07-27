@@ -583,14 +583,35 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
 .loan-quick-field label { font-family: 'IBM Plex Mono', monospace; font-size: 0.6rem; color: var(--text-dim); letter-spacing: 0.12em; text-transform: uppercase; }
 .loan-quick-add input, .loan-quick-add select { background: var(--surface2); border: 1px solid var(--border); border-radius: 3px; padding: 0.62rem 0.75rem; color: var(--text); font-family: 'IBM Plex Sans', sans-serif; font-size: 0.86rem; outline: none; min-width: 0; width: 100%; }
 .loan-quick-add input:focus, .loan-quick-add select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(240,165,0,0.1); }
-.loan-row { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 0.9rem 1rem; display: grid; grid-template-columns: 190px minmax(0, 1fr) minmax(150px, 0.7fr) auto; align-items: center; gap: 0.9rem; }
-.loan-row.returned { opacity: 0.72; }
-.loan-date { font-family: 'Bebas Neue', sans-serif; font-size: 1.28rem; letter-spacing: 0.08em; color: var(--accent); line-height: 1; }
-.loan-date-sub { font-family: 'IBM Plex Mono', monospace; font-size: 0.62rem; color: var(--text-dim); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 0.18rem; }
-.loan-title { font-size: 0.94rem; font-weight: 800; color: var(--text); line-height: 1.25; }
-.loan-meta { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.35rem; }
-.loan-person { font-size: 0.9rem; font-weight: 700; color: var(--text); }
-.loan-note { font-family: 'IBM Plex Mono', monospace; font-size: 0.66rem; color: var(--text-dim); margin-top: 0.25rem; line-height: 1.35; }
+.loan-overview { display: flex; align-items: center; gap: 0.55rem 1rem; flex-wrap: wrap; padding: 0.65rem 0.8rem; border: 1px solid var(--border); border-radius: 5px; background: rgba(255,255,255,0.015); font-family: 'IBM Plex Mono', monospace; font-size: 0.66rem; color: var(--text-dim); }
+.loan-overview strong { color: var(--text); font-size: 0.74rem; }
+.loan-overview-hint { margin-left: auto; color: var(--text-faint); }
+.loan-groups { display: flex; flex-direction: column; gap: 0.5rem; }
+.loan-group { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; transition: border-color 0.15s; }
+.loan-group:hover { border-color: var(--border-bright); }
+.loan-group-header { width: 100%; border: none; background: transparent; color: inherit; padding: 0.75rem 0.85rem; display: grid; grid-template-columns: 130px minmax(160px, 0.72fr) minmax(220px, 1.4fr) auto; gap: 0.75rem; align-items: center; text-align: left; cursor: pointer; }
+.loan-group-header:hover { background: var(--surface2); }
+.loan-group-date { font-family: 'IBM Plex Mono', monospace; font-size: 0.76rem; font-weight: 700; color: var(--accent); letter-spacing: 0.03em; }
+.loan-group-status { font-family: 'IBM Plex Mono', monospace; font-size: 0.58rem; color: var(--text-faint); margin-top: 0.18rem; text-transform: uppercase; letter-spacing: 0.08em; }
+.loan-group-person { font-size: 0.9rem; font-weight: 700; color: var(--text); line-height: 1.25; }
+.loan-group-count { font-family: 'IBM Plex Mono', monospace; font-size: 0.62rem; color: var(--text-dim); margin-top: 0.18rem; }
+.loan-group-preview { font-size: 0.76rem; color: var(--text-dim); line-height: 1.4; overflow-wrap: anywhere; }
+.loan-group-date, .loan-group-status, .loan-group-person, .loan-group-count, .loan-group-preview { display: block; }
+.loan-group-preview strong { color: var(--text); font-weight: 600; }
+.loan-group-toggle { width: 28px; height: 28px; border: 1px solid var(--border); border-radius: 4px; background: var(--surface2); color: var(--text-dim); display: flex; align-items: center; justify-content: center; }
+.loan-group-toggle svg { transition: transform 0.18s; }
+.loan-group.expanded .loan-group-toggle svg { transform: rotate(180deg); }
+.loan-group-body { border-top: 1px solid var(--border); }
+.loan-group.collapsed .loan-group-body { display: none; }
+.loan-item-row { display: grid; grid-template-columns: minmax(220px, 1.25fr) 60px 130px minmax(160px, 0.9fr) auto; gap: 0.7rem; align-items: center; padding: 0.65rem 0.85rem; background: rgba(255,255,255,0.01); }
+.loan-item-row + .loan-item-row { border-top: 1px solid var(--border); }
+.loan-item-main { min-width: 0; }
+.loan-item-name { font-size: 0.84rem; font-weight: 700; color: var(--text); line-height: 1.3; overflow-wrap: anywhere; }
+.loan-item-category { font-family: 'IBM Plex Mono', monospace; font-size: 0.58rem; color: var(--text-faint); margin-top: 0.2rem; }
+.loan-item-qty { font-family: 'IBM Plex Mono', monospace; font-size: 0.78rem; font-weight: 700; color: var(--accent); }
+.loan-item-return-label, .loan-item-note-label { display: block; font-family: 'IBM Plex Mono', monospace; font-size: 0.54rem; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.15rem; }
+.loan-item-return, .loan-item-note { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--text-dim); line-height: 1.35; overflow-wrap: anywhere; }
+.loan-item-note.empty { color: var(--text-faint); }
 .loan-actions { display: flex; gap: 0.35rem; justify-content: flex-end; flex-wrap: wrap; }
 .loan-section-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.66rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-dim); margin-top: 0.35rem; }
 
@@ -688,7 +709,15 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
   .loan-layout { padding: 0.8rem 0.8rem calc(6rem + env(safe-area-inset-bottom)); }
   .loan-quick-add { grid-template-columns: 1fr; }
   .loan-quick-add .btn { justify-content: center; min-height: 42px; }
-  .loan-row { grid-template-columns: 1fr; align-items: stretch; gap: 0.65rem; }
+  .loan-overview { align-items: flex-start; }
+  .loan-overview-hint { width: 100%; margin-left: 0; }
+  .loan-group-header { grid-template-columns: 1fr auto; gap: 0.45rem 0.75rem; align-items: start; }
+  .loan-group-header > span:nth-child(2), .loan-group-preview { grid-column: 1; }
+  .loan-group-toggle { grid-column: 2; grid-row: 1 / span 3; align-self: center; }
+  .loan-item-row { grid-template-columns: minmax(0, 1fr) auto; gap: 0.55rem 0.75rem; align-items: start; }
+  .loan-item-main { grid-column: 1; }
+  .loan-item-qty { grid-column: 2; grid-row: 1; }
+  .loan-item-return, .loan-item-note { grid-column: 1 / -1; }
   .loan-actions { justify-content: flex-start; }
   .service-picker-controls { grid-template-columns: 1fr; }
   .service-picker-row input { width: 82px; }
@@ -1265,19 +1294,6 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
         <input type="text" id="searchLoans" class="search-input" placeholder="Cerca persona, articolo o nota..." autocomplete="off">
       </div>
-      <div class="filter-tabs finance-filter-tabs" id="filterTabsLoans">
-        <button class="tab active" data-filter="open" onclick="setLoanFilter('open')">Aperti</button>
-        <button class="tab" data-filter="returned" onclick="setLoanFilter('returned')">Riconsegnati</button>
-        <button class="tab" data-filter="all" onclick="setLoanFilter('all')">Tutti</button>
-      </div>
-    </div>
-    <div class="info-banner" id="infoBannerLoans">
-      <div class="info-banner-icon">🙋</div>
-      <div class="info-banner-text">
-        <strong>Prestiti</strong>
-        Segna quando un membro del team prende materiale per sé o lo tiene fuori magazzino. I pezzi risultano non disponibili nel periodo indicato; se non sai il rientro, lascia vuoto <b>Al</b> e chiudi con <b>Riconsegnato</b>.
-      </div>
-      <button class="info-banner-close" onclick="closeBanner('infoBannerLoans')">✕</button>
     </div>
     <div class="loan-layout">
       <div class="loan-quick-add">
@@ -1295,11 +1311,11 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
         </div>
         <div class="loan-quick-field">
           <label>Dal</label>
-          <input type="date" id="loanStartDate" onchange="populateLoanItemSelect()">
+          <input type="date" id="loanStartDate" onchange="syncLoanEndDate()">
         </div>
         <div class="loan-quick-field">
-          <label>Al</label>
-          <input type="date" id="loanEndDate" onchange="populateLoanItemSelect()">
+          <label>Rientro</label>
+          <input type="date" id="loanEndDate" required onchange="populateLoanItemSelect()">
         </div>
         <div class="loan-quick-field">
           <label>Nota</label>
@@ -1638,7 +1654,6 @@ let financeSearch = '';
 let financeMemberFilter = 'all';
 let truckSearch = '';
 let loanSearch = '';
-let loanFilter = 'open';
 let loanItemSearch = '';
 let editLoanId = null;
 let currentUser = null;
@@ -1653,6 +1668,7 @@ let editTruckId = null;
 let backupReminderShown = false;
 let expandedServiceCards = new Set();
 let expandedQuoteCards = new Set();
+let expandedLoanGroups = new Set();
 let svcSelectedItems = []; // [{id, qty}] while editing
 let servicePickerCategory = 'all';
 let servicePickerSearch = '';
@@ -1660,6 +1676,7 @@ let itemSuggestedLinks = []; // [{id, qty}] while editing item
 let autoStatusSyncRunning = false;
 let autoStatusTimer = null;
 let autoStatusLastRunDay = '';
+let autoLoanCleanupRunning = false;
 let financeMonth = getLocalDateKey().slice(0, 7);
 let teamReportMonth = getLocalDateKey().slice(0, 7);
 const PAGE_LABELS = {
@@ -1829,6 +1846,7 @@ function startFirebaseDataListeners() {
     loans = snap.val() || {};
     markFirebaseDataLoaded('loans');
     renderAll();
+    autoDeleteExpiredLoans();
   }, () => { setSyncing(false); showToast('Errore lettura prestiti', 'danger'); }));
 }
 
@@ -2130,6 +2148,36 @@ function autoSyncServiceStatuses() {
     })
     .finally(() => {
       autoStatusSyncRunning = false;
+    });
+}
+
+function autoDeleteExpiredLoans() {
+  if (autoLoanCleanupRunning || !checkSession()) return;
+  const fb = window._fb;
+  if (!fb?.db) return;
+
+  const today = getLocalDateKey();
+  const expiredIds = Object.entries(loans || {})
+    .filter(([, loan]) => isLoanExpired(loan, today))
+    .map(([key]) => key);
+
+  if (expiredIds.length === 0) return;
+
+  autoLoanCleanupRunning = true;
+  setSyncing(true);
+  const updates = {};
+  expiredIds.forEach(id => { updates[id] = null; });
+
+  fb.update(fb.ref(fb.db, 'loans'), updates)
+    .then(() => {
+      showToast(`${expiredIds.length} ${expiredIds.length === 1 ? 'prestito scaduto eliminato' : 'prestiti scaduti eliminati'} automaticamente`);
+    })
+    .catch(err => {
+      setSyncing(false);
+      console.error('autoDeleteExpiredLoans failed:', err);
+    })
+    .finally(() => {
+      autoLoanCleanupRunning = false;
     });
 }
 
@@ -2998,7 +3046,7 @@ function renderDashboard() {
 
   const eventsToday = getDashboardEventsToday();
   const activeEvents = Object.values(services || {}).filter(svc => svc.stato === 'active');
-  const openLoans = Object.values(loans || {}).filter(isLoanOpen);
+  const openLoans = Object.values(loans || {}).filter(isLoanActive);
   const availabilityIssues = getServicesWithAvailabilityIssues();
   const recentExpenses = getFinanceArray().slice(0, 3);
   const truckToday = Object.values(truckLog || {}).filter(entry => entry.date === getLocalDateKey());
@@ -3084,15 +3132,28 @@ function getLoanPlannedEndDate(loan) {
   return loan?.endDate || loan?.dateEnd || loan?.toDate || '';
 }
 
+function getLoanExpiryDate(loan) {
+  if (!loan) return '';
+  if (!isLoanOpen(loan)) return loan.returnedAt || getLoanPlannedEndDate(loan) || getLoanStartDate(loan);
+  return getLoanPlannedEndDate(loan) || getLoanStartDate(loan);
+}
+
+function isLoanExpired(loan, today = getLocalDateKey()) {
+  const expiry = getLoanExpiryDate(loan);
+  return isValidYmd(expiry) && expiry < today;
+}
+
+function isLoanActive(loan, today = getLocalDateKey()) {
+  return isLoanOpen(loan) && !isLoanExpired(loan, today);
+}
+
 function getLoanEffectiveEndDate(loan) {
-  const start = getLoanStartDate(loan);
-  if (!isLoanOpen(loan)) return loan?.returnedAt || getLoanPlannedEndDate(loan) || start;
-  return getLoanPlannedEndDate(loan) || '9999-12-31';
+  return getLoanExpiryDate(loan);
 }
 
 function getLoanRangeLabel(loan) {
   const start = getLoanStartDate(loan);
-  const plannedEnd = getLoanPlannedEndDate(loan);
+  const plannedEnd = getLoanPlannedEndDate(loan) || start;
   if (!plannedEnd || plannedEnd === start) return formatDate(start);
   return `${formatDate(start)} → ${formatDate(plannedEnd)}`;
 }
@@ -3108,7 +3169,7 @@ function getLoanStatusLabel(loan) {
 }
 
 function loanCoversDate(loan, dateStr) {
-  if (!isValidYmd(dateStr)) return false;
+  if (!isValidYmd(dateStr) || !isLoanActive(loan, dateStr)) return false;
   const start = getLoanStartDate(loan);
   const end = getLoanEffectiveEndDate(loan);
   return isValidYmd(start) && isValidYmd(end) && start <= dateStr && end >= dateStr;
@@ -3125,6 +3186,7 @@ function getLoanQtyForDateRange(itemId, startDate, endDate, excludeLoanId = '') 
   return Object.values(loans || {}).reduce((sum, loan) => {
     if (excludeLoanId && loan.id === excludeLoanId) return sum;
     if (loan.itemId !== itemId) return sum;
+    if (!isLoanOpen(loan) || isLoanExpired(loan)) return sum;
     const loanStart = getLoanStartDate(loan);
     if (!isValidYmd(loanStart)) return sum;
     const loanEnd = getLoanEffectiveEndDate(loan);
@@ -4134,11 +4196,16 @@ function deleteTruckEntry(id) {
 
 // ==================== PRESTITI ====================
 function getLoanEntries() {
-  return Object.values(loans || {}).sort((a, b) => {
-    const openCmp = Number(isLoanOpen(b)) - Number(isLoanOpen(a));
-    if (openCmp !== 0) return openCmp;
-    return String(getLoanStartDate(b) || '').localeCompare(String(getLoanStartDate(a) || ''));
-  });
+  const today = getLocalDateKey();
+  return Object.values(loans || {})
+    .filter(loan => isLoanActive(loan, today))
+    .sort((a, b) => {
+      const aStarted = getLoanStartDate(a) <= today;
+      const bStarted = getLoanStartDate(b) <= today;
+      if (aStarted !== bStarted) return aStarted ? -1 : 1;
+      if (aStarted) return String(getLoanExpiryDate(a)).localeCompare(String(getLoanExpiryDate(b)));
+      return String(getLoanStartDate(a)).localeCompare(String(getLoanStartDate(b)));
+    });
 }
 
 function getLoanPersonName(loan) {
@@ -4149,8 +4216,6 @@ function getLoanPersonName(loan) {
 
 function loanMatchesSearch(loan) {
   const q = loanSearch.trim().toLowerCase();
-  if (loanFilter === 'open' && !isLoanOpen(loan)) return false;
-  if (loanFilter === 'returned' && isLoanOpen(loan)) return false;
   if (!q) return true;
   const item = items?.[loan.itemId];
   return [
@@ -4166,7 +4231,9 @@ function loanMatchesSearch(loan) {
 
 function initLoanForm() {
   const startEl = document.getElementById('loanStartDate');
+  const endEl = document.getElementById('loanEndDate');
   if (startEl && !startEl.value) startEl.value = getLocalDateKey();
+  if (endEl && !endEl.value) endEl.value = startEl?.value || getLocalDateKey();
   populateLoanPersonSelect();
   populateLoanItemSelect();
   updateLoanFormMode();
@@ -4174,9 +4241,16 @@ function initLoanForm() {
 
 function getLoanFormRange() {
   const start = document.getElementById('loanStartDate')?.value || getLocalDateKey();
-  const endRaw = document.getElementById('loanEndDate')?.value || '';
-  const end = endRaw || '9999-12-31';
+  const endRaw = document.getElementById('loanEndDate')?.value || start;
+  const end = endRaw;
   return { start, end, endRaw };
+}
+
+function syncLoanEndDate() {
+  const startEl = document.getElementById('loanStartDate');
+  const endEl = document.getElementById('loanEndDate');
+  if (startEl && endEl && (!endEl.value || endEl.value < startEl.value)) endEl.value = startEl.value;
+  populateLoanItemSelect();
 }
 
 function updateLoanFormMode() {
@@ -4229,12 +4303,6 @@ function setLoanItemSearch(value) {
   populateLoanItemSelect();
 }
 
-function setLoanFilter(filter) {
-  loanFilter = filter || 'open';
-  document.querySelectorAll('#filterTabsLoans .tab').forEach(t => t.classList.toggle('active', t.dataset.filter === loanFilter));
-  renderLoans();
-}
-
 function handleLoanQuickKey(event) {
   if (event.key !== 'Enter') return;
   event.preventDefault();
@@ -4249,7 +4317,7 @@ function clearLoanForm(keepDates = true) {
   if (search) search.value = '';
   if (!keepDates) {
     document.getElementById('loanStartDate').value = getLocalDateKey();
-    document.getElementById('loanEndDate').value = '';
+    document.getElementById('loanEndDate').value = getLocalDateKey();
   }
 }
 
@@ -4271,7 +4339,7 @@ function editLoan(id) {
   document.getElementById('loanPerson').value = loan.memberId || '';
   document.getElementById('loanQty').value = Math.max(1, parseInt(loan.qty, 10) || 1);
   document.getElementById('loanStartDate').value = getLoanStartDate(loan) || getLocalDateKey();
-  document.getElementById('loanEndDate').value = getLoanPlannedEndDate(loan) || '';
+  document.getElementById('loanEndDate').value = getLoanPlannedEndDate(loan) || getLoanStartDate(loan) || getLocalDateKey();
   document.getElementById('loanNote').value = loan.note || '';
   populateLoanItemSelect();
   const itemSelect = document.getElementById('loanItem');
@@ -4293,9 +4361,9 @@ function saveLoan() {
   if (!member) { showToast('Seleziona un membro del team', 'danger'); return; }
   if (!item) { showToast('Seleziona un articolo', 'danger'); return; }
   if (!isValidYmd(startDate)) { showToast('Inserisci la data iniziale', 'danger'); return; }
-  if (endRaw && (!isValidYmd(endRaw) || endRaw < startDate)) { showToast('La data finale deve essere uguale o successiva al Dal', 'danger'); return; }
+  if (!isValidYmd(endRaw) || endRaw < startDate) { showToast('Il rientro deve essere uguale o successivo al Dal', 'danger'); return; }
   const existing = editLoanId ? (loans?.[editLoanId] || {}) : {};
-  if (!editLoanId || isLoanOpen(existing)) {
+  if (!editLoanId || isLoanActive(existing)) {
     const available = Math.max(0, (parseInt(item.qty, 10) || 0) - getReservedQtyForServiceRange(itemId, null, startDate, end, editLoanId));
     if (qty > available) {
       showToast(`Disponibili solo ${available} pezzi nel periodo scelto`, 'danger');
@@ -4319,8 +4387,8 @@ function saveLoan() {
     startDate,
     endDate: endRaw,
     note,
-    status: existing.status || 'open',
-    returnedAt: existing.returnedAt || null,
+    status: 'open',
+    returnedAt: null,
     updatedAt: now,
     createdAt: existing.createdAt || now
   };
@@ -4338,32 +4406,6 @@ function saveLoan() {
       setSyncing(false);
       console.error('saveLoan failed:', err);
       showToast('Errore prestito: ' + getErrMsg(err), 'danger');
-    });
-}
-
-function returnLoan(id) {
-  const loan = loans?.[id];
-  if (!loan || !isLoanOpen(loan)) return;
-  const item = items?.[loan.itemId];
-  const ok = confirm(`Segnare come riconsegnato?\n\n${getLoanPersonName(loan)} - ${getItemDisplayName(item)} x${loan.qty || 1}`);
-  if (!ok) return;
-  const fb = getFbOrWarn();
-  if (!fb) return;
-  setSyncing(true);
-  const { db, ref, update } = fb;
-  update(ref(db, `loans/${id}`), {
-    status: 'returned',
-    returnedAt: getLocalDateKey(),
-    updatedAt: Date.now()
-  })
-    .then(() => {
-      if (editLoanId === id) cancelEditLoan();
-      showToast('Materiale riconsegnato');
-    })
-    .catch(err => {
-      setSyncing(false);
-      console.error('returnLoan failed:', err);
-      showToast('Errore riconsegna: ' + getErrMsg(err), 'danger');
     });
 }
 
@@ -4386,64 +4428,131 @@ function deleteLoan(id) {
     });
 }
 
+function getLoanGroupKey(loan) {
+  const identity = loan?.memberId || getLoanPersonName(loan).toLowerCase();
+  return `${getLoanStartDate(loan)}__${encodeURIComponent(identity).replace(/'/g, '%27')}`;
+}
+
+function groupLoanEntries(entries) {
+  const groups = new Map();
+  entries.forEach(loan => {
+    const key = getLoanGroupKey(loan);
+    if (!groups.has(key)) {
+      groups.set(key, {
+        key,
+        date: getLoanStartDate(loan),
+        person: getLoanPersonName(loan),
+        loans: []
+      });
+    }
+    groups.get(key).loans.push(loan);
+  });
+  return [...groups.values()];
+}
+
+function getLoanGroupReturnLabel(group) {
+  const endDates = [...new Set(group.loans.map(getLoanExpiryDate).filter(isValidYmd))];
+  if (endDates.length === 0) return 'Rientro non indicato';
+  if (endDates.length === 1) return `Rientro ${formatDate(endDates[0])}`;
+  return `${endDates.length} date di rientro`;
+}
+
+function getLoanGroupPreview(group) {
+  const labels = group.loans.map(loan => {
+    const item = items?.[loan.itemId];
+    const name = getItemDisplayName(item || { nome: loan.itemName || 'Articolo rimosso' });
+    return `${name} ×${parseInt(loan.qty, 10) || 1}`;
+  });
+  const visible = labels.slice(0, 3).map(escHtml);
+  if (labels.length > 3) visible.push(`<strong>+${labels.length - 3} altr${labels.length - 3 === 1 ? 'o' : 'i'}</strong>`);
+  return visible.join(' · ');
+}
+
 function renderLoans() {
   initLoanForm();
   const container = document.getElementById('mainLoans');
   if (!container) return;
   const all = getLoanEntries();
-  const open = all.filter(isLoanOpen);
   const today = getLocalDateKey();
-  const unavailableToday = open
+  const unavailableToday = all
     .filter(loan => loanCoversDate(loan, today))
     .reduce((sum, loan) => sum + (parseInt(loan.qty, 10) || 0), 0);
-  const scheduled = open.filter(loan => isValidYmd(getLoanStartDate(loan)) && getLoanStartDate(loan) > today).length;
   const filtered = all.filter(loanMatchesSearch);
+  const groups = groupLoanEntries(filtered);
+  const totalPieces = filtered.reduce((sum, loan) => sum + (parseInt(loan.qty, 10) || 0), 0);
 
   container.innerHTML = `
-    <div class="finance-summary">
-      ${renderFinanceSummaryCard('Prestiti aperti', open.length, 'var(--accent)', false)}
-      ${renderFinanceSummaryCard('Non disponibili oggi', unavailableToday, unavailableToday ? 'var(--warning)' : 'var(--text)', false)}
-      ${renderFinanceSummaryCard('Programmati', scheduled, scheduled ? 'var(--accent2)' : 'var(--text)', false)}
-      ${renderFinanceSummaryCard('Storico totale', all.length, 'var(--text)', false)}
+    <div class="loan-overview">
+      <span><strong>${groups.length}</strong> ${groups.length === 1 ? 'giornata' : 'giornate'}</span>
+      <span><strong>${totalPieces}</strong> ${totalPieces === 1 ? 'pezzo' : 'pezzi'}</span>
+      <span><strong>${unavailableToday}</strong> non ${unavailableToday === 1 ? 'disponibile' : 'disponibili'} oggi</span>
+      <span class="loan-overview-hint">Eliminazione automatica il giorno dopo il rientro</span>
     </div>
     ${filtered.length === 0
-      ? `<div class="empty-state"><div class="icon">🙋</div><p>${all.length === 0 ? 'Nessun prestito registrato.' : 'Nessun risultato.'}</p></div>`
-      : `<div class="loan-section-title">${loanFilter === 'open' ? 'Prestiti aperti' : loanFilter === 'returned' ? 'Riconsegnati' : 'Tutti i prestiti'}</div>
-         <div class="finance-list">${filtered.map(renderLoanRow).join('')}</div>`}
+      ? `<div class="empty-state"><div class="icon">🙋</div><p>${all.length === 0 ? 'Nessun prestito attivo.' : 'Nessun risultato.'}</p></div>`
+      : `<div class="loan-section-title">Prestiti per persona e giorno</div>
+         <div class="loan-groups">${groups.map(renderLoanGroup).join('')}</div>`}
   `;
 }
 
-function renderLoanRow(loan) {
+function renderLoanGroup(group) {
+  const isExpanded = expandedLoanGroups.has(group.key);
+  const totalPieces = group.loans.reduce((sum, loan) => sum + (parseInt(loan.qty, 10) || 0), 0);
+  const notesCount = group.loans.filter(loan => loan.note).length;
+  const status = group.date > getLocalDateKey() ? 'Programmato' : 'In corso';
+  return `<section class="loan-group ${isExpanded ? 'expanded' : 'collapsed'}">
+    <button class="loan-group-header" type="button" onclick="toggleLoanGroup('${group.key}')" aria-expanded="${isExpanded}">
+      <span>
+        <span class="loan-group-date">${formatDate(group.date)}</span>
+        <span class="loan-group-status">${status}</span>
+      </span>
+      <span>
+        <span class="loan-group-person">${escHtml(group.person)}</span>
+        <span class="loan-group-count">${group.loans.length} ${group.loans.length === 1 ? 'articolo' : 'articoli'} · ${totalPieces} pz · ${escHtml(getLoanGroupReturnLabel(group))}${notesCount ? ` · ${notesCount} ${notesCount === 1 ? 'nota' : 'note'}` : ''}</span>
+      </span>
+      <span class="loan-group-preview">${getLoanGroupPreview(group)}</span>
+      <span class="loan-group-toggle" aria-hidden="true">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="6 9 12 15 18 9"/></svg>
+      </span>
+    </button>
+    <div class="loan-group-body">
+      ${group.loans.map(renderLoanItemRow).join('')}
+    </div>
+  </section>`;
+}
+
+function renderLoanItemRow(loan) {
   const item = items?.[loan.itemId];
-  const open = isLoanOpen(loan);
   const qty = parseInt(loan.qty, 10) || 1;
-  return `<div class="loan-row ${open ? '' : 'returned'}">
-    <div>
-      <div class="loan-date">${getLoanRangeLabel(loan)}</div>
-      <div class="loan-date-sub">${getLoanStatusLabel(loan)}</div>
+  return `<div class="loan-item-row">
+    <div class="loan-item-main">
+      <div class="loan-item-name">${escHtml(getItemDisplayName(item || { nome: loan.itemName || 'Articolo rimosso' }))}</div>
+      <div class="loan-item-category">${item?.categoria ? `${getCategoryIcon(item.categoria)} ${escHtml(item.categoria)}` : 'Articolo rimosso'}</div>
     </div>
-    <div>
-      <div class="loan-title">${escHtml(getItemDisplayName(item || { nome: loan.itemName || 'Articolo rimosso' }))} <span style="color:var(--accent);font-family:'IBM Plex Mono',monospace;">x${qty}</span></div>
-      <div class="loan-meta">
-        ${item?.categoria ? `<span class="tag tag-loc">${getCategoryIcon(item.categoria)} ${escHtml(item.categoria)}</span>` : ''}
-        ${item ? `<span class="tag ${getItemTypeMeta(item).cls}">${getItemTypeMeta(item).shortLabel}</span>` : '<span class="tag tag-serial">Articolo rimosso</span>'}
-      </div>
-      ${loan.note ? `<div class="loan-note">${escHtml(loan.note)}</div>` : ''}
+    <div class="loan-item-qty">×${qty}</div>
+    <div class="loan-item-return">
+      <span class="loan-item-return-label">Rientro</span>
+      ${formatDate(getLoanExpiryDate(loan))}
     </div>
-    <div>
-      <div class="loan-person">${escHtml(getLoanPersonName(loan))}</div>
-      <div class="loan-date-sub">${open ? (getLoanStatusLabel(loan) === 'Programmato' ? 'prenotato' : 'aperto') : 'chiuso'}</div>
+    <div class="loan-item-note ${loan.note ? '' : 'empty'}">
+      <span class="loan-item-note-label">Nota</span>
+      ${loan.note ? escHtml(loan.note) : 'Nessuna nota'}
     </div>
     <div class="loan-actions">
       <button class="icon-btn" onclick="editLoan('${loan.id}')" title="Modifica">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
       </button>
-      ${open ? `<button class="btn btn-primary btn-sm" onclick="returnLoan('${loan.id}')">Riconsegnato</button>` : ''}
       <button class="icon-btn del" onclick="deleteLoan('${loan.id}')" title="Elimina">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
       </button>
     </div>
   </div>`;
+}
+
+function toggleLoanGroup(key) {
+  if (expandedLoanGroups.has(key)) expandedLoanGroups.delete(key);
+  else expandedLoanGroups.add(key);
+  renderLoans();
 }
 
 // ==================== DISPONIBILITA ====================
@@ -6786,6 +6895,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!checkSession()) return;
     const todayKey = getLocalDateKey();
     if (todayKey !== autoStatusLastRunDay) autoSyncServiceStatuses();
+    autoDeleteExpiredLoans();
   }, 60 * 1000);
 });
 
@@ -6802,7 +6912,10 @@ document.addEventListener('visibilitychange', () => {
     resumeCameraOnVisible = false;
     startCamera();
   }
-  if (checkSession()) autoSyncServiceStatuses();
+  if (checkSession()) {
+    autoSyncServiceStatuses();
+    autoDeleteExpiredLoans();
+  }
 });
 
 function refreshFabForCurrentPage() {

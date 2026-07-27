@@ -74,7 +74,7 @@ Per uso online con GitHub Pages:
 3. Pubblica le regole in `database.rules.json` sul Realtime Database.
 4. Verifica che GitHub Pages sia tra i domini autorizzati in **Authentication -> Settings -> Authorized domains**.
 
-Le regole incluse permettono lettura/scrittura solo a utenti autenticati e solo sui rami dati usati dall'app (`inventario`, `services`, `team`, `categories`, `finance`, `orders`, `truck`). Qualsiasi altro ramo del Realtime Database resta negato di default:
+Le regole incluse permettono lettura/scrittura solo a utenti autenticati e solo sui rami dati usati dall'app (`inventario`, `services`, `team`, `categories`, `finance`, `orders`, `truck`, `loans`). Qualsiasi altro ramo del Realtime Database resta negato di default:
 
 ```json
 {
@@ -104,6 +104,10 @@ Le regole incluse permettono lettura/scrittura solo a utenti autenticati e solo 
       ".write": "auth != null"
     },
     "truck": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "loans": {
       ".read": "auth != null",
       ".write": "auth != null"
     },
@@ -202,6 +206,12 @@ La UI e in ascolto realtime (`onValue`) su questi nodi; quando cambia un dato in
 - storico semplice di chi prende il camion in una data
 - campi: data, nome, note opzionali
 - vista mobile-first con date future in alto e storico passato sotto
+
+### Prestiti
+- assegna materiale a un membro del team per un intervallo definito
+- raggruppa nella stessa scheda tutti gli articoli presi dalla stessa persona nello stesso giorno
+- mostra articoli, quantita, rientro e note in un dettaglio espandibile
+- il giorno successivo al rientro il prestito non incide piu sulla disponibilita e viene eliminato automaticamente alla prima sincronizzazione utile
 
 ## 7. Modello dati (schema pratico)
 
@@ -325,18 +335,37 @@ La UI e in ascolto realtime (`onValue`) su questi nodi; quando cambia un dato in
 }
 ```
 
+### `loans/<loanId>`
+
+```json
+{
+  "id": "loan001",
+  "memberId": "member01",
+  "person": "Michi",
+  "itemId": "abc123",
+  "itemName": "Cavo XLR",
+  "qty": 2,
+  "startDate": "2026-07-31",
+  "endDate": "2026-08-02",
+  "note": "Uso personale",
+  "status": "open",
+  "createdAt": 1710000000000,
+  "updatedAt": 1710000000000
+}
+```
+
 ## 8. Storage: cosa usa davvero il progetto
 
 ### Realtime Database (principale)
 - E il database reale dell'app.
-- Tutti i dati persistenti stanno qui (`inventario`, `services`, `team`, `categories`, `finance`, `orders`, `truck`).
+- Tutti i dati persistenti stanno qui (`inventario`, `services`, `team`, `categories`, `finance`, `orders`, `truck`, `loans`).
 - Il piano gratuito Spark e sufficiente per uso leggero/medio: se superi i limiti il servizio puo bloccarsi o rifiutare operazioni, ma non e pensato come sistema di backup pluriennale.
 - Su Spark non hai i backup automatici gestiti di Realtime Database. Per zero sorprese operative, conserva sempre copie JSON fuori da Firebase.
 
 ### Backup JSON
-- Dal pulsante **Backup** nell'header scarichi un file JSON con `inventario`, `services`, `team`, `categories`, `finance`, `orders` e `truck`.
+- Dal pulsante **Backup** nell'header scarichi un file JSON con `inventario`, `services`, `team`, `categories`, `finance`, `orders`, `truck` e `loans`.
 - Il backup include data di export, motivo e conteggi dei rami dati.
-- Il download viene consentito solo dopo la prima sincronizzazione completa di magazzino, eventi, team, categorie, costi, ordini e camion.
+- Il download viene consentito solo dopo la prima sincronizzazione completa di magazzino, eventi, team, categorie, costi, ordini, camion e prestiti.
 - Dal pulsante **Ripristina** puoi ricaricare un backup JSON completo, con doppia conferma prima di sovrascrivere i dati attuali.
 - Anche il ripristino viene consentito solo dopo la sincronizzazione completa, per poter scaricare una copia corretta dello stato corrente.
 - Prima di ogni ripristino l'app scarica automaticamente una copia `verso_pre_ripristino_*.json`.
@@ -373,6 +402,11 @@ La UI e in ascolto realtime (`onValue`) su questi nodi; quando cambia un dato in
   - oggi tra `dataOut` e `dataIn` -> `active`
   - oggi > `dataIn` -> `returned`
 - Sync lanciato dopo login/caricamento dati e controllato periodicamente (anche oltre mezzanotte).
+
+### Scadenza automatica prestiti
+- La data di rientro e sempre valorizzata; per i vecchi record senza rientro viene usato il giorno di uscita.
+- Dal giorno successivo al rientro il materiale torna immediatamente disponibile nei calcoli.
+- Il record scaduto viene rimosso da Firebase al primo caricamento, ritorno in primo piano o controllo periodico con connessione disponibile.
 
 ### Calcolo disponibilita articolo
 - "Impegnato ora": somma qty articolo su eventi `active`.
