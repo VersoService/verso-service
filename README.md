@@ -182,6 +182,8 @@ La UI e in ascolto realtime (`onValue`) su questi nodi; quando cambia un dato in
 - CRUD membri
 - assegnazione membri agli eventi
 - ore lavorate per membro/evento
+- nella pagina Team gli eventi attivi o pianificati sono raccolti in schede comprimibili
+- nella pagina Eventi il team resta modificabile anche sugli eventi conclusi: aggiunta, rimozione e aggiornamento ore
 - report mensile ore (input mese + export CSV)
 
 ### Costi
