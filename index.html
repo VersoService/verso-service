@@ -154,6 +154,7 @@ header { background: var(--surface); border-bottom: 2px solid var(--accent); pad
 .mobile-nav-action.danger { color: var(--danger); border-color: rgba(255,68,68,0.25); }
 .mobile-bottom-nav { display: none; }
 .mobile-bottom-nav-btn { border: none; background: transparent; color: var(--text-dim); font-family: 'IBM Plex Mono', monospace; font-size: 0.58rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; cursor: pointer; }
+.mobile-bottom-nav-primary .ico { display: flex; align-items: center; justify-content: center; }
 body.mobile-nav-open { overflow: hidden; }
 
 @media (min-width: 641px) {
@@ -247,6 +248,9 @@ main { padding: 1.5rem 2rem 5rem; }
 .qty-avail .avail-num.low { color: var(--warning); }
 .qty-avail .avail-num.none { color: var(--danger); }
 .item-actions { display: flex; gap: 0.3rem; }
+.item-more-actions { display: none; position: relative; }
+.item-more-actions summary { list-style: none; }
+.item-more-actions summary::-webkit-details-marker { display: none; }
 .item-quick-actions { display: flex; flex-wrap: wrap; gap: 0.45rem; margin-top: 0.8rem; }
 .item-quick-actions .btn { flex: 1 1 auto; justify-content: center; min-height: 34px; }
 .icon-btn { width: 30px; height: 30px; background: transparent; border: 1px solid transparent; border-radius: 3px; cursor: pointer; color: var(--text-dim); display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
@@ -296,6 +300,7 @@ main { padding: 1.5rem 2rem 5rem; }
 .service-item-remove { width: 24px; height: 24px; background: transparent; border: none; cursor: pointer; color: var(--text-faint); display: flex; align-items: center; justify-content: center; border-radius: 3px; transition: all 0.15s; }
 .service-item-remove:hover { color: var(--danger); background: rgba(255,68,68,0.1); }
 .service-card-actions { padding: 0.8rem 1.2rem; border-top: 1px solid var(--border); display: flex; gap: 0.6rem; flex-wrap: wrap; }
+.service-card-actions-mobile { display: none; }
 .service-empty-items { font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; color: var(--text-faint); text-align: center; padding: 1rem; letter-spacing: 0.08em; }
 .service-note { font-size: 0.8rem; color: var(--text-dim); padding: 0.6rem 0.8rem; background: rgba(240,165,0,0.05); border-left: 2px solid rgba(240,165,0,0.3); border-radius: 2px; margin-bottom: 0.8rem; }
 .service-availability-alert { padding: 0.75rem 0.85rem; border-radius: 4px; border: 1px solid rgba(255,68,68,0.24); border-left: 3px solid var(--danger); background: rgba(255,68,68,0.08); color: var(--text-dim); font-size: 0.78rem; line-height: 1.5; margin-bottom: 0.8rem; }
@@ -686,14 +691,23 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
 
 @media (max-width: 640px) {
   body { min-height: 100dvh; }
+  #page-dashboard > .toolbar { display: none; }
   .dashboard-layout { padding: 0.8rem 0.8rem calc(6rem + env(safe-area-inset-bottom)); }
+  .dashboard-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.55rem; }
   .dashboard-grid { grid-template-columns: 1fr; }
   .dashboard-row { grid-template-columns: 1fr; align-items: stretch; }
   .dashboard-row-side { text-align: left; }
+  .dashboard-grid-secondary { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.55rem; }
+  .dashboard-grid-secondary .dashboard-card-head { min-height: 72px; border-bottom: 0; padding: 0.75rem; align-items: flex-start; flex-direction: column; }
+  .dashboard-grid-secondary .dashboard-card-title { font-family: 'IBM Plex Sans', sans-serif; font-size: 0.78rem; letter-spacing: 0.01em; text-transform: none; color: var(--text); }
+  .dashboard-grid-secondary .dashboard-list { display: none; }
+  .dashboard-grid-secondary .dashboard-card-action { width: 100%; min-height: 34px; }
   .dashboard-actions .btn { flex: 1 1 100%; }
   .backup-guide { grid-template-columns: 1fr; }
+  .backup-guide-counts { display: none; }
   .backup-guide-actions { justify-content: stretch; }
-  .backup-guide-actions .btn { flex: 1 1 100%; }
+  .backup-guide-actions .btn { flex: 1 1 calc(50% - 0.3rem); }
+  .backup-guide-actions .btn:last-child { display: none; }
   .team-layout { grid-template-columns: 1fr; padding: 0.8rem 0.8rem 6rem; }
   .team-event-header { flex-direction: column; gap: 0; }
   .team-event-toggle { padding: 0.8rem 0.9rem; }
@@ -771,23 +785,24 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
   .quote-rental-row input,
   .quote-rental-add-grid input,
   .search-input { min-height: 46px; }
-  header { padding: 0.6rem 0.8rem; height: auto; min-height: 52px; }
-  .header-brand { min-width: 0; }
-  .logo { font-size: 1.3rem; }
+  header { padding: 0.5rem 0.8rem; height: auto; min-height: 56px; }
+  .header-brand { min-width: 0; flex: 1; flex-direction: row; align-items: center; gap: 0.55rem; }
+  .logo { display: none; }
+  .logo-sub { margin: 0; font-size: 0; letter-spacing: 0; }
+  .logo-sub .conn-dot { width: 8px; height: 8px; }
   .mobile-page-name {
-    display: inline-flex;
+    display: block;
     align-items: center;
-    margin-top: 0.34rem;
-    padding: 0.2rem 0.5rem;
-    border-radius: 999px;
-    border: 1px solid rgba(240,165,0,0.35);
-    background: rgba(240,165,0,0.1);
-    color: var(--accent);
-    font-size: 0.56rem;
-    letter-spacing: 0.14em;
+    margin: 0;
+    padding: 0;
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 0.01em;
     font-weight: 700;
+    text-transform: none;
   }
-  .header-right { gap: 0.6rem; }
+  .header-right { gap: 0; }
   .mobile-menu-btn { display: flex; }
   .mobile-menu-btn, .mobile-nav-close { min-width: 44px; min-height: 44px; }
   .mobile-nav-drawer { height: 100dvh; max-height: 100dvh; padding-bottom: env(safe-area-inset-bottom); }
@@ -818,40 +833,30 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
     gap: 0.18rem;
     color: var(--text-dim);
     transition: background 0.15s, color 0.15s;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 0.68rem;
+    letter-spacing: 0;
+    text-transform: none;
   }
   .mobile-bottom-nav-btn .ico { font-size: 1.05rem; line-height: 1; }
   .mobile-bottom-nav-btn.active {
     color: var(--accent);
     background: rgba(240,165,0,0.1);
   }
+  .mobile-bottom-nav-primary .ico {
+    width: 38px;
+    height: 38px;
+    margin-top: -18px;
+    border: 3px solid var(--surface);
+    border-radius: 50%;
+    background: var(--accent);
+    color: #000;
+    box-shadow: 0 6px 18px rgba(240,165,0,0.28);
+    font-size: 1rem;
+  }
+  .mobile-bottom-nav-primary.active { background: transparent; color: var(--accent); }
   .header-actions { display: none; }
-  .header-stats { gap: 0.38rem; }
-  .stat-chip {
-    min-width: 44px;
-    padding: 0.28rem 0.42rem 0.24rem;
-    border-radius: 999px;
-    border: 1px solid rgba(0,212,255,0.26);
-    background: rgba(0,212,255,0.08);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-  }
-  .stat-chip .val {
-    font-size: 0.95rem;
-    line-height: 1;
-    color: var(--accent2);
-  }
-  .stat-chip .lbl { display: none; }
-  .stat-chip .lbl-mobile {
-    display: block;
-    font-size: 0.44rem;
-    line-height: 1.05;
-    letter-spacing: 0.11em;
-    color: var(--accent2);
-    font-weight: 700;
-    opacity: 0.95;
-  }
+  .header-stats { display: none; }
   .nav-tabs { display: none; }
   .toolbar { padding: 0.8rem 1rem; gap: 0.6rem; }
   .search-wrap { flex: 1 1 100%; max-width: 100%; }
@@ -859,15 +864,55 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
   .filter-tabs { flex: 1 1 100%; overflow-x: auto; flex-wrap: nowrap; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
   .filter-tabs::-webkit-scrollbar { display: none; }
   .tab { flex-shrink: 0; min-height: 44px; }
+  .btn, .tab, .dashboard-card-action, .mobile-nav-link, .mobile-nav-action {
+    font-family: 'IBM Plex Sans', sans-serif;
+    letter-spacing: 0.01em;
+    text-transform: none;
+  }
   .btn { min-height: 44px; }
   .toolbar > .btn.btn-primary { display: none !important; }
   #fabAdd { display: flex; }
   main { padding: 0.8rem 0.8rem calc(6rem + env(safe-area-inset-bottom)); }
   .service-layout { padding: 0.8rem 0.8rem calc(6rem + env(safe-area-inset-bottom)); }
   .items-grid { grid-template-columns: 1fr; }
-  .item-card { padding: 1rem; }
-  .item-bottom { flex-direction: column; align-items: stretch; gap: 0.7rem; }
-  .item-actions { justify-content: flex-end; }
+  .item-card { padding: 0.9rem; gap: 0.5rem; }
+  .item-card .mobile-secondary { display: none; }
+  .item-bottom { flex-direction: row; align-items: flex-end; gap: 0.7rem; }
+  .item-actions-desktop { display: none; }
+  .item-more-actions { display: block; margin-left: auto; }
+  .item-more-actions > summary {
+    min-width: 84px;
+    min-height: 44px;
+    padding: 0.55rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    background: var(--surface2);
+    color: var(--text-dim);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .item-more-actions[open] > summary { color: var(--accent); border-color: rgba(240,165,0,0.35); }
+  .item-more-menu {
+    position: absolute;
+    right: 0;
+    bottom: calc(100% + 0.45rem);
+    z-index: 20;
+    width: 172px;
+    padding: 0.45rem;
+    border: 1px solid var(--border-bright);
+    border-radius: 6px;
+    background: var(--surface2);
+    box-shadow: 0 12px 28px rgba(0,0,0,0.42);
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+  .item-more-menu .btn { width: 100%; justify-content: flex-start; }
   .item-quick-actions .btn { flex: 1 1 calc(50% - 0.3rem); min-height: 44px; }
   .item-quick-actions .item-quick-secondary { display: none; }
   .qty-btn { width: 40px; height: 40px; font-size: 1.3rem; }
@@ -915,8 +960,35 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
   #camAim > div { width: min(72vw, 220px) !important; height: min(72vw, 220px) !important; }
   .scanner-manual-row { flex-direction: column; }
   .scanner-manual-row .search-input, .scanner-manual-row .btn { width: 100%; }
-  .service-card-header { flex-direction: column; }
-  .service-card-actions .btn { flex: 1 1 100%; justify-content: center; }
+  .service-card-header { flex-direction: row; padding: 0.9rem; gap: 0.7rem; }
+  .service-title-row { gap: 0.5rem; }
+  .service-name { font-family: 'IBM Plex Sans', sans-serif; font-size: 1rem; letter-spacing: 0.01em; }
+  .service-meta-row { gap: 0.45rem 0.8rem; }
+  .service-meta-client, .service-meta-quote { display: none; }
+  .service-card-actions-desktop { display: none; }
+  .service-card-actions-mobile { display: flex; padding: 0.8rem 0.9rem; }
+  .service-card-actions-mobile > .btn { flex: 1 1 calc(50% - 0.3rem); justify-content: center; }
+  .service-more-actions { flex: 1 1 100%; }
+  .service-more-actions > summary {
+    list-style: none;
+    width: 100%;
+    min-height: 44px;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    background: var(--surface2);
+    color: var(--text-dim);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .service-more-actions > summary::-webkit-details-marker { display: none; }
+  .service-more-actions[open] > summary { color: var(--accent); border-color: rgba(240,165,0,0.35); }
+  .service-more-menu { display: flex; flex-direction: column; gap: 0.45rem; margin-top: 0.55rem; }
+  .service-more-menu .btn { width: 100%; justify-content: flex-start; }
   .service-item-row { align-items: flex-start; gap: 0.65rem; }
   .service-item-name { line-height: 1.35; min-width: 0; overflow-wrap: anywhere; }
   .scan-actions { grid-template-columns: 1fr; gap: 0.7rem; }
@@ -1095,6 +1167,7 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
       <div class="mobile-nav-actions">
         <button class="mobile-nav-action" type="button" onclick="exportBackup(); toggleMobileMenu(false)">Backup JSON</button>
         <button class="mobile-nav-action" type="button" onclick="openBackupImport(); toggleMobileMenu(false)">Ripristina</button>
+        <button class="mobile-nav-action" type="button" onclick="resetInfoBanners(); toggleMobileMenu(false)">Mostra suggerimenti</button>
         <button class="mobile-nav-action danger" type="button" onclick="logout(); toggleMobileMenu(false)">Esci</button>
       </div>
     </aside>
@@ -1105,17 +1178,17 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
       <span class="ico">📊</span>
       <span>Oggi</span>
     </button>
-    <button class="mobile-bottom-nav-btn" type="button" data-page="magazzino" onclick="switchPage('magazzino')">
-      <span class="ico">📦</span>
-      <span>Mag.</span>
-    </button>
     <button class="mobile-bottom-nav-btn" type="button" data-page="service" onclick="switchPage('service')">
       <span class="ico">🎪</span>
       <span>Eventi</span>
     </button>
-    <button class="mobile-bottom-nav-btn" type="button" data-page="scanner" onclick="switchPage('scanner')">
+    <button class="mobile-bottom-nav-btn mobile-bottom-nav-primary" type="button" data-page="scanner" onclick="switchPage('scanner')">
       <span class="ico">📷</span>
-      <span>Scan</span>
+      <span>Scanner</span>
+    </button>
+    <button class="mobile-bottom-nav-btn" type="button" data-page="magazzino" onclick="switchPage('magazzino')">
+      <span class="ico">📦</span>
+      <span>Magazzino</span>
     </button>
     <button class="mobile-bottom-nav-btn" type="button" data-page="menu" onclick="toggleMobileMenu(true)">
       <span class="ico">☰</span>
@@ -1651,6 +1724,7 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
 const SESSION_USER_KEY = 'vs_auth_user_v1';
 const LAST_BACKUP_KEY = 'vs_last_backup_download_v1';
 const LAST_BACKUP_DRIVE_KEY = 'vs_last_backup_drive_confirm_v1';
+const DISMISSED_BANNERS_KEY = 'vs_dismissed_info_banners_v1';
 const BACKUP_CONFIRM_WORD = 'RIPRISTINA';
 const DATA_BRANCHES = ['inventario', 'services', 'team', 'categories', 'finance', 'truck', 'loans'];
 const CAT_ICONS = { 'Luci':'🔦','Audio':'🔊','Cavi & Connettori':'🔌','Strutture & Truss':'🏗️','Consolle & Controller':'🎛️','Consumabili':'🎊','Accessori':'🔧','Altro':'📦' };
@@ -3028,8 +3102,8 @@ function renderDashboardList(rows, emptyText) {
   return rows.length ? rows.join('') : `<div class="dashboard-empty">${escHtml(emptyText)}</div>`;
 }
 
-function renderDashboardCard(title, page, rows, emptyText) {
-  return `<div class="dashboard-card">
+function renderDashboardCard(title, page, rows, emptyText, variant = '') {
+  return `<div class="dashboard-card ${variant}">
     <div class="dashboard-card-head">
       <div class="dashboard-card-title">${escHtml(title)}</div>
       <button class="dashboard-card-action" onclick="switchPage('${page}')">Apri</button>
@@ -3040,6 +3114,7 @@ function renderDashboardCard(title, page, rows, emptyText) {
 
 function renderBackupGuide() {
   const health = getBackupHealth();
+  if (health.level === 'ok') return '';
   const counts = getBackupCounts(getBackupData());
   const cls = health.level === 'danger' ? 'danger' : health.level === 'warn' ? 'warn' : '';
   const status = health.level === 'danger'
@@ -3124,12 +3199,14 @@ function renderDashboard() {
       ${renderDashboardMetric('Prestiti aperti', openLoans.length, openLoans.length ? 'var(--accent2)' : 'var(--text)')}
       ${renderDashboardMetric('Alert disponibilita', availabilityIssues.length, availabilityIssues.length ? 'var(--danger)' : 'var(--success)')}
     </div>
-    <div class="dashboard-grid">
+    <div class="dashboard-grid dashboard-grid-primary">
       ${renderDashboardCard('Eventi oggi', 'service', todayRows, 'Nessun evento oggi.')}
       ${renderDashboardCard('Disponibilita', 'service', issueRows, 'Nessun problema materiale rilevato.')}
-      ${renderDashboardCard('Materiale fuori', 'prestiti', loanRows, 'Nessun prestito aperto.')}
-      ${renderDashboardCard('Operativo', 'costi', opsRows, 'Nessuna urgenza operativa.')}
       ${renderDashboardCard('Prossimi eventi', 'service', upcomingRows, 'Nessun evento pianificato.')}
+    </div>
+    <div class="dashboard-grid dashboard-grid-secondary">
+      ${renderDashboardCard(`Materiale fuori · ${openLoans.length}`, 'prestiti', loanRows, 'Nessun prestito aperto.', 'dashboard-card-secondary')}
+      ${renderDashboardCard(`Operativo · ${opsRows.length}`, 'costi', opsRows, 'Nessuna urgenza operativa.', 'dashboard-card-secondary')}
     </div>
   `;
 }
@@ -3307,15 +3384,15 @@ function renderItemCard(item) {
         </div>
         <div class="status-dot ${dotClass}"></div>
       </div>
-      ${item.note?`<div class="item-desc">${hl(item.note,q)}</div>`:''}
+      ${item.note?`<div class="item-desc mobile-secondary">${hl(item.note,q)}</div>`:''}
       <div class="item-meta">
         ${item.posizione?`<span class="tag tag-loc">📍 ${hl(item.posizione,q)}</span>`:''}
-        ${item.seriale?`<span class="tag tag-serial">S/N: ${hl(item.seriale,q)}</span>`:''}
+        ${item.seriale?`<span class="tag tag-serial mobile-secondary">S/N: ${hl(item.seriale,q)}</span>`:''}
         <span class="tag ${typeMeta.cls}">${isConsumableItem(item) ? '🧾' : '↩'} ${typeMeta.shortLabel}</span>
         ${isItemNoCharge(item)
-          ? `<span class="tag" style="background:rgba(0,212,255,0.08);color:var(--accent2);border:1px solid rgba(0,212,255,0.2);">💶 Non fatturato</span>`
+          ? `<span class="tag mobile-secondary" style="background:rgba(0,212,255,0.08);color:var(--accent2);border:1px solid rgba(0,212,255,0.2);">💶 Non fatturato</span>`
           : getItemPrice(item)>0
-            ? `<span class="tag" style="background:rgba(240,165,0,0.08);color:var(--accent);border:1px solid rgba(240,165,0,0.2);">💶 ${formatMoney(getItemPrice(item))}</span>`
+            ? `<span class="tag mobile-secondary" style="background:rgba(240,165,0,0.08);color:var(--accent);border:1px solid rgba(240,165,0,0.2);">💶 ${formatMoney(getItemPrice(item))}</span>`
             : ''}
         ${eventBusy>0?`<span class="tag tag-busy">🚚 ${eventBusy} in evento</span>`:''}
         ${loanBusy>0?`<span class="tag tag-busy">🙋 ${loanBusy} in prestito</span>`:''}
@@ -3335,7 +3412,7 @@ function renderItemCard(item) {
           </div>
           ${busy>0?`<div class="qty-avail">disponibili: <span class="avail-num ${availClass}">${avail}</span>/${item.qty}</div>`:''}
         </div>
-        <div class="item-actions">
+        <div class="item-actions item-actions-desktop">
           <button class="icon-btn" onclick="showQrModal('${item.id}')" title="QR Code" style="color:var(--accent2)">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3M17 14h3M14 17h3v3"/></svg>
           </button>
@@ -3346,6 +3423,14 @@ function renderItemCard(item) {
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
           </button>
         </div>
+        <details class="item-more-actions">
+          <summary>••• Altro</summary>
+          <div class="item-more-menu">
+            <button class="btn btn-ghost btn-sm" onclick="showQrModal('${item.id}')">🏷️ QR code</button>
+            <button class="btn btn-ghost btn-sm" onclick="openModalItem('${item.id}')">✏️ Modifica</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteItem('${item.id}')">Elimina</button>
+          </div>
+        </details>
       </div>
     </div>`;
 }
@@ -3698,17 +3783,17 @@ function renderServiceCard(svc) {
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
               ${formatDate(svc.dataOut)} → ${formatDate(svc.dataIn)}
             </div>
-            ${svc.cliente?`<div class="service-meta-item">
+            ${svc.cliente?`<div class="service-meta-item service-meta-client">
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
               ${escHtml(svc.cliente)}
             </div>`:''}
-            <div class="service-meta-item" style="color:var(--text-faint)">
+            <div class="service-meta-item service-meta-material" style="color:var(--text-faint)">
               📦 ${materialStats.types} tipologie · ${materialStats.pieces} pz
             </div>
-            <div class="service-meta-item" style="color:${quoteSummary.missingCount ? 'var(--warning)' : 'var(--accent)'}">
+            <div class="service-meta-item service-meta-quote" style="color:${quoteSummary.missingCount ? 'var(--warning)' : 'var(--accent)'}">
               💶 ${formatMoney(quoteSummary.total)}${quoteSummary.missingCount ? ` · ${quoteSummary.missingCount} senza prezzo` : ''}
             </div>
-            ${availabilityIssues.length ? `<div class="service-meta-item" style="color:var(--danger)">⚠️ ${availabilityIssues.length} problema disp.</div>` : ''}
+            ${availabilityIssues.length ? `<div class="service-meta-item service-meta-alert" style="color:var(--danger)">⚠️ ${availabilityIssues.length} problema disp.</div>` : ''}
           </div>
         </div>
         <div class="service-expand-btn" title="${isExpanded ? 'Riduci evento' : 'Espandi evento'}" aria-label="${isExpanded ? 'Riduci evento' : 'Espandi evento'}">
@@ -3723,7 +3808,7 @@ function renderServiceCard(svc) {
         </div>
       </div>
       <div class="service-team-wrap" id="svcTeam-${svcId}">${getServiceTeamHtml(svcId)}</div>
-      <div class="service-card-actions">
+      <div class="service-card-actions service-card-actions-desktop">
         ${svcStatus==='planned'?`<button class="btn btn-sm" style="background:rgba(240,165,0,0.1);color:var(--accent);border:1px solid rgba(240,165,0,0.3);" onclick="setServiceStato('${svcId}','active')">🚚 Segna In corso</button>`:''}
         ${svcStatus==='active'?`<button class="btn btn-sm" style="background:rgba(0,204,102,0.1);color:var(--success);border:1px solid rgba(0,204,102,0.3);" onclick="setServiceStato('${svcId}','returned')">✅ Segna Rientrato</button>`:''}
         ${svcStatus==='returned' && shouldOfferConsumableDeduction(svc) ? `<button class="btn btn-sm" style="background:rgba(255,149,0,0.1);color:var(--warning);border:1px solid rgba(255,149,0,0.28);" onclick="deductServiceConsumables('${svcId}')">🧾 Scala consumabili</button>` : ''}
@@ -3734,6 +3819,23 @@ function renderServiceCard(svc) {
         <button class="btn btn-ghost btn-sm" onclick="duplicateService('${svcId}')">📄 Duplica</button>
         <button class="btn btn-ghost btn-sm" onclick="openModalService('${svcId}')">✏️ Modifica</button>
         <button class="btn btn-danger btn-sm" onclick="deleteService('${svcId}')">Elimina</button>
+      </div>
+      <div class="service-card-actions service-card-actions-mobile">
+        ${svcStatus==='planned'?`<button class="btn btn-sm" style="background:rgba(240,165,0,0.1);color:var(--accent);border:1px solid rgba(240,165,0,0.3);" onclick="setServiceStato('${svcId}','active')">🚚 In corso</button>`:''}
+        ${svcStatus==='active'?`<button class="btn btn-sm" style="background:rgba(0,204,102,0.1);color:var(--success);border:1px solid rgba(0,204,102,0.3);" onclick="setServiceStato('${svcId}','returned')">✅ Rientrato</button>`:''}
+        ${svcStatus==='returned' && shouldOfferConsumableDeduction(svc) ? `<button class="btn btn-sm" style="background:rgba(255,149,0,0.1);color:var(--warning);border:1px solid rgba(255,149,0,0.28);" onclick="deductServiceConsumables('${svcId}')">🧾 Consumi</button>` : ''}
+        <button class="btn btn-ghost btn-sm" onclick="openModalService('${svcId}')">✏️ Modifica</button>
+        <details class="service-more-actions">
+          <summary>Altre azioni</summary>
+          <div class="service-more-menu">
+            <button class="btn btn-ghost btn-sm" onclick="downloadServiceLoadList('${svcId}')">📋 Lista carico</button>
+            <button class="btn btn-ghost btn-sm" onclick="openQuoteForService('${svcId}')">🧾 Preventivo</button>
+            <button class="btn btn-ghost btn-sm" onclick="openGoogleCalendarForService('${svcId}')">📆 Google Calendar</button>
+            <button class="btn btn-ghost btn-sm" onclick="downloadServiceIcs('${svcId}')">📆 File ICS</button>
+            <button class="btn btn-ghost btn-sm" onclick="duplicateService('${svcId}')">📄 Duplica</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteService('${svcId}')">Elimina</button>
+          </div>
+        </details>
       </div>
     </div>`;
 }
@@ -6309,10 +6411,57 @@ function removeAssignment(svcId, memberId) {
 }
 
 // ==================== INFO BANNERS ====================
+function getDismissedBannerIds() {
+  try {
+    const value = JSON.parse(localStorage.getItem(DISMISSED_BANNERS_KEY) || '[]');
+    return Array.isArray(value) ? value.filter(id => typeof id === 'string') : [];
+  } catch (err) {
+    return [];
+  }
+}
+
+function hideInfoBanner(el, animate = false) {
+  if (!el) return;
+  if (!animate) {
+    el.style.display = 'none';
+    return;
+  }
+  el.style.transition = 'opacity 0.3s';
+  el.style.opacity = '0';
+  setTimeout(() => { el.style.display = 'none'; }, 300);
+}
+
 function closeBanner(id) {
   const el = document.getElementById(id);
-  if (el) { el.style.transition = 'opacity 0.3s'; el.style.opacity = '0'; setTimeout(() => el.style.display = 'none', 300); }
+  if (!el) return;
+  const dismissed = new Set(getDismissedBannerIds());
+  dismissed.add(id);
+  try {
+    localStorage.setItem(DISMISSED_BANNERS_KEY, JSON.stringify([...dismissed]));
+  } catch (err) {
+    console.warn('banner preference not saved:', err);
+  }
+  hideInfoBanner(el, true);
 }
+
+function restoreDismissedBanners() {
+  const dismissed = new Set(getDismissedBannerIds());
+  document.querySelectorAll('.info-banner').forEach(el => {
+    if (dismissed.has(el.id)) hideInfoBanner(el);
+  });
+}
+
+function resetInfoBanners() {
+  try { localStorage.removeItem(DISMISSED_BANNERS_KEY); } catch (err) {}
+  document.querySelectorAll('.info-banner').forEach(el => {
+    el.style.transition = '';
+    el.style.opacity = '';
+    el.style.display = '';
+  });
+  showToast('Suggerimenti ripristinati');
+}
+
+restoreDismissedBanners();
 
 // ==================== QR CODES ====================
 let currentQrItemId = null;
