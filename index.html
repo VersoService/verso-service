@@ -11,6 +11,7 @@
 <link rel="icon" type="image/png" sizes="16x16" href="./icons/icon-16.png">
 <link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-touch-icon.png">
 <link rel="manifest" href="./manifest.webmanifest">
+<link rel="stylesheet" href="./app-features.css">
 <meta name="theme-color" content="#121212">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1048,6 +1049,13 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
       <div class="mobile-page-name" id="mobilePageName">Oggi</div>
     </div>
     <div class="header-right">
+      <button class="global-search-trigger" id="globalSearchBtn" type="button" onclick="window.versoFeatures?.openGlobalSearch()" aria-label="Cerca ovunque" title="Cerca ovunque (Ctrl/⌘ K)">
+        <span aria-hidden="true">⌕</span><span class="global-search-trigger-label">Cerca</span>
+      </button>
+      <div class="sync-status-pill connecting" id="syncStatus" role="status" aria-live="polite" title="Stato sincronizzazione">
+        <span class="sync-status-dot" aria-hidden="true"></span>
+        <span id="syncStatusText">Connessione…</span>
+      </div>
       <button class="mobile-menu-btn" id="mobileMenuBtn" type="button" aria-label="Apri menu" aria-expanded="false" onclick="toggleMobileMenu(true)">
         <span></span>
         <span></span>
@@ -1165,6 +1173,8 @@ mark { background: rgba(240,165,0,0.25); color: var(--accent); border-radius: 2p
         </button>
       </div>
       <div class="mobile-nav-actions">
+        <button class="mobile-nav-action" type="button" onclick="toggleMobileMenu(false); window.versoFeatures?.openGlobalSearch()">Cerca ovunque</button>
+        <button class="mobile-nav-action" type="button" onclick="toggleMobileMenu(false); window.versoFeatures?.openQuickActions()">Azioni rapide</button>
         <button class="mobile-nav-action" type="button" onclick="exportBackup(); toggleMobileMenu(false)">Backup JSON</button>
         <button class="mobile-nav-action" type="button" onclick="openBackupImport(); toggleMobileMenu(false)">Ripristina</button>
         <button class="mobile-nav-action" type="button" onclick="resetInfoBanners(); toggleMobileMenu(false)">Mostra suggerimenti</button>
@@ -1890,8 +1900,10 @@ function startFirebaseDataListeners() {
   resetFirebaseDataLoaded();
 
   firebaseUnsubscribers.push(onValue(ref(db, '.info/connected'), snap => {
-    document.getElementById('connDot').className = 'conn-dot ' + (snap.val() ? 'online' : 'offline');
-    if (snap.val() && checkSession()) hideLoading();
+    const online = !!snap.val();
+    document.getElementById('connDot').className = 'conn-dot ' + (online ? 'online' : 'offline');
+    window.dispatchEvent(new CustomEvent('verso:connection', { detail: { online } }));
+    if (online && checkSession()) hideLoading();
   }));
 
   firebaseUnsubscribers.push(onValue(ref(db, 'inventario'), snap => {
@@ -1965,6 +1977,7 @@ function hideLoading() {
 }
 function setSyncing(on) {
   document.getElementById('syncBar').className = 'sync-bar ' + (on ? 'syncing' : 'ok');
+  window.dispatchEvent(new CustomEvent('verso:sync', { detail: { syncing: !!on } }));
 }
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
 
@@ -2673,7 +2686,7 @@ function buildBackupPayload(reason = 'manual') {
   const data = getBackupData();
   return {
     app: 'verso-service',
-    version: 3,
+    version: 4,
     reason,
     exportedAt: new Date().toISOString(),
     counts: getBackupCounts(data),
@@ -2813,6 +2826,7 @@ function normalizeBackupRoot(parsed) {
   if (!isPlainObject(parsed)) return null;
   const root = isPlainObject(parsed.data) ? parsed.data : parsed;
   if (!isPlainObject(root)) return null;
+  if (DATA_BRANCHES.some(key => Object.prototype.hasOwnProperty.call(root, key) && !isPlainObject(root[key]))) return null;
   if (!['inventario', 'services', 'team'].every(key => hasBackupBranch(root, key))) return null;
   const preservedBranches = [];
   const optionalBranch = (key, currentValue) => {
@@ -2829,8 +2843,86 @@ function normalizeBackupRoot(parsed) {
     truck: optionalBranch('truck', truckLog),
     loans: optionalBranch('loans', loans),
     preservedBranches,
-    exportedAt: parsed.exportedAt || null
+    exportedAt: parsed.exportedAt || null,
+    sourceApp: parsed.app || null,
+    sourceVersion: Number(parsed.version || 0)
   };
+}
+
+function validateBackupData(backup) {
+  const errors = [];
+  const warnings = [];
+  const branchLabels = {
+    inventario: 'inventario', services: 'eventi', team: 'team', categories: 'categorie',
+    finance: 'spese', truck: 'camion', loans: 'prestiti'
+  };
+  const invalidKey = /[.#$\[\]\/]/;
+  const maxRecords = 100000;
+  let totalRecords = 0;
+
+  if (backup.sourceApp && backup.sourceApp !== 'verso-service') errors.push(`Il file appartiene a un'altra app (${backup.sourceApp}).`);
+  if (backup.sourceVersion && (!Number.isInteger(backup.sourceVersion) || backup.sourceVersion < 1)) errors.push('Versione backup non valida.');
+  if (backup.sourceVersion > 4) errors.push(`Backup versione ${backup.sourceVersion}: questa app supporta fino alla versione 4.`);
+
+  DATA_BRANCHES.forEach(branch => {
+    const records = backup[branch];
+    if (!isPlainObject(records)) {
+      errors.push(`${branchLabels[branch]}: struttura non valida.`);
+      return;
+    }
+    const entries = Object.entries(records);
+    totalRecords += entries.length;
+    entries.forEach(([key, record], index) => {
+      const label = `${branchLabels[branch]} / record ${index + 1}`;
+      if (!key || invalidKey.test(key)) errors.push(`${label}: chiave Firebase non valida.`);
+      if (!isPlainObject(record)) {
+        errors.push(`${label}: deve essere un oggetto.`);
+        return;
+      }
+      let recordSize = 0;
+      try { recordSize = JSON.stringify(record).length; } catch (err) { errors.push(`${label}: contenuto non serializzabile.`); }
+      if (recordSize > 200000) errors.push(`${label}: dimensione anomala (oltre 200 KB).`);
+
+      if (branch === 'inventario') {
+        if (typeof record.nome !== 'string' || !record.nome.trim()) errors.push(`${label}: nome articolo mancante.`);
+        if (record.nome?.length > 300) errors.push(`${label}: nome articolo troppo lungo.`);
+        if (record.qty != null && (!Number.isFinite(Number(record.qty)) || Number(record.qty) < 0 || Number(record.qty) > 1000000000)) errors.push(`${label}: quantità non valida.`);
+      }
+      if (branch === 'services') {
+        if (typeof record.nome !== 'string' || !record.nome.trim()) errors.push(`${label}: nome evento mancante.`);
+        if (record.dataOut && !isValidYmd(record.dataOut)) errors.push(`${label}: data di uscita non valida.`);
+        if (record.dataIn && !isValidYmd(record.dataIn)) errors.push(`${label}: data di rientro non valida.`);
+        if (record.dataOut && record.dataIn && record.dataIn < record.dataOut) errors.push(`${label}: rientro precedente all'uscita.`);
+        if (record.items != null && !isPlainObject(record.items)) errors.push(`${label}: materiali non validi.`);
+        if (isPlainObject(record.items)) Object.entries(record.items).forEach(([itemKey, itemEntry]) => {
+          if (!isPlainObject(itemEntry) || typeof itemEntry.id !== 'string' || !itemEntry.id || invalidKey.test(itemKey)) errors.push(`${label}: riga materiale non valida.`);
+          else if (!Number.isFinite(Number(itemEntry.qty)) || Number(itemEntry.qty) <= 0 || Number(itemEntry.qty) > 1000000000) errors.push(`${label}: quantità materiale non valida.`);
+        });
+      }
+      if (branch === 'team' && (typeof record.nome !== 'string' || !record.nome.trim())) errors.push(`${label}: nome membro mancante.`);
+      if (branch === 'finance') {
+        if (record.date && !isValidYmd(record.date)) errors.push(`${label}: data spesa non valida.`);
+        if (!Number.isFinite(Number(record.amount)) || Number(record.amount) < 0 || Number(record.amount) > 1000000000) errors.push(`${label}: importo non valido.`);
+      }
+      if (branch === 'truck') {
+        if (record.date && !isValidYmd(record.date)) errors.push(`${label}: data camion non valida.`);
+        if (typeof record.person !== 'string' || !record.person.trim()) errors.push(`${label}: persona camion mancante.`);
+      }
+      if (branch === 'loans') {
+        if (typeof record.itemId !== 'string' || !record.itemId) errors.push(`${label}: articolo prestito mancante.`);
+        if (!Number.isFinite(Number(record.qty)) || Number(record.qty) <= 0 || Number(record.qty) > 1000000000) errors.push(`${label}: quantità prestito non valida.`);
+        ['startDate', 'endDate', 'returnedAt'].forEach(field => {
+          if (record[field] && field !== 'returnedAt' && !isValidYmd(record[field])) errors.push(`${label}: ${field} non valida.`);
+        });
+      }
+      if (branch === 'categories' && record.name != null && typeof record.name !== 'string') errors.push(`${label}: nome categoria non valido.`);
+    });
+  });
+
+  if (totalRecords > maxRecords) errors.push(`Il backup contiene troppi record (${totalRecords}, massimo ${maxRecords}).`);
+  if (!backup.sourceVersion) warnings.push('Backup precedente alla versione 4: verrà importato in formato compatibile.');
+  if (backup.preservedBranches?.length) warnings.push(`Saranno mantenuti i dati attuali per: ${backup.preservedBranches.join(', ')}.`);
+  return { ok: errors.length === 0, errors, warnings, totalRecords };
 }
 
 function formatBackupExportedAt(value) {
@@ -2844,6 +2936,10 @@ function handleBackupFile(input) {
   const file = input.files?.[0];
   input.value = '';
   if (!file) return;
+  if (file.size > 25 * 1024 * 1024) {
+    showToast('Backup troppo grande (massimo 25 MB)', 'danger');
+    return;
+  }
 
   const reader = new FileReader();
   reader.onload = () => {
@@ -2857,7 +2953,13 @@ function handleBackupFile(input) {
 
     const backup = normalizeBackupRoot(parsed);
     if (!backup) {
-      showToast('Formato backup non completo: servono inventario, eventi e team', 'danger');
+      showToast('Formato backup non valido o incompleto', 'danger');
+      return;
+    }
+    const validation = validateBackupData(backup);
+    if (!validation.ok) {
+      showToast(`Backup rifiutato: ${validation.errors.length} problemi`, 'danger');
+      alert(`Il backup non è stato modificato né importato.\n\n${validation.errors.slice(0, 12).join('\n')}${validation.errors.length > 12 ? `\n…e altri ${validation.errors.length - 12} problemi.` : ''}`);
       return;
     }
     if (!ensureBackupDataReady()) return;
@@ -2867,7 +2969,8 @@ function handleBackupFile(input) {
     const preservedMsg = backup.preservedBranches?.length
       ? `\n\nRami non presenti nel backup e mantenuti attuali: ${backup.preservedBranches.join(', ')}`
       : '';
-    const ok = confirm(`Ripristinare questo backup?\n\nBackup: ${formatBackupExportedAt(backup.exportedAt)}\nArticoli: ${counts.inventario}\nEventi: ${counts.services}\nMembri team: ${counts.team}\nCategorie: ${counts.categories}\nSpese: ${counts.finance}\nCamion: ${counts.truck}\nPrestiti: ${counts.loans}\n\nDati attuali:\nArticoli: ${currentCounts.inventario}\nEventi: ${currentCounts.services}\nMembri team: ${currentCounts.team}\nCategorie: ${currentCounts.categories}\nSpese: ${currentCounts.finance}\nCamion: ${currentCounts.truck}\nPrestiti: ${currentCounts.loans}${preservedMsg}\n\nPrima del ripristino verra scaricata una copia dello stato attuale. Poi i dati Firebase verranno sovrascritti.`);
+    const warningMsg = validation.warnings.length ? `\n\nNote:\n${validation.warnings.join('\n')}` : '';
+    const ok = confirm(`Ripristinare questo backup?\n\nBackup: ${formatBackupExportedAt(backup.exportedAt)}\nVersione: ${backup.sourceVersion || 'precedente'}\nRecord verificati: ${validation.totalRecords}\nArticoli: ${counts.inventario}\nEventi: ${counts.services}\nMembri team: ${counts.team}\nCategorie: ${counts.categories}\nSpese: ${counts.finance}\nCamion: ${counts.truck}\nPrestiti: ${counts.loans}\n\nDati attuali:\nArticoli: ${currentCounts.inventario}\nEventi: ${currentCounts.services}\nMembri team: ${currentCounts.team}\nCategorie: ${currentCounts.categories}\nSpese: ${currentCounts.finance}\nCamion: ${currentCounts.truck}\nPrestiti: ${currentCounts.loans}${preservedMsg}${warningMsg}\n\nPrima del ripristino verrà scaricata una copia dello stato attuale. Il ripristino sarà applicato da Firebase in un'unica operazione atomica.`);
     if (!ok) return;
     const typed = prompt(`Conferma finale: digita ${BACKUP_CONFIRM_WORD} per sovrascrivere i dati.`);
     if (typed !== BACKUP_CONFIRM_WORD) {
@@ -2877,18 +2980,18 @@ function handleBackupFile(input) {
 
     const fb = getFbOrWarn();
     if (!fb) return;
-    const { db, ref, set } = fb;
+    const { db, ref, update } = fb;
     downloadBackupSnapshot('verso_pre_ripristino', 'pre-restore');
     setSyncing(true);
-    Promise.all([
-      set(ref(db, 'inventario'), backup.inventario),
-      set(ref(db, 'services'), backup.services),
-      set(ref(db, 'team'), backup.team),
-      set(ref(db, 'categories'), backup.categories),
-      set(ref(db, 'finance'), backup.finance),
-      set(ref(db, 'truck'), backup.truck),
-      set(ref(db, 'loans'), backup.loans)
-    ])
+    update(ref(db), {
+      inventario: backup.inventario,
+      services: backup.services,
+      team: backup.team,
+      categories: backup.categories,
+      finance: backup.finance,
+      truck: backup.truck,
+      loans: backup.loans
+    })
       .then(() => showToast('Backup ripristinato'))
       .catch(err => {
         setSyncing(false);
@@ -3764,6 +3867,8 @@ function renderServiceCard(svc) {
   const materialStats = getServiceMaterialStats(svcEntries);
   const quoteSummary = getServiceQuoteSummary(svc);
   const availabilityIssues = getServiceAvailabilityIssues(svc);
+  const readinessBadge = window.versoFeatures?.renderServiceReadinessBadge?.(svc) || '';
+  const readinessChecklist = window.versoFeatures?.renderServiceChecklist?.(svc) || '';
   const isExpanded = expandedServiceCards.has(svcId);
 
   return `
@@ -3773,6 +3878,7 @@ function renderServiceCard(svc) {
           <div class="service-title-row">
             <div class="service-name">${escHtml(svc.nome || 'Evento')}</div>
             <div class="service-status ${statusClass[svcStatus] || statusClass.planned}">${statusLabels[svcStatus] || svcStatus}</div>
+            ${readinessBadge}
           </div>
           <div class="service-meta-row">
             <div class="service-meta-item">
@@ -3802,6 +3908,7 @@ function renderServiceCard(svc) {
       </div>
       <div class="service-card-body">
         ${renderServiceAvailabilityAlert(availabilityIssues)}
+        ${readinessChecklist}
         ${svc.note?`<div class="service-note">📝 ${escHtml(svc.note)}</div>`:''}
         <div class="service-items-list">
           ${renderServiceMaterialsHtml(svcEntries)}
@@ -7118,88 +7225,14 @@ document.addEventListener('visibilitychange', () => {
 function refreshFabForCurrentPage() {
   const fab = document.getElementById('fabAdd');
   if (!fab) return;
-
-  if (currentPage === 'qrcodes' || currentPage === 'preventivi') {
-    fab.style.display = 'none';
-    return;
-  }
-
   fab.style.display = '';
-
-  if (currentPage === 'dashboard') {
-    fab.textContent = '+';
-    fab.setAttribute('aria-label', 'Nuovo evento');
-    fab.onclick = openModalService;
-    return;
-  }
-
-  if (currentPage === 'service') {
-    fab.textContent = '+';
-    fab.setAttribute('aria-label', 'Nuovo evento');
-    fab.onclick = openModalService;
-    return;
-  }
-
-  if (currentPage === 'prezzi') {
-    fab.textContent = '€';
-    fab.setAttribute('aria-label', 'Nuovo articolo');
-    fab.onclick = openModalItem;
-    return;
-  }
-
-  if (currentPage === 'costi') {
-    fab.textContent = '+';
-    fab.setAttribute('aria-label', 'Nuova spesa');
-    fab.onclick = openModalFinance;
-    return;
-  }
-
-  if (currentPage === 'camion') {
-    fab.textContent = '+';
-    fab.setAttribute('aria-label', 'Nuova assegnazione camion');
-    fab.onclick = openModalTruck;
-    return;
-  }
-
-  if (currentPage === 'prestiti') {
-    fab.textContent = '+';
-    fab.setAttribute('aria-label', 'Nuovo prestito');
-    fab.onclick = () => {
-      document.getElementById('loanPerson')?.focus();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
-    return;
-  }
-
-  if (currentPage === 'team') {
-    fab.textContent = '👤';
-    fab.setAttribute('aria-label', 'Aggiungi membro');
-    fab.onclick = openModalMember;
-    return;
-  }
-
-  if (currentPage === 'disponibilita') {
-    fab.textContent = '📅';
-    fab.setAttribute('aria-label', 'Vai a oggi');
-    fab.onclick = () => {
-      const d = document.getElementById('availDate');
-      if (d) d.value = getLocalDateKey();
-      renderDisponibilita();
-    };
-    return;
-  }
-
-  if (currentPage === 'scanner') {
-    const running = !!camStream;
-    fab.textContent = running ? '■' : '📷';
-    fab.setAttribute('aria-label', running ? 'Ferma camera' : 'Avvia camera');
-    fab.onclick = running ? stopCamera : startCamera;
-    return;
-  }
-
   fab.textContent = '+';
-  fab.setAttribute('aria-label', 'Aggiungi');
-  fab.onclick = openModalItem;
+  fab.setAttribute('aria-label', 'Apri azioni rapide');
+  fab.setAttribute('title', 'Azioni rapide');
+  fab.onclick = () => {
+    if (window.versoFeatures?.openQuickActions) window.versoFeatures.openQuickActions();
+    else openModalService();
+  };
 }
 
 // Override routing to handle QR and Scanner pages
@@ -7244,6 +7277,29 @@ function switchPage(page) {
     }, 50);
   }
 }
+
+window.VersoCore = {
+  getState: () => ({ items, services, members, financeEntries, truckLog, loans, currentPage }),
+  getFbOrWarn,
+  escHtml,
+  formatDate,
+  formatMoney,
+  getItemDisplayName,
+  getServiceItemEntries,
+  getServiceAvailabilityIssues,
+  getServiceQuoteSummary,
+  isValidYmd,
+  openModalItem,
+  openModalService,
+  openModalFinance,
+  openModalTruck,
+  openModalMember,
+  switchPage,
+  showToast,
+  setSyncing,
+  renderAll,
+  renderService
+};
 
 
 // FAB default action
@@ -7322,6 +7378,49 @@ syncMobileNavUi();
     </div>
   </div>
 </div>
+
+<!-- MODULO FUNZIONI TRASVERSALI -->
+<div class="modal-overlay feature-overlay" id="modalQuickActions" onclick="window.versoFeatures?.handleOverlay(event, 'modalQuickActions')">
+  <div class="modal feature-modal" role="dialog" aria-modal="true" aria-labelledby="quickActionsTitle">
+    <div class="feature-modal-heading">
+      <div>
+        <div class="modal-title" id="quickActionsTitle">Azioni rapide</div>
+        <div class="feature-modal-subtitle">Crea senza dover cercare la pagina giusta.</div>
+      </div>
+      <button class="feature-modal-close" type="button" aria-label="Chiudi" onclick="window.versoFeatures?.closeFeatureModal('modalQuickActions')">✕</button>
+    </div>
+    <div class="quick-actions-grid">
+      <button type="button" class="quick-action-card primary" onclick="window.versoFeatures?.runQuickAction('event')"><span>🎪</span><strong>Nuovo evento</strong><small>Date, luogo e materiali</small></button>
+      <button type="button" class="quick-action-card" onclick="window.versoFeatures?.runQuickAction('loan')"><span>🙋</span><strong>Nuovo prestito</strong><small>Articolo affidato al team</small></button>
+      <button type="button" class="quick-action-card" onclick="window.versoFeatures?.runQuickAction('expense')"><span>💰</span><strong>Nuova spesa</strong><small>Costo e pagante</small></button>
+      <button type="button" class="quick-action-card" onclick="window.versoFeatures?.runQuickAction('truck')"><span>🚚</span><strong>Camion</strong><small>Nuova assegnazione</small></button>
+      <button type="button" class="quick-action-card" onclick="window.versoFeatures?.runQuickAction('item')"><span>📦</span><strong>Nuovo articolo</strong><small>Aggiungi al magazzino</small></button>
+      <button type="button" class="quick-action-card" onclick="window.versoFeatures?.runQuickAction('member')"><span>👤</span><strong>Nuovo membro</strong><small>Aggiungi al team</small></button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay feature-overlay" id="modalGlobalSearch" onclick="window.versoFeatures?.handleOverlay(event, 'modalGlobalSearch')">
+  <div class="modal feature-modal global-search-modal" role="dialog" aria-modal="true" aria-labelledby="globalSearchTitle">
+    <div class="feature-modal-heading">
+      <div>
+        <div class="modal-title" id="globalSearchTitle">Cerca ovunque</div>
+        <div class="feature-modal-subtitle">Articoli, eventi, team, prestiti, spese e camion.</div>
+      </div>
+      <button class="feature-modal-close" type="button" aria-label="Chiudi" onclick="window.versoFeatures?.closeFeatureModal('modalGlobalSearch')">✕</button>
+    </div>
+    <label class="global-search-box">
+      <span aria-hidden="true">⌕</span>
+      <input type="search" id="globalSearchInput" placeholder="Scrivi almeno 2 caratteri…" autocomplete="off" aria-label="Cerca in tutta l'app">
+      <kbd>ESC</kbd>
+    </label>
+    <div class="global-search-results" id="globalSearchResults" aria-live="polite">
+      <div class="global-search-empty">Inizia a scrivere per cercare in tutta l'app.</div>
+    </div>
+  </div>
+</div>
+
+<script src="./app-features.js"></script>
 
 </body>
 </html>
