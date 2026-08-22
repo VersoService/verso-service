@@ -1,6 +1,6 @@
 # VERSO SERVICE - Guida Completa
 
-Gestionale web single-file per magazzino, eventi, costi, ordini, camion, team e QR.
+Gestionale web responsive per magazzino, eventi, preventivi, costi, camion, prestiti, team e QR.
 
 ## 1. Obiettivo del progetto
 
@@ -8,17 +8,18 @@ L'app serve a gestire tutto il ciclo operativo di un service:
 - inventario articoli
 - pianificazione e gestione eventi
 - verifica disponibilita per data
-- gestione costi, entrate e spese operative
-- tracciamento ordini/acquisti con costo
+- gestione spese operative
 - storico assegnazioni camion per data
-- rimborsi team e collegamenti economici evento/ordine
+- prestiti di materiale al team con intervallo di date
 - assegnazioni team e ore lavorate
 - generazione/scansione QR per movimenti rapidi
 
 ## 2. Stack e architettura
 
 - Frontend: HTML + CSS + JavaScript vanilla
-- File principale: `index.html` (UI + logica applicativa nello stesso file)
+- File principale: `index.html` (UI e logica applicativa principale)
+- Funzioni trasversali: `app-features.js` (ricerca globale, azioni rapide, sync e prontezza eventi)
+- Stili trasversali: `app-features.css`
 - Backend dati: Firebase Realtime Database
 - Login: Firebase Authentication (Email/Password)
 - Librerie esterne:
@@ -33,6 +34,10 @@ Nota importante: non c'e un backend custom. Tutte le operazioni CRUD partono dal
 ```text
 verso-service/
   index.html
+  app-features.js
+  app-features.css
+  database.rules.json
+  firebase.json
   manifest.webmanifest
   icons/
     icon-16.png
@@ -74,7 +79,7 @@ Per uso online con GitHub Pages:
 3. Pubblica le regole in `database.rules.json` sul Realtime Database.
 4. Verifica che GitHub Pages sia tra i domini autorizzati in **Authentication -> Settings -> Authorized domains**.
 
-Le regole incluse permettono lettura/scrittura solo a utenti autenticati e solo sui rami dati usati dall'app (`inventario`, `services`, `team`, `categories`, `finance`, `orders`, `truck`, `loans`). Qualsiasi altro ramo del Realtime Database resta negato di default:
+Le regole incluse permettono lettura/scrittura solo a utenti autenticati e solo sui rami dati usati dall'app (`inventario`, `services`, `team`, `categories`, `finance`, `truck`, `loans`). Qualsiasi altro ramo del Realtime Database resta negato di default:
 
 ```json
 {
@@ -96,10 +101,6 @@ Le regole incluse permettono lettura/scrittura solo a utenti autenticati e solo 
       ".write": "auth != null"
     },
     "finance": {
-      ".read": "auth != null",
-      ".write": "auth != null"
-    },
-    "orders": {
       ".read": "auth != null",
       ".write": "auth != null"
     },
@@ -133,8 +134,8 @@ Path Realtime Database usati:
 - `team/`
 - `categories/`
 - `finance/`
-- `orders/`
 - `truck/`
+- `loans/`
 
 La UI e in ascolto realtime (`onValue`) su questi nodi; quando cambia un dato in DB, la pagina si aggiorna automaticamente.
 
@@ -156,7 +157,6 @@ La UI e in ascolto realtime (`onValue`) su questi nodi; quando cambia un dato in
 - vista evento compatta/espandibile per gestire liste lunghe
 - ogni evento contiene lista articoli con quantita, raggruppata per categoria quando espanso
 - quando un evento passa a `returned`, l'app propone di scalare dal magazzino i consumabili usati
-- da evento/preventivo puoi registrare l'incasso nella sezione Costi
 - export **Lista carico** in `.txt` con solo materiale e quantita, separato dal preventivo
 
 ### Disponibilita
@@ -187,22 +187,12 @@ La UI e in ascolto realtime (`onValue`) su questi nodi; quando cambia un dato in
 - report mensile ore (input mese + export CSV)
 
 ### Costi
-- CRUD movimenti economici
-- tipo movimento: entrata o spesa
+- CRUD spese operative
 - filtro per mese e ricerca libera
-- riepilogo entrate, spese, saldo e rimborsi aperti
-- collegamento opzionale a evento e ordine
-- spese anticipate da membri del team con stato rimborso `open` / `paid`
-- grafico annuale entrate/spese mese per mese
-- export CSV dei movimenti filtrati
-
-### Ordini
-- CRUD ordini/acquisti
-- stati: `pending`, `ordered`, `paid`, `received`, `cancelled`
-- fornitore, riferimento, oggetto, quantita e costo totale
-- riepilogo totale ordini, pagato/arrivato e righe da seguire
-- dagli ordini pagati/arrivati puoi registrare la spesa nella sezione Costi
-- export CSV ordini
+- riepilogo spese, righe e membri coinvolti
+- pagante opzionale scelto dal team
+- grafico annuale delle spese
+- export CSV delle spese filtrate
 
 ### Camion
 - storico semplice di chi prende il camion in una data
@@ -291,34 +281,8 @@ La UI e in ascolto realtime (`onValue`) su questi nodi; quando cambia un dato in
   "type": "expense",
   "date": "2026-06-08",
   "description": "Carburante",
-  "category": "Trasporti",
   "amount": 85.5,
-  "payment": "Carta",
-  "eventId": "svc001",
-  "orderId": "",
   "paidByMemberId": "member01",
-  "reimbursementStatus": "open",
-  "sourceType": "event_income",
-  "sourceId": "svc001",
-  "note": "...",
-  "createdAt": 1710000000000,
-  "updatedAt": 1710000000000
-}
-```
-
-### `orders/<orderId>`
-
-```json
-{
-  "id": "ord001",
-  "date": "2026-06-08",
-  "status": "pending",
-  "supplier": "Fornitore",
-  "reference": "ORD-123",
-  "item": "Cavi XLR",
-  "qty": 10,
-  "amount": 120,
-  "note": "...",
   "createdAt": 1710000000000,
   "updatedAt": 1710000000000
 }
@@ -360,14 +324,14 @@ La UI e in ascolto realtime (`onValue`) su questi nodi; quando cambia un dato in
 
 ### Realtime Database (principale)
 - E il database reale dell'app.
-- Tutti i dati persistenti stanno qui (`inventario`, `services`, `team`, `categories`, `finance`, `orders`, `truck`, `loans`).
+- Tutti i dati persistenti stanno qui (`inventario`, `services`, `team`, `categories`, `finance`, `truck`, `loans`).
 - Il piano gratuito Spark e sufficiente per uso leggero/medio: se superi i limiti il servizio puo bloccarsi o rifiutare operazioni, ma non e pensato come sistema di backup pluriennale.
 - Su Spark non hai i backup automatici gestiti di Realtime Database. Per zero sorprese operative, conserva sempre copie JSON fuori da Firebase.
 
 ### Backup JSON
-- Dal pulsante **Backup** nell'header scarichi un file JSON con `inventario`, `services`, `team`, `categories`, `finance`, `orders`, `truck` e `loans`.
+- Dal pulsante **Backup** nell'header scarichi un file JSON con `inventario`, `services`, `team`, `categories`, `finance`, `truck` e `loans`.
 - Il backup include data di export, motivo e conteggi dei rami dati.
-- Il download viene consentito solo dopo la prima sincronizzazione completa di magazzino, eventi, team, categorie, costi, ordini, camion e prestiti.
+- Il download viene consentito solo dopo la prima sincronizzazione completa di magazzino, eventi, team, categorie, costi, camion e prestiti.
 - Dal pulsante **Ripristina** puoi ricaricare un backup JSON completo, con doppia conferma prima di sovrascrivere i dati attuali.
 - Anche il ripristino viene consentito solo dopo la sincronizzazione completa, per poter scaricare una copia corretta dello stato corrente.
 - Prima di ogni ripristino l'app scarica automaticamente una copia `verso_pre_ripristino_*.json`.
@@ -412,7 +376,7 @@ La UI e in ascolto realtime (`onValue`) su questi nodi; quando cambia un dato in
 
 ### Calcolo disponibilita articolo
 - "Impegnato ora": somma qty articolo su eventi `active`.
-- "Impegnato su data": somma qty su eventi che coprono la data selezionata (`dataOut <= data <= dataIn`) e non `returned`.
+- "Impegnato su data": somma qty su eventi e prestiti che coprono la data selezionata.
 
 ### Scanner e prelievo evento
 - Codice QR atteso: `VS:<itemId>` (supporta anche payload testuali che contengono questa forma).
@@ -436,12 +400,11 @@ Prima del deploy pubblico controlla:
 
 In `index.html` la logica e organizzata per blocchi. Mappa rapida:
 - Login/sessione: funzioni `checkSession`, `doLogin`, `showApp`
-- Firebase sync base: listener `onValue` su `inventario/services/team/categories/finance/orders/truck`
+- Firebase sync base: listener `onValue` su `inventario/services/team/categories/finance/truck/loans`
 - Magazzino: `renderMagazzino`, `saveItem`, `changeQty`, `deleteItem`, `saveCategory`
 - Eventi: `renderService`, `saveService`, `setServiceStato`
 - Lista carico eventi: `downloadServiceLoadList`, `buildServiceLoadListText`
-- Costi: `renderFinance`, `saveFinanceEntry`, `deleteFinanceEntry`, `markFinanceReimbursed`, `recordEventIncome`, `recordOrderExpense`, `exportFinanceCsv`
-- Ordini: `renderOrders`, `saveOrder`, `deleteOrder`, `recordOrderExpense`, `exportOrdersCsv`
+- Costi: `renderFinance`, `saveFinanceEntry`, `deleteFinanceEntry`, `exportFinanceCsv`
 - Camion: `renderTruck`, `saveTruckEntry`, `deleteTruckEntry`
 - Disponibilita: `renderDisponibilita`, `getItemsBusyOnDate`
 - Team: `renderTeam`, `saveMember`, `saveAssignment`, `saveAssignmentHours`
@@ -451,14 +414,14 @@ In `index.html` la logica e organizzata per blocchi. Mappa rapida:
 
 ## 12. Limiti noti e migliorie suggerite
 
-- File unico molto grande (`index.html`): manutenzione difficile.
+- `index.html` resta molto grande: la manutenzione richiede attenzione.
 - Assenza test automatici.
 - Nessun service worker/offline reale.
-- Autenticazione non robusta.
+- Le regole Firebase non distinguono ancora ruoli o permessi diversi tra utenti autenticati.
 
 Roadmap minima consigliata:
-1. Separare `index.html` in `app.js`, `styles.css`, componenti/moduli.
-2. Introdurre Firebase Auth + ruoli.
+1. Separare gradualmente `index.html` in moduli piu piccoli.
+2. Aggiungere ruoli e permessi alle regole Firebase, se serviranno utenti con accessi diversi.
 3. Aggiungere test smoke end-to-end (almeno flussi CRUD + scanner manuale).
 4. Definire ambienti `dev`/`prod` con config separate.
 

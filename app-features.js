@@ -23,10 +23,12 @@
   }
 
   function openFeatureModal(id) {
+    if (!document.getElementById('appWrapper')?.classList.contains('visible')) return false;
     const modal = document.getElementById(id);
-    if (!modal) return;
+    if (!modal) return false;
     modal.classList.add('open');
     document.body.classList.add('feature-modal-open');
+    return true;
   }
 
   function closeFeatureModal(id) {
@@ -41,8 +43,12 @@
   }
 
   function openQuickActions() {
-    openFeatureModal('modalQuickActions');
-    setTimeout(() => document.querySelector('#modalQuickActions .quick-action-card')?.focus(), 80);
+    if (!openFeatureModal('modalQuickActions')) return;
+    setTimeout(() => {
+      if (document.getElementById('modalQuickActions')?.classList.contains('open')) {
+        document.querySelector('#modalQuickActions .quick-action-card')?.focus();
+      }
+    }, 80);
   }
 
   function runQuickAction(action) {
@@ -97,6 +103,7 @@
     Object.values(items || {}).forEach(item => add({
       icon: '📦', type: 'Articolo', page: 'magazzino', searchId: 'searchMag',
       title: core.getItemDisplayName(item),
+      filterQuery: item.nome || core.getItemDisplayName(item),
       meta: [item.categoria, item.posizione, item.seriale].filter(Boolean).join(' · '),
       extra: [item.nome, item.brand, item.modello, item.note].filter(Boolean).join(' ')
     }));
@@ -104,6 +111,7 @@
     Object.values(services || {}).forEach(service => add({
       icon: '🎪', type: 'Evento', page: 'service', searchId: 'searchSvc',
       title: service.nome || 'Evento',
+      filterQuery: service.nome || 'Evento',
       meta: [service.luogo, service.cliente, service.dataOut].filter(Boolean).join(' · '),
       extra: service.note || ''
     }));
@@ -111,6 +119,7 @@
     Object.values(members || {}).forEach(member => add({
       icon: '👤', type: 'Team', page: 'team',
       title: member.nome || 'Membro team',
+      filterQuery: member.nome || 'Membro team',
       meta: [member.ruolo, member.telefono].filter(Boolean).join(' · '),
       extra: member.note || ''
     }));
@@ -121,6 +130,7 @@
       add({
         icon: '🙋', type: 'Prestito', page: 'prestiti', searchId: 'searchLoans',
         title: `${memberName} · ${itemName}`,
+        filterQuery: memberName,
         meta: [loan.startDate || loan.date, loan.endDate, loan.status === 'returned' ? 'Rientrato' : 'Aperto'].filter(Boolean).join(' · '),
         extra: loan.note || ''
       });
@@ -129,6 +139,7 @@
     Object.values(financeEntries || {}).filter(entry => entry.type !== 'income').forEach(entry => add({
       icon: '💰', type: 'Spesa', page: 'costi', searchId: 'searchFinance',
       title: entry.description || 'Spesa',
+      filterQuery: entry.description || 'Spesa',
       meta: [entry.date, core.formatMoney(Number(entry.amount) || 0), members?.[entry.paidByMemberId]?.nome].filter(Boolean).join(' · '),
       extra: entry.note || ''
     }));
@@ -136,6 +147,7 @@
     Object.values(truckLog || {}).forEach(entry => add({
       icon: '🚚', type: 'Camion', page: 'camion', searchId: 'searchTruck',
       title: entry.person || 'Assegnazione camion',
+      filterQuery: entry.person || 'Assegnazione camion',
       meta: [entry.date, entry.note].filter(Boolean).join(' · '),
       extra: ''
     }));
@@ -177,19 +189,21 @@
   }
 
   function openGlobalSearch() {
-    openFeatureModal('modalGlobalSearch');
+    if (!openFeatureModal('modalGlobalSearch')) return;
     const input = document.getElementById('globalSearchInput');
     if (input) {
       input.value = '';
       renderSearchResults('');
-      setTimeout(() => input.focus(), 80);
+      setTimeout(() => {
+        if (document.getElementById('modalGlobalSearch')?.classList.contains('open')) input.focus();
+      }, 80);
     }
   }
 
   function openSearchResult(index) {
     const result = searchResults[index];
     if (!result) return;
-    const query = document.getElementById('globalSearchInput')?.value.trim() || result.title;
+    const query = result.filterQuery || result.title;
     closeFeatureModal('modalGlobalSearch');
     core.switchPage(result.page);
     requestAnimationFrame(() => {
@@ -202,78 +216,12 @@
     });
   }
 
-  function getServiceReadiness(service) {
-    const entries = core.getServiceItemEntries(service);
-    const availabilityIssues = core.getServiceAvailabilityIssues(service);
-    const quote = core.getServiceQuoteSummary(service);
-    const datesReady = core.isValidYmd(service?.dataOut) && core.isValidYmd(service?.dataIn) && service.dataIn >= service.dataOut;
-    const checks = [
-      { key: 'details', label: 'Date e luogo', done: datesReady && !!String(service?.luogo || '').trim() },
-      { key: 'materials', label: 'Materiali inseriti', done: entries.length > 0 },
-      { key: 'availability', label: 'Disponibilità verificata', done: entries.length > 0 && availabilityIssues.length === 0 },
-      { key: 'team', label: 'Team assegnato', done: Object.keys(service?.team || {}).length > 0 },
-      { key: 'quote', label: 'Preventivo completo', done: quote.lines.length > 0 && quote.missingCount === 0 },
-      { key: 'truck', label: 'Camion pronto', done: service?.checklist?.truckReady === true, manual: true }
-    ];
-    const completed = checks.filter(check => check.done).length;
-    return { checks, completed, total: checks.length, ready: completed === checks.length };
-  }
-
-  function renderServiceReadinessBadge(service) {
-    const readiness = getServiceReadiness(service);
-    return `<span class="service-readiness-badge${readiness.ready ? ' ready' : ''}" title="Prontezza evento: ${readiness.completed} controlli su ${readiness.total}">${readiness.ready ? '✓ Pronto' : `${readiness.completed}/${readiness.total} pronto`}</span>`;
-  }
-
-  function renderServiceChecklist(service) {
-    const readiness = getServiceReadiness(service);
-    const serviceId = escapeHtml(service?.id || '');
-    return `
-      <section class="service-readiness" aria-label="Checklist prontezza evento">
-        <div class="service-readiness-head">
-          <span>Checklist prontezza</span>
-          <span class="service-readiness-progress">${readiness.completed}/${readiness.total}${readiness.ready ? ' · pronto' : ''}</span>
-        </div>
-        <div class="service-readiness-list">
-          ${readiness.checks.map(check => {
-            const content = `<span class="service-readiness-check">${check.done ? '✓' : '○'}</span><span>${check.label}</span>`;
-            return check.manual
-              ? `<button type="button" class="service-readiness-item manual${check.done ? ' done' : ''}" data-service-readiness-toggle="${serviceId}" aria-pressed="${check.done}">${content}</button>`
-              : `<div class="service-readiness-item${check.done ? ' done' : ''}">${content}</div>`;
-          }).join('')}
-        </div>
-      </section>`;
-  }
-
-  function toggleTruckReady(serviceId) {
-    const state = core.getState();
-    const service = state.services?.[serviceId];
-    const fb = core.getFbOrWarn();
-    if (!service || !fb) return;
-    const next = service?.checklist?.truckReady !== true;
-    const { db, ref, update } = fb;
-    core.setSyncing(true);
-    update(ref(db, `services/${serviceId}`), {
-      'checklist/truckReady': next,
-      updatedAt: Date.now()
-    })
-      .then(() => core.showToast(next ? 'Camion segnato come pronto' : 'Controllo camion riaperto'))
-      .catch(error => {
-        core.setSyncing(false);
-        console.error('toggleTruckReady failed:', error);
-        core.showToast('Errore checklist camion', 'danger');
-      });
-  }
-
   window.versoFeatures = {
     openQuickActions,
     runQuickAction,
     openGlobalSearch,
     closeFeatureModal,
-    handleOverlay,
-    getServiceReadiness,
-    renderServiceReadinessBadge,
-    renderServiceChecklist,
-    toggleTruckReady
+    handleOverlay
   };
 
   window.addEventListener('verso:connection', event => {
@@ -281,7 +229,8 @@
     updateSyncStatus();
   });
   window.addEventListener('verso:sync', event => {
-    syncState.syncing = !!event.detail?.syncing;
+    const nextSyncing = !!event.detail?.syncing;
+    if (!(syncState.online === false && syncState.syncing && !nextSyncing)) syncState.syncing = nextSyncing;
     updateSyncStatus();
   });
 
@@ -297,11 +246,6 @@
   document.getElementById('globalSearchResults')?.addEventListener('click', event => {
     const button = event.target.closest('[data-search-result]');
     if (button) openSearchResult(Number(button.dataset.searchResult));
-  });
-
-  document.addEventListener('click', event => {
-    const toggle = event.target.closest('[data-service-readiness-toggle]');
-    if (toggle) toggleTruckReady(toggle.dataset.serviceReadinessToggle);
   });
 
   document.addEventListener('keydown', event => {

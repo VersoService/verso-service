@@ -11,7 +11,7 @@
 <link rel="icon" type="image/png" sizes="16x16" href="./icons/icon-16.png">
 <link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-touch-icon.png">
 <link rel="manifest" href="./manifest.webmanifest">
-<link rel="stylesheet" href="./app-features.css">
+<link rel="stylesheet" href="./app-features.css?v=20260822-3">
 <meta name="theme-color" content="#121212">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1858,9 +1858,37 @@ function showApp() {
 
 function showLogin() {
   stopFirebaseDataListeners();
+  if (typeof camStream !== 'undefined' && camStream) stopCamera();
   currentUser = null;
   sessionStorage.removeItem(SESSION_USER_KEY);
   document.getElementById('appWrapper').classList.remove('visible');
+  items = {};
+  services = {};
+  members = {};
+  categories = {};
+  financeEntries = {};
+  truckLog = {};
+  loans = {};
+  editItemId = null;
+  editSvcId = null;
+  editMemberId = null;
+  editFinanceId = null;
+  editTruckId = null;
+  editLoanId = null;
+  assigningSvcId = null;
+  backupReminderShown = false;
+  expandedServiceCards.clear();
+  expandedQuoteCards.clear();
+  expandedLoanGroups.clear();
+  expandedTeamEventCards.clear();
+  document.querySelectorAll('.modal-overlay.open').forEach(overlay => overlay.classList.remove('open'));
+  document.body.classList.remove('feature-modal-open', 'mobile-nav-open');
+  toggleMobileMenu(false);
+  currentPage = 'dashboard';
+  document.querySelectorAll('.page').forEach(page => page.classList.toggle('active', page.id === 'page-dashboard'));
+  document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.toggle('active', tab.id === 'tab-dashboard'));
+  syncMobileNavUi();
+  renderAll();
   const ls = document.getElementById('loginScreen');
   ls.style.display = 'flex';
   ls.classList.remove('hidden');
@@ -1908,7 +1936,7 @@ function startFirebaseDataListeners() {
 
   firebaseUnsubscribers.push(onValue(ref(db, 'inventario'), snap => {
     setSyncing(false);
-    items = snap.val() || {};
+    items = sanitizeFirebaseBranch(snap.val(), 'inventario');
     markFirebaseDataLoaded('inventario');
     renderAll();
     if (checkSession()) hideLoading();
@@ -1916,7 +1944,7 @@ function startFirebaseDataListeners() {
 
   firebaseUnsubscribers.push(onValue(ref(db, 'services'), snap => {
     setSyncing(false);
-    services = snap.val() || {};
+    services = sanitizeFirebaseBranch(snap.val(), 'services');
     markFirebaseDataLoaded('services');
     renderAll();
     scheduleAutoServiceStatusSync();
@@ -1924,7 +1952,7 @@ function startFirebaseDataListeners() {
 
   firebaseUnsubscribers.push(onValue(ref(db, 'team'), snap => {
     setSyncing(false);
-    members = snap.val() || {};
+    members = sanitizeFirebaseBranch(snap.val(), 'team');
     markFirebaseDataLoaded('team');
     if (currentPage === 'team') renderTeam();
     if (currentPage === 'service') renderService();
@@ -1933,7 +1961,7 @@ function startFirebaseDataListeners() {
 
   firebaseUnsubscribers.push(onValue(ref(db, 'categories'), snap => {
     setSyncing(false);
-    categories = snap.val() || {};
+    categories = sanitizeFirebaseBranch(snap.val(), 'categories');
     markFirebaseDataLoaded('categories');
     populateCategorySelect(document.getElementById('fCategoria')?.value || '');
     renderAll();
@@ -1941,21 +1969,21 @@ function startFirebaseDataListeners() {
 
   firebaseUnsubscribers.push(onValue(ref(db, 'finance'), snap => {
     setSyncing(false);
-    financeEntries = snap.val() || {};
+    financeEntries = sanitizeFirebaseBranch(snap.val(), 'finance');
     markFirebaseDataLoaded('finance');
     if (currentPage === 'costi') renderFinance();
   }, () => { setSyncing(false); showToast('Errore lettura costi', 'danger'); }));
 
   firebaseUnsubscribers.push(onValue(ref(db, 'truck'), snap => {
     setSyncing(false);
-    truckLog = snap.val() || {};
+    truckLog = sanitizeFirebaseBranch(snap.val(), 'truck');
     markFirebaseDataLoaded('truck');
     if (currentPage === 'camion') renderTruck();
   }, () => { setSyncing(false); showToast('Errore lettura camion', 'danger'); }));
 
   firebaseUnsubscribers.push(onValue(ref(db, 'loans'), snap => {
     setSyncing(false);
-    loans = snap.val() || {};
+    loans = sanitizeFirebaseBranch(snap.val(), 'loans');
     markFirebaseDataLoaded('loans');
     renderAll();
     autoDeleteExpiredLoans();
@@ -2016,6 +2044,79 @@ function getLocalDateTimeKey(d = new Date()) {
 
 function isPlainObject(value) {
   return !!value && typeof value === 'object' && !Array.isArray(value);
+}
+
+const INVALID_FIREBASE_ID = /[.#$\[\]\/]/;
+const UNSAFE_UI_ID = /[\s<>'"`\\\u0000-\u001F\u007F]/;
+
+function isSafeDataId(value) {
+  return typeof value === 'string'
+    && value.length > 0
+    && value.length <= 200
+    && !INVALID_FIREBASE_ID.test(value)
+    && !UNSAFE_UI_ID.test(value);
+}
+
+function sanitizeNestedIdMap(raw, normalizeRecord = record => record) {
+  if (!isPlainObject(raw)) return {};
+  const clean = {};
+  Object.entries(raw).forEach(([key, record]) => {
+    if (!isSafeDataId(key) || !isPlainObject(record)) return;
+    clean[key] = normalizeRecord({ ...record, id: key });
+  });
+  return clean;
+}
+
+function sanitizeFirebaseBranch(raw, branch) {
+  if (!isPlainObject(raw)) return {};
+  const clean = {};
+  let dropped = 0;
+
+  Object.entries(raw).forEach(([key, source]) => {
+    if (!isSafeDataId(key) || !isPlainObject(source)) {
+      dropped += 1;
+      return;
+    }
+    const record = { ...source, id: key };
+    if (branch === 'inventario') {
+      record.qty = Math.max(0, parseInt(source.qty, 10) || 0);
+      if (source.suggestedItems != null) {
+        record.suggestedItems = sanitizeNestedIdMap(source.suggestedItems, link => ({
+          ...link,
+          qty: Math.max(1, parseInt(link.qty, 10) || 1)
+        }));
+      }
+    }
+    if (branch === 'services') {
+      if (source.items != null) record.items = sanitizeNestedIdMap(source.items, entry => ({
+        ...entry,
+        qty: Math.max(1, parseInt(entry.qty, 10) || 1)
+      }));
+      if (source.team != null) record.team = sanitizeNestedIdMap(source.team, assignment => ({
+        ...assignment,
+        ore: normalizeHours(assignment.ore || 0)
+      }));
+      if (isPlainObject(source.quote) && source.quote.externalRentals != null) {
+        record.quote = {
+          ...source.quote,
+          externalRentals: normalizeQuoteExternalRentals(source.quote.externalRentals)
+        };
+      }
+    }
+    if (branch === 'finance' && record.paidByMemberId && !isSafeDataId(record.paidByMemberId)) {
+      record.paidByMemberId = '';
+    }
+    if (branch === 'finance') record.amount = normalizeMoney(record.amount);
+    if (branch === 'loans') {
+      if (record.itemId && !isSafeDataId(record.itemId)) record.itemId = '';
+      if (record.memberId && !isSafeDataId(record.memberId)) record.memberId = '';
+      record.qty = Math.max(1, parseInt(record.qty, 10) || 1);
+    }
+    clean[key] = record;
+  });
+
+  if (dropped) console.warn(`Verso: ignorati ${dropped} record non validi nel ramo ${branch}.`);
+  return clean;
 }
 
 function normalizeCategoryName(value) {
@@ -2126,7 +2227,11 @@ function toggleCategoryCreator(forceOpen) {
   if (!panel) return;
   const shouldOpen = typeof forceOpen === 'boolean' ? forceOpen : !panel.classList.contains('open');
   panel.classList.toggle('open', shouldOpen);
-  if (shouldOpen) setTimeout(() => document.getElementById('fCategoryName')?.focus(), 50);
+  if (shouldOpen) setTimeout(() => {
+    if (panel.classList.contains('open') && document.getElementById('modalItem')?.classList.contains('open')) {
+      document.getElementById('fCategoryName')?.focus();
+    }
+  }, 50);
 }
 
 function clearCategoryCreator() {
@@ -2194,7 +2299,14 @@ function handleCategoryCreatorKey(e) {
 }
 
 function isValidYmd(s) {
-  return typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s);
+  if (typeof s !== 'string') return false;
+  const match = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) return false;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
 }
 
 function calcServiceAutoStatus(svc, todayKey = getLocalDateKey()) {
@@ -2227,7 +2339,7 @@ function autoSyncServiceStatuses() {
   const changes = [];
 
   Object.entries(services || {}).forEach(([key, svc]) => {
-    const svcId = svc?.id || key;
+    const svcId = key;
     const target = calcServiceAutoStatus(svc, todayKey);
     if (!target) return;
     const current = svc?.stato || 'planned';
@@ -2845,7 +2957,8 @@ function normalizeBackupRoot(parsed) {
     preservedBranches,
     exportedAt: parsed.exportedAt || null,
     sourceApp: parsed.app || null,
-    sourceVersion: Number(parsed.version || 0)
+    sourceVersionRaw: Object.prototype.hasOwnProperty.call(parsed, 'version') ? parsed.version : null,
+    sourceVersion: parsed.version == null ? 0 : Number(parsed.version)
   };
 }
 
@@ -2856,12 +2969,12 @@ function validateBackupData(backup) {
     inventario: 'inventario', services: 'eventi', team: 'team', categories: 'categorie',
     finance: 'spese', truck: 'camion', loans: 'prestiti'
   };
-  const invalidKey = /[.#$\[\]\/]/;
   const maxRecords = 100000;
   let totalRecords = 0;
 
-  if (backup.sourceApp && backup.sourceApp !== 'verso-service') errors.push(`Il file appartiene a un'altra app (${backup.sourceApp}).`);
-  if (backup.sourceVersion && (!Number.isInteger(backup.sourceVersion) || backup.sourceVersion < 1)) errors.push('Versione backup non valida.');
+  if (backup.sourceApp != null && typeof backup.sourceApp !== 'string') errors.push('Identificativo app del backup non valido.');
+  else if (backup.sourceApp && backup.sourceApp !== 'verso-service') errors.push(`Il file appartiene a un'altra app (${backup.sourceApp}).`);
+  if (backup.sourceVersionRaw != null && (!Number.isInteger(backup.sourceVersion) || backup.sourceVersion < 1)) errors.push('Versione backup non valida.');
   if (backup.sourceVersion > 4) errors.push(`Backup versione ${backup.sourceVersion}: questa app supporta fino alla versione 4.`);
 
   DATA_BRANCHES.forEach(branch => {
@@ -2874,7 +2987,7 @@ function validateBackupData(backup) {
     totalRecords += entries.length;
     entries.forEach(([key, record], index) => {
       const label = `${branchLabels[branch]} / record ${index + 1}`;
-      if (!key || invalidKey.test(key)) errors.push(`${label}: chiave Firebase non valida.`);
+      if (!isSafeDataId(key)) errors.push(`${label}: identificativo non valido.`);
       if (!isPlainObject(record)) {
         errors.push(`${label}: deve essere un oggetto.`);
         return;
@@ -2882,21 +2995,37 @@ function validateBackupData(backup) {
       let recordSize = 0;
       try { recordSize = JSON.stringify(record).length; } catch (err) { errors.push(`${label}: contenuto non serializzabile.`); }
       if (recordSize > 200000) errors.push(`${label}: dimensione anomala (oltre 200 KB).`);
+      if (record.id != null && (record.id !== key || !isSafeDataId(record.id))) errors.push(`${label}: id interno non coerente con la chiave.`);
 
       if (branch === 'inventario') {
         if (typeof record.nome !== 'string' || !record.nome.trim()) errors.push(`${label}: nome articolo mancante.`);
         if (record.nome?.length > 300) errors.push(`${label}: nome articolo troppo lungo.`);
         if (record.qty != null && (!Number.isFinite(Number(record.qty)) || Number(record.qty) < 0 || Number(record.qty) > 1000000000)) errors.push(`${label}: quantità non valida.`);
+        if (record.suggestedItems != null && !isPlainObject(record.suggestedItems)) errors.push(`${label}: collegamenti suggeriti non validi.`);
+        if (isPlainObject(record.suggestedItems)) Object.entries(record.suggestedItems).forEach(([suggestedKey, suggested]) => {
+          if (!isPlainObject(suggested) || suggested.id !== suggestedKey || !isSafeDataId(suggestedKey)) errors.push(`${label}: collegamento suggerito non valido.`);
+        });
       }
       if (branch === 'services') {
         if (typeof record.nome !== 'string' || !record.nome.trim()) errors.push(`${label}: nome evento mancante.`);
+        if (record.stato != null && !['planned', 'active', 'returned'].includes(record.stato)) errors.push(`${label}: stato evento non valido.`);
         if (record.dataOut && !isValidYmd(record.dataOut)) errors.push(`${label}: data di uscita non valida.`);
         if (record.dataIn && !isValidYmd(record.dataIn)) errors.push(`${label}: data di rientro non valida.`);
         if (record.dataOut && record.dataIn && record.dataIn < record.dataOut) errors.push(`${label}: rientro precedente all'uscita.`);
         if (record.items != null && !isPlainObject(record.items)) errors.push(`${label}: materiali non validi.`);
         if (isPlainObject(record.items)) Object.entries(record.items).forEach(([itemKey, itemEntry]) => {
-          if (!isPlainObject(itemEntry) || typeof itemEntry.id !== 'string' || !itemEntry.id || invalidKey.test(itemKey)) errors.push(`${label}: riga materiale non valida.`);
+          if (!isPlainObject(itemEntry) || itemEntry.id !== itemKey || !isSafeDataId(itemKey)) errors.push(`${label}: riga materiale non valida.`);
           else if (!Number.isFinite(Number(itemEntry.qty)) || Number(itemEntry.qty) <= 0 || Number(itemEntry.qty) > 1000000000) errors.push(`${label}: quantità materiale non valida.`);
+        });
+        if (record.team != null && !isPlainObject(record.team)) errors.push(`${label}: team evento non valido.`);
+        if (isPlainObject(record.team)) Object.entries(record.team).forEach(([memberKey, assignment]) => {
+          if (!isPlainObject(assignment) || assignment.id !== memberKey || !isSafeDataId(memberKey)) errors.push(`${label}: assegnazione team non valida.`);
+        });
+        if (record.quote != null && !isPlainObject(record.quote)) errors.push(`${label}: configurazione preventivo non valida.`);
+        const rentals = isPlainObject(record.quote) ? record.quote.externalRentals : null;
+        if (rentals != null && !Array.isArray(rentals) && !isPlainObject(rentals)) errors.push(`${label}: noleggi terzi non validi.`);
+        if (Array.isArray(rentals) || isPlainObject(rentals)) Object.values(rentals).forEach(rental => {
+          if (!isPlainObject(rental) || !isSafeDataId(rental.id)) errors.push(`${label}: riga noleggio terzi non valida.`);
         });
       }
       if (branch === 'team' && (typeof record.nome !== 'string' || !record.nome.trim())) errors.push(`${label}: nome membro mancante.`);
@@ -2910,6 +3039,7 @@ function validateBackupData(backup) {
       }
       if (branch === 'loans') {
         if (typeof record.itemId !== 'string' || !record.itemId) errors.push(`${label}: articolo prestito mancante.`);
+        if (record.status != null && !['open', 'returned'].includes(record.status)) errors.push(`${label}: stato prestito non valido.`);
         if (!Number.isFinite(Number(record.qty)) || Number(record.qty) <= 0 || Number(record.qty) > 1000000000) errors.push(`${label}: quantità prestito non valida.`);
         ['startDate', 'endDate', 'returnedAt'].forEach(field => {
           if (record[field] && field !== 'returnedAt' && !isValidYmd(record[field])) errors.push(`${label}: ${field} non valida.`);
@@ -3454,7 +3584,7 @@ function renderMagazzino() {
     <div class="category-section">
       <div class="cat-header">
         <div class="cat-label"><span>${getCategoryIcon(cat)}</span>${escHtml(cat)}</div>
-        <div class="cat-count">${catItems.length} art. / ${catItems.reduce((s,i)=>s+i.qty,0)} pz</div>
+        <div class="cat-count">${catItems.length} art. / ${catItems.reduce((sum, item) => sum + (Math.max(0, parseInt(item.qty, 10) || 0)), 0)} pz</div>
         <div class="cat-line"></div>
       </div>
       <div class="items-grid">${catItems.map(renderItemCard).join('')}</div>
@@ -3463,9 +3593,13 @@ function renderMagazzino() {
 }
 
 function hl(text, q) {
-  if (!q || !text) return text || '';
-  const esc = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  return text.replace(new RegExp(`(${esc})`, 'gi'), '<mark>$1</mark>');
+  const value = String(text ?? '');
+  if (!q || !value) return escHtml(value);
+  const escapedQuery = String(q).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return value
+    .split(new RegExp(`(${escapedQuery})`, 'gi'))
+    .map((part, index) => index % 2 ? `<mark>${escHtml(part)}</mark>` : escHtml(part))
+    .join('');
 }
 
 function renderItemCard(item) {
@@ -3867,8 +4001,6 @@ function renderServiceCard(svc) {
   const materialStats = getServiceMaterialStats(svcEntries);
   const quoteSummary = getServiceQuoteSummary(svc);
   const availabilityIssues = getServiceAvailabilityIssues(svc);
-  const readinessBadge = window.versoFeatures?.renderServiceReadinessBadge?.(svc) || '';
-  const readinessChecklist = window.versoFeatures?.renderServiceChecklist?.(svc) || '';
   const isExpanded = expandedServiceCards.has(svcId);
 
   return `
@@ -3877,8 +4009,7 @@ function renderServiceCard(svc) {
         <div style="flex:1">
           <div class="service-title-row">
             <div class="service-name">${escHtml(svc.nome || 'Evento')}</div>
-            <div class="service-status ${statusClass[svcStatus] || statusClass.planned}">${statusLabels[svcStatus] || svcStatus}</div>
-            ${readinessBadge}
+            <div class="service-status ${statusClass[svcStatus] || statusClass.planned}">${escHtml(statusLabels[svcStatus] || svcStatus)}</div>
           </div>
           <div class="service-meta-row">
             <div class="service-meta-item">
@@ -3908,7 +4039,6 @@ function renderServiceCard(svc) {
       </div>
       <div class="service-card-body">
         ${renderServiceAvailabilityAlert(availabilityIssues)}
-        ${readinessChecklist}
         ${svc.note?`<div class="service-note">📝 ${escHtml(svc.note)}</div>`:''}
         <div class="service-items-list">
           ${renderServiceMaterialsHtml(svcEntries)}
@@ -4166,7 +4296,11 @@ function openModalFinance(id = null) {
   document.getElementById('finDescription').value = entry?.description || '';
   document.getElementById('finAmount').value = normalizeMoney(entry?.amount || 0);
   openModal('modalFinance');
-  setTimeout(() => document.getElementById('finDescription').focus(), 160);
+  setTimeout(() => {
+    if (document.getElementById('modalFinance')?.classList.contains('open')) {
+      document.getElementById('finDescription')?.focus();
+    }
+  }, 160);
 }
 
 function saveFinanceEntry() {
@@ -4375,7 +4509,11 @@ function openModalTruck(id = null) {
   document.getElementById('truckNote').value = entry?.note || '';
   openModal('modalTruck');
   if (!isMobileViewport()) {
-    setTimeout(() => document.getElementById(id ? 'truckPerson' : 'truckDate')?.focus(), 160);
+    setTimeout(() => {
+      if (document.getElementById('modalTruck')?.classList.contains('open')) {
+        document.getElementById(id ? 'truckPerson' : 'truckDate')?.focus();
+      }
+    }, 160);
   }
 }
 
@@ -4825,13 +4963,13 @@ function renderDisponibilita() {
           const cls = avail === 0 ? 'avail-none' : avail <= 2 ? 'avail-warn' : 'avail-ok';
           return `<div class="avail-item">
             <div>
-              <div class="avail-item-name">${item.nome}${item.modello?` <span class="avail-item-model">${item.modello}</span>`:''}</div>
-              ${item.brand?`<div class="avail-item-brand">${item.brand}</div>`:''}
+              <div class="avail-item-name">${escHtml(item.nome || 'Articolo')}${item.modello?` <span class="avail-item-model">${escHtml(item.modello)}</span>`:''}</div>
+              ${item.brand?`<div class="avail-item-brand">${escHtml(item.brand)}</div>`:''}
               ${isConsumableItem(item) ? `<div class="avail-item-brand" style="color:var(--warning);">Consumabile</div>` : ''}
             </div>
             <div class="avail-numbers">
               <div class="avail-numbers-main ${cls}">${avail}</div>
-              <div class="avail-numbers-total">/ ${item.qty}</div>
+              <div class="avail-numbers-total">/ ${Math.max(0, parseInt(item.qty, 10) || 0)}</div>
             </div>
           </div>`;
         }).join('')}
@@ -4911,7 +5049,7 @@ function renderPrices() {
                 <div class="pricing-item-card">
                   <div class="pricing-item-head">
                     <div style="flex:1;">
-                      <div class="pricing-item-name">${getItemDisplayName(item)}</div>
+                      <div class="pricing-item-name">${escHtml(getItemDisplayName(item))}</div>
                       ${item.brand ? `<div class="pricing-item-brand">${escHtml(item.brand)}</div>` : ''}
                     </div>
                     <div class="tag tag-serial" style="font-size:0.6rem;">${parseInt(item.qty, 10) || 0} pz</div>
@@ -5117,7 +5255,7 @@ function renderQuotes() {
               <span>📍 ${escHtml(svc.luogo || 'Luogo non impostato')}</span>
               <span>📅 ${formatDate(svc.dataOut)} → ${formatDate(svc.dataIn)}</span>
               ${svc.cliente ? `<span>👤 ${escHtml(svc.cliente)}</span>` : ''}
-              <span>${statusLabel}</span>
+              <span>${escHtml(statusLabel)}</span>
               <span>📦 ${summary.lines.length} righe / ${totalQty} pz</span>
               ${summary.externalLines.length ? `<span>🏷️ ${summary.externalLines.length} noleggi terzi</span>` : ''}
               ${summary.missingCount ? `<span style="color:var(--warning);">⚠ ${summary.missingCount} senza prezzo</span>` : ''}
@@ -5557,7 +5695,11 @@ function openModalItem(id = null) {
   populateSuggestionPicker(id);
   renderItemSuggestionLinks();
   openModal('modalItem');
-  setTimeout(()=>document.getElementById('fNome').focus(),200);
+  setTimeout(() => {
+    if (document.getElementById('modalItem')?.classList.contains('open')) {
+      document.getElementById('fNome')?.focus();
+    }
+  }, 200);
 }
 
 function saveItem() {
@@ -5694,7 +5836,11 @@ function openModalService(id = null) {
   populateItemPicker();
   renderSvcSelectedItems();
   openModal('modalService');
-  setTimeout(()=>document.getElementById('sNome').focus(),200);
+  setTimeout(() => {
+    if (document.getElementById('modalService')?.classList.contains('open')) {
+      document.getElementById('sNome')?.focus();
+    }
+  }, 200);
 }
 
 function setServicePickerCategory(value) {
@@ -5729,9 +5875,9 @@ function dateRangesOverlap(startA, endA, startB, endB) {
 
 function getServiceReservedQtyForModal(itemId) {
   const { dataOut, dataIn, hasRange } = getServiceModalDateRange();
-  let busy = getOpenLoanQty(itemId);
-  Object.values(services || {}).forEach(svc => {
-    if (!svc || svc.id === editSvcId || svc.stato === 'returned' || !svc.items?.[itemId]) return;
+  let busy = hasRange ? getLoanQtyForDateRange(itemId, dataOut, dataIn) : getOpenLoanQty(itemId);
+  Object.entries(services || {}).forEach(([serviceKey, svc]) => {
+    if (!svc || serviceKey === editSvcId || svc.id === editSvcId || svc.stato === 'returned' || !svc.items?.[itemId]) return;
     if (hasRange) {
       const svcOut = svc.dataOut || '';
       const svcIn = svc.dataIn || svcOut;
@@ -6033,7 +6179,9 @@ function saveService() {
 // ==================== MODAL UTILS ====================
 function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) {
-  document.getElementById(id).classList.remove('open');
+  const modal = document.getElementById(id);
+  if (!modal) return;
+  modal.classList.remove('open');
   if (id === 'modalAssign') assigningSvcId = null;
   if (id === 'modalItem') itemSuggestedLinks = [];
   if (id === 'modalItem') { toggleCategoryCreator(false); clearCategoryCreator(); }
@@ -6043,9 +6191,11 @@ function closeModal(id) {
     servicePickerSearch = '';
     delete document.getElementById(id).dataset.duplicateQuote;
   }
+  if (id === 'modalItem') editItemId = null;
+  if (id === 'modalService') editSvcId = null;
+  if (id === 'modalMember') editMemberId = null;
   if (id === 'modalFinance') editFinanceId = null;
   if (id === 'modalTruck') editTruckId = null;
-  editItemId = null; editSvcId = null;
 }
 function handleOverlay(e, id) { if (e.target === document.getElementById(id)) closeModal(id); }
 
@@ -6068,7 +6218,7 @@ document.getElementById('searchLoans').addEventListener('input', e => { loanSear
 function exportCSV() {
   const arr = Object.values(items);
   const cols = ['Nome','Brand','Modello','Categoria','Tipo','Quantità','Prezzo Preventivo','Non fatturare','Posizione','Seriale','Note'];
-  const rows = arr.map(i=>[i.nome,i.brand,i.modello,i.categoria,getItemTypeMeta(i).label,i.qty,getItemPrice(i),isItemNoCharge(i) ? 'Sì' : 'No',i.posizione,i.seriale,i.note].map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(','));
+  const rows = arr.map(i=>[i.nome,i.brand,i.modello,i.categoria,getItemTypeMeta(i).label,i.qty,getItemPrice(i),isItemNoCharge(i) ? 'Sì' : 'No',i.posizione,i.seriale,i.note].map(v=>`"${String(v ?? '').replace(/"/g,'""')}"`).join(','));
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob(['\ufeff'+[cols.join(','),...rows].join('\n')],{type:'text/csv;charset=utf-8;'}));
   a.download = `inventario_verso_service_${new Date().toISOString().slice(0,10)}.csv`;
@@ -6078,7 +6228,7 @@ function exportCSV() {
 
 // ==================== UTILS ====================
 function formatDate(d) {
-  if (!d) return '—';
+  if (!isValidYmd(d)) return '—';
   const [y,m,dd] = d.split('-');
   return `${dd}/${m}/${y}`;
 }
@@ -6117,16 +6267,16 @@ function haptic(kind = 'light') {
 }
 
 document.addEventListener('keydown', e => {
-  if (e.key==='Escape') {
-    closeModal('modalItem');
-    closeModal('modalService');
-    closeModal('modalMember');
-    closeModal('modalAssign');
-    closeModal('modalQr');
-    closeModal('modalScanAction');
-    closeModal('modalTruck');
-    toggleMobileMenu(false);
+  if (e.key !== 'Escape') return;
+  const openOverlays = [...document.querySelectorAll('.modal-overlay.open')];
+  const topOverlay = openOverlays.at(-1);
+  if (topOverlay) {
+    e.preventDefault();
+    if (topOverlay.classList.contains('feature-overlay')) window.versoFeatures?.closeFeatureModal(topOverlay.id);
+    else closeModal(topOverlay.id);
+    return;
   }
+  toggleMobileMenu(false);
 });
 
 window.addEventListener('error', e => {
@@ -6154,7 +6304,7 @@ function getMemberBusyEvents(memberId) {
 }
 
 function getInitials(name) {
-  return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
+  return String(name || '').trim().split(/\s+/).filter(Boolean).map(word => word[0]).join('').toUpperCase().slice(0, 2) || '?';
 }
 
 function getTeamMonthlyHoursRows(monthKey) {
@@ -6204,7 +6354,7 @@ function exportTeamHoursCsv() {
     return;
   }
   const cols = ['Mese', 'Membro', 'Ore Totali', 'Eventi'];
-  const csvRows = rows.map(r => [monthKey, r.nome, formatHours(r.ore), r.eventi].map(v => `"${String(v || '').replace(/"/g, '""')}"`).join(','));
+  const csvRows = rows.map(r => [monthKey, r.nome, formatHours(r.ore), r.eventi].map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(','));
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob(['\ufeff' + [cols.join(','), ...csvRows].join('\n')], { type: 'text/csv;charset=utf-8;' }));
   a.download = `ore_team_${monthKey}.csv`;
@@ -6221,7 +6371,7 @@ function renderAssignmentMemberRow(svc, assignment, context = 'team') {
   const name = member ? member.nome : 'Membro rimosso';
   const inputId = getAssignmentHoursInputId(svc.id, assignment.id, context);
   return `<div class="assigned-member-row">
-    <div class="assigned-member-avatar">${member ? getInitials(member.nome) : '?'}</div>
+    <div class="assigned-member-avatar">${member ? escHtml(getInitials(member.nome)) : '?'}</div>
     <div class="assigned-member-name">${escHtml(name)}</div>
     ${assignment.ruolo ? `<div class="assigned-member-role">${escHtml(assignment.ruolo)}</div>` : ''}
     <div class="assigned-hours-wrap">
@@ -6256,10 +6406,10 @@ function renderTeam() {
       const busyEvents = getMemberBusyEvents(m.id);
       const isBusy = busyEvents.length > 0;
       return `<div class="member-row">
-        <div class="member-avatar">${getInitials(m.nome)}</div>
+        <div class="member-avatar">${escHtml(getInitials(m.nome || ''))}</div>
         <div class="member-info">
-          <div class="member-name">${m.nome}</div>
-          <div class="member-role-tag">${isBusy ? '🚚 In evento: ' + busyEvents.map(e=>e.nome).join(', ') : m.ruolo || 'Nessun ruolo'}</div>
+          <div class="member-name">${escHtml(m.nome || 'Membro')}</div>
+          <div class="member-role-tag">${escHtml(isBusy ? '🚚 In evento: ' + busyEvents.map(e => e.nome || 'Evento').join(', ') : m.ruolo || 'Nessun ruolo')}</div>
         </div>
         <div class="member-status ${isBusy ? 'busy' : 'free'}" title="${isBusy ? 'Occupato' : 'Disponibile'}"></div>
         <div class="member-actions">
@@ -6288,12 +6438,12 @@ function renderTeam() {
         <button class="btn btn-ghost btn-sm" onclick="exportTeamHoursCsv()">CSV ore</button>
       </div>
     </div>
-    <div class="team-report-meta">${formatMonthLabel(monthKey)} · Totale <b>${formatHours(monthlyTotalHours)} h</b> · ${monthlyRows.length} membri</div>
+    <div class="team-report-meta">${escHtml(formatMonthLabel(monthKey))} · Totale <b>${formatHours(monthlyTotalHours)} h</b> · ${monthlyRows.length} membri</div>
     <div class="team-report-list">
       ${monthlyRows.length === 0
         ? '<div class="team-report-empty">Nessuna ora registrata per questo mese.</div>'
         : monthlyRows.map(r => `<div class="team-report-row">
-            <div class="team-report-name">${r.nome}</div>
+            <div class="team-report-name">${escHtml(r.nome)}</div>
             <div class="team-report-events">${r.eventi} ${r.eventi === 1 ? 'evento' : 'eventi'}</div>
             <div class="team-report-hours">${formatHours(r.ore)} h</div>
           </div>`).join('')
@@ -6382,7 +6532,11 @@ function openModalMember(id = null) {
     ['mNome','mRuolo','mTelefono','mNote'].forEach(f => document.getElementById(f).value = '');
   }
   openModal('modalMember');
-  setTimeout(() => document.getElementById('mNome').focus(), 200);
+  setTimeout(() => {
+    if (document.getElementById('modalMember')?.classList.contains('open')) {
+      document.getElementById('mNome')?.focus();
+    }
+  }, 200);
 }
 
 function saveMember() {
@@ -6440,7 +6594,7 @@ function openAssignModal(svcId) {
     return;
   }
 
-  sel.innerHTML = available.map(m => `<option value="${m.id}">${m.nome}${m.ruolo ? ' — ' + m.ruolo : ''}</option>`).join('');
+  sel.innerHTML = available.map(m => `<option value="${escHtml(m.id)}">${escHtml(m.nome || 'Membro')}${m.ruolo ? ' — ' + escHtml(m.ruolo) : ''}</option>`).join('');
   document.getElementById('assignRuolo').value = '';
   document.getElementById('assignOre').value = '0';
   openModal('modalAssign');
@@ -6576,6 +6730,10 @@ let currentQrItemId = null;
 function showQrModal(itemId) {
   const item = items[itemId];
   if (!item) return;
+  if (typeof window.QRCode !== 'function') {
+    showToast('Generatore QR non disponibile: controlla la connessione e ricarica', 'danger');
+    return;
+  }
   currentQrItemId = itemId;
   document.getElementById('modalQrTitle').textContent = item.nome;
   document.getElementById('modalQrSubtitle').textContent = [item.brand, item.modello].filter(Boolean).join(' · ') || 'Articolo Magazzino';
@@ -6616,11 +6774,15 @@ function printQr() {
   if (!canvas) return;
   const item = items[currentQrItemId];
   const win = window.open('', '_blank');
-  win.document.write(`<html><head><title>QR - ${item?.nome||''}</title></head><body style="text-align:center;padding:2rem;font-family:sans-serif;">
+  if (!win) {
+    showToast('Popup bloccato dal browser', 'danger');
+    return;
+  }
+  win.document.write(`<html><head><meta charset="UTF-8"><title>QR - ${escHtml(item?.nome || '')}</title></head><body style="text-align:center;padding:2rem;font-family:sans-serif;">
     <img src="${canvas.toDataURL()}" style="width:200px;height:200px;display:block;margin:0 auto 1rem;">
-    <div style="font-size:1.2rem;font-weight:bold;">${item?.nome||''}</div>
-    ${item?.brand?`<div style="font-size:0.9rem;color:#888;">${item.brand}${item.modello?' · '+item.modello:''}</div>`:''}
-    <div style="font-size:0.7rem;color:#bbb;margin-top:0.5rem;">Verso Service · ID: ${currentQrItemId}</div>
+    <div style="font-size:1.2rem;font-weight:bold;">${escHtml(item?.nome || '')}</div>
+    ${item?.brand?`<div style="font-size:0.9rem;color:#888;">${escHtml(item.brand)}${item.modello?' · '+escHtml(item.modello):''}</div>`:''}
+    <div style="font-size:0.7rem;color:#bbb;margin-top:0.5rem;">Verso Service · ID: ${escHtml(currentQrItemId)}</div>
   </body></html>`);
   win.document.close();
   win.print();
@@ -6648,13 +6810,13 @@ function renderQrCodes() {
         <div class="cat-count">${catItems.length} articoli</div>
         <div class="cat-line"></div>
       </div>
-      <div class="qr-grid" id="qrGrid_${cat.replace(/[^a-z]/gi,'_')}">
+      <div class="qr-grid">
         ${catItems.map(item => `
-          <div class="qr-card" id="qrcard_${item.id}">
-            <div id="qr_mini_${item.id}"></div>
-            <div class="qr-card-name">${item.nome}${item.modello?`<div style="font-weight:400;font-size:0.78em;color:var(--text-dim)">${item.modello}</div>`:''}</div>
-            ${item.brand?`<div class="qr-card-brand">${item.brand}</div>`:''}
-            <div class="qr-card-id">ID: ${item.id}</div>
+          <div class="qr-card" id="qrcard_${escHtml(item.id)}">
+            <div id="qr_mini_${escHtml(item.id)}"></div>
+            <div class="qr-card-name">${escHtml(item.nome || 'Articolo')}${item.modello?`<div style="font-weight:400;font-size:0.78em;color:var(--text-dim)">${escHtml(item.modello)}</div>`:''}</div>
+            ${item.brand?`<div class="qr-card-brand">${escHtml(item.brand)}</div>`:''}
+            <div class="qr-card-id">ID: ${escHtml(item.id)}</div>
             <div class="qr-card-actions">
               <button class="btn btn-ghost btn-sm" onclick="showQrModal('${item.id}')">🔍 Dettaglio</button>
               <button class="btn btn-ghost btn-sm" onclick="printSingleQr('${item.id}')">🖨️</button>
@@ -7053,7 +7215,7 @@ function processQrCode(code) {
     resultEl.style.display = 'block';
     resultEl.innerHTML = `
       <div style="background:rgba(255,68,68,0.08);border:1px solid rgba(255,68,68,0.2);border-left:3px solid var(--danger);border-radius:4px;padding:1rem;font-family:monospace;font-size:0.8rem;color:var(--danger);">
-        ❌ Articolo non trovato per il codice: <strong>${normalizedCode}</strong>
+        ❌ Articolo non trovato per il codice: <strong>${escHtml(normalizedCode)}</strong>
       </div>`;
     resultEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
     return;
@@ -7067,18 +7229,18 @@ function processQrCode(code) {
     .sort((a, b) => new Date(a.dataOut) - new Date(b.dataOut));
   const svcOptionsHtml = selectableServices.map(s => {
     const status = s.stato === 'active' ? 'In corso' : 'Pianificato';
-    return `<option value="${s.id}">${s.nome} · ${formatDate(s.dataOut)} · ${status}</option>`;
+    return `<option value="${escHtml(s.id)}">${escHtml(s.nome || 'Evento')} · ${formatDate(s.dataOut)} · ${status}</option>`;
   }).join('');
 
   resultEl.style.display = 'block';
   resultEl.innerHTML = `
     <div class="scan-found">
       <div style="font-family:monospace;font-size:0.62rem;color:var(--success);letter-spacing:0.15em;margin-bottom:0.4rem;">✅ ARTICOLO TROVATO</div>
-      <div class="scan-found-name">${item.nome}${item.modello?' — '+item.modello:''}</div>
-      ${item.brand?`<div class="scan-found-brand">${item.brand}</div>`:'<div style="margin-bottom:0.8rem"></div>'}
+      <div class="scan-found-name">${escHtml(item.nome || 'Articolo')}${item.modello?' — '+escHtml(item.modello):''}</div>
+      ${item.brand?`<div class="scan-found-brand">${escHtml(item.brand)}</div>`:'<div style="margin-bottom:0.8rem"></div>'}
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.6rem;margin-bottom:1rem;">
         <div style="background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:0.6rem;text-align:center;">
-          <div style="font-family:monospace;font-size:1.3rem;font-weight:700;color:var(--text)">${item.qty}</div>
+          <div style="font-family:monospace;font-size:1.3rem;font-weight:700;color:var(--text)">${Math.max(0, parseInt(item.qty, 10) || 0)}</div>
           <div style="font-family:monospace;font-size:0.58rem;color:var(--text-dim);letter-spacing:0.1em;">TOTALE</div>
         </div>
         <div style="background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:0.6rem;text-align:center;">
@@ -7090,7 +7252,7 @@ function processQrCode(code) {
           <div style="font-family:monospace;font-size:0.58rem;color:var(--text-dim);letter-spacing:0.1em;">DISPONIBILI</div>
         </div>
       </div>
-      ${item.posizione?`<div style="font-family:monospace;font-size:0.7rem;color:var(--accent2);margin-bottom:1rem;">📍 ${item.posizione}</div>`:''}
+      ${item.posizione?`<div style="font-family:monospace;font-size:0.7rem;color:var(--accent2);margin-bottom:1rem;">📍 ${escHtml(item.posizione)}</div>`:''}
       <div class="scan-actions">
         <button class="scan-action-btn" onclick="scanChangeQty('${itemId}',+1)">+ Aggiungi 1</button>
         <button class="scan-action-btn" onclick="scanChangeQty('${itemId}',-1)">− Rimuovi 1</button>
@@ -7420,7 +7582,7 @@ syncMobileNavUi();
   </div>
 </div>
 
-<script src="./app-features.js"></script>
+<script src="./app-features.js?v=20260822-3"></script>
 
 </body>
 </html>
