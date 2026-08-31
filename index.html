@@ -4025,14 +4025,49 @@ function downloadServiceLoadList(id) {
   showToast(`Lista carico pronta: ${svc.nome}`);
 }
 
+function getServiceTimelineGroup(svc, today = getLocalDateKey()) {
+  const start = isValidYmd(svc?.dataOut) ? svc.dataOut : '';
+  const end = isValidYmd(svc?.dataIn) ? svc.dataIn : start;
+  const activeByDate = !!start && start <= today && end >= today;
+  if (svc?.stato === 'active' || activeByDate) return 0;
+  if (start && start > today) return 1;
+  return 2;
+}
+
+function compareServicesByTimeline(a, b, today = getLocalDateKey()) {
+  const groupA = getServiceTimelineGroup(a, today);
+  const groupB = getServiceTimelineGroup(b, today);
+  if (groupA !== groupB) return groupA - groupB;
+
+  const startA = isValidYmd(a?.dataOut) ? a.dataOut : '';
+  const startB = isValidYmd(b?.dataOut) ? b.dataOut : '';
+  const endA = isValidYmd(a?.dataIn) ? a.dataIn : startA;
+  const endB = isValidYmd(b?.dataIn) ? b.dataIn : startB;
+
+  // In corso: prima quello che termina prima. Futuri: prima il più vicino.
+  // Passati: prima il più recente, così la cronologia vecchia scende in fondo.
+  if (groupA === 0) {
+    const byEnd = endA.localeCompare(endB);
+    if (byEnd !== 0) return byEnd;
+  } else if (groupA === 1) {
+    const byStart = startA.localeCompare(startB);
+    if (byStart !== 0) return byStart;
+  } else {
+    const byMostRecent = endB.localeCompare(endA);
+    if (byMostRecent !== 0) return byMostRecent;
+  }
+
+  return String(a?.nome || '').localeCompare(String(b?.nome || ''), 'it', { sensitivity: 'base' });
+}
+
 function renderService() {
-  const arr = Object.values(services).sort((a,b) => new Date(a.dataOut) - new Date(b.dataOut));
+  const arr = Object.values(services);
   const q = svcSearch.toLowerCase();
   const filtered = arr.filter(s => {
     if (svcFilter !== 'all' && s.stato !== svcFilter) return false;
-    if (q) return [s.nome,s.luogo,s.cliente].some(v=>v?.toLowerCase().includes(q));
+    if (q) return [s.nome,s.luogo,s.cliente].some(v => String(v || '').toLowerCase().includes(q));
     return true;
-  });
+  }).sort((a, b) => compareServicesByTimeline(a, b));
 
   const container = document.getElementById('mainSvc');
   if (filtered.length === 0) {
