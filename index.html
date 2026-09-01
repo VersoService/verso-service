@@ -4060,6 +4060,21 @@ function compareServicesByTimeline(a, b, today = getLocalDateKey()) {
   return String(a?.nome || '').localeCompare(String(b?.nome || ''), 'it', { sensitivity: 'base' });
 }
 
+function compareQuotesByPriority(a, b, today = getLocalDateKey()) {
+  const groupA = getServiceTimelineGroup(a, today);
+  const groupB = getServiceTimelineGroup(b, today);
+  if (groupA !== groupB) return groupA - groupB;
+
+  // Nei lavori conclusi mostriamo prima ciò che deve ancora essere incassato.
+  if (groupA === 2) {
+    const paidA = a?.pagato === true ? 1 : 0;
+    const paidB = b?.pagato === true ? 1 : 0;
+    if (paidA !== paidB) return paidA - paidB;
+  }
+
+  return compareServicesByTimeline(a, b, today);
+}
+
 function renderService() {
   const arr = Object.values(services);
   const q = svcSearch.toLowerCase();
@@ -5349,7 +5364,7 @@ function removeQuoteRentalRow(svcId, rentalId) {
 }
 
 function renderQuotes() {
-  const arr = Object.values(services).sort((a, b) => new Date(a.dataOut) - new Date(b.dataOut));
+  const arr = Object.values(services).sort((a, b) => compareQuotesByPriority(a, b));
   const q = quoteSearch.trim().toLowerCase();
   const filtered = arr.filter(svc => {
     if (!q) return true;
@@ -6603,7 +6618,7 @@ function renderTeam() {
 
   const svcArr = Object.values(services)
     .filter(s => s.stato !== 'returned')
-    .sort((a,b) => new Date(a.dataOut) - new Date(b.dataOut));
+    .sort((a, b) => compareServicesByTimeline(a, b));
 
   const teamEventList = document.getElementById('teamEventList');
   const statusLabels = { planned:'🔵 Pianificato', active:'🟠 In corso', returned:'✅ Rientrato' };
