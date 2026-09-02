@@ -24,7 +24,7 @@
 .global-search-trigger:hover,
 .global-search-trigger:focus-visible {
   color: var(--accent);
-  border-color: rgba(240,165,0,0.45);
+  border-color: rgba(var(--accent-rgb),0.45);
   outline: none;
 }
 
@@ -56,7 +56,7 @@
 
 .sync-status-pill.synced { color: var(--success); border-color: rgba(0,204,102,0.22); }
 .sync-status-pill.synced .sync-status-dot { background: var(--success); box-shadow: 0 0 7px rgba(0,204,102,0.55); }
-.sync-status-pill.syncing { color: var(--accent); border-color: rgba(240,165,0,0.3); }
+.sync-status-pill.syncing { color: var(--accent); border-color: rgba(var(--accent-rgb),0.3); }
 .sync-status-pill.syncing .sync-status-dot { background: var(--accent); animation: versoSyncPulse 0.8s ease-in-out infinite alternate; }
 .sync-status-pill.offline { color: var(--danger); border-color: rgba(255,68,68,0.3); }
 .sync-status-pill.offline .sync-status-dot { background: var(--danger); }
@@ -115,7 +115,7 @@ body #fabAdd { display: flex; }
 }
 .quick-action-card:hover,
 .quick-action-card:focus-visible { transform: translateY(-2px); border-color: var(--border-bright); background: var(--surface3); outline: none; }
-.quick-action-card.primary { border-color: rgba(240,165,0,0.38); background: rgba(240,165,0,0.08); }
+.quick-action-card.primary { border-color: rgba(var(--accent-rgb),0.38); background: rgba(var(--accent-rgb),0.08); }
 .quick-action-card > span { font-size: 1.45rem; }
 .quick-action-card strong { font-size: 0.86rem; }
 .quick-action-card small { color: var(--text-dim); font-size: 0.68rem; line-height: 1.35; }
@@ -131,7 +131,7 @@ body #fabAdd { display: flex; }
   border-radius: 7px;
   background: var(--surface2);
 }
-.global-search-box:focus-within { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(240,165,0,0.12); }
+.global-search-box:focus-within { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(var(--accent-rgb),0.12); }
 .global-search-box > span { color: var(--accent); font-size: 1.25rem; }
 .global-search-box input { width: 100%; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--text); font-size: 1rem; }
 .global-search-box kbd { padding: 0.2rem 0.35rem; border: 1px solid var(--border); border-radius: 4px; color: var(--text-faint); font-family: 'IBM Plex Mono', monospace; font-size: 0.55rem; }
@@ -161,7 +161,7 @@ body #fabAdd { display: flex; }
   cursor: pointer;
 }
 .global-search-result:hover,
-.global-search-result:focus-visible { background: rgba(240,165,0,0.06); outline: none; }
+.global-search-result:focus-visible { background: rgba(var(--accent-rgb),0.06); outline: none; }
 .global-search-result-icon { font-size: 1.15rem; text-align: center; }
 .global-search-result-copy { min-width: 0; }
 .global-search-result-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.84rem; font-weight: 700; }
