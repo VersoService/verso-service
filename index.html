@@ -77,7 +77,7 @@ button, .btn, .icon-btn, .tab, .nav-tab, .mobile-nav-link, .mobile-menu-btn { to
 
 /* IDENTITÀ VISIVA VERSO SERVICE */
 .brand-lockup { display: flex; align-items: center; justify-content: center; gap: 1rem; }
-.brand-image { display: block; object-fit: cover; object-position: center; mix-blend-mode: screen; }
+.brand-image { display: block; object-fit: contain; object-position: center; mix-blend-mode: normal; }
 .login-brand-image { width: min(320px, 84vw); height: 122px; }
 .loading-brand-image { width: 238px; height: 90px; }
 .header-logo-image { width: 156px; height: 52px; }
@@ -1087,7 +1087,7 @@ mark { background: rgba(var(--accent-rgb),0.25); color: var(--accent); border-ra
 <!-- LOGIN -->
 <div id="loginScreen">
   <div class="login-box">
-    <img class="brand-image login-brand-image" src="./verso-service-logo.png" alt="Verso Service — Audio e luci">
+    <img class="brand-image login-brand-image" src="./verso-service-logo-transparent-v2.png" alt="Verso Service — Audio e luci">
     <form class="login-form" onsubmit="doLogin(event)">
       <div class="login-field">
         <label>Email</label>
@@ -1106,7 +1106,7 @@ mark { background: rgba(var(--accent-rgb),0.25); color: var(--accent); border-ra
 
 <!-- LOADING -->
 <div id="loadingScreen">
-  <img class="brand-image loading-brand-image" src="./verso-service-logo.png" alt="Verso Service">
+  <img class="brand-image loading-brand-image" src="./verso-service-logo-transparent-v2.png" alt="Verso Service">
   <div class="loading-sub">Connessione al database...</div>
   <div class="spinner"></div>
 </div>
@@ -1115,7 +1115,7 @@ mark { background: rgba(var(--accent-rgb),0.25); color: var(--accent); border-ra
 
   <header>
     <div class="header-brand">
-      <img class="brand-image header-logo-image" src="./verso-service-logo.png" alt="Verso Service">
+      <img class="brand-image header-logo-image" src="./verso-service-logo-transparent-v2.png" alt="Verso Service">
       <span class="brand-mark brand-mark-header" aria-hidden="true"></span>
       <div class="header-brand-copy">
         <div class="logo">VERSO SERVICE</div>
@@ -1209,7 +1209,7 @@ mark { background: rgba(var(--accent-rgb),0.25); color: var(--accent); border-ra
     <aside class="mobile-nav-drawer" id="mobileNavDrawer" role="dialog" aria-modal="true" aria-label="Menu navigazione">
       <div class="mobile-nav-header">
         <div class="mobile-nav-brand">
-          <img class="brand-image mobile-nav-logo-image" src="./verso-service-logo.png" alt="Verso Service">
+          <img class="brand-image mobile-nav-logo-image" src="./verso-service-logo-transparent-v2.png" alt="Verso Service">
         </div>
         <button type="button" class="mobile-nav-close" aria-label="Chiudi menu" onclick="toggleMobileMenu(false)">✕</button>
       </div>
@@ -5655,7 +5655,7 @@ function copyQuoteText(svcId) {
 function buildQuoteDocumentHtml(svc, configOverride = null) {
   const summary = getServiceQuoteSummary(svc, configOverride);
   const cfg = summary.config;
-  const logoUrl = new URL('./verso-service-logo.png', window.location.href).href;
+  const logoUrl = new URL('./verso-service-logo-transparent-v2.png', window.location.href).href;
   const linesHtml = summary.lines.length
     ? summary.lines.map(line => `<tr>
         <td style="padding:10px 12px;border-bottom:1px solid #e7e2e9;">
@@ -5688,7 +5688,7 @@ function buildQuoteDocumentHtml(svc, configOverride = null) {
       .quote-sheet { max-width: 860px; margin: 0 auto; background: #fff; border: 1px solid #ded8e1; box-shadow: 0 18px 50px rgba(25,16,28,0.08); }
       .quote-header { position: relative; min-height: 126px; padding: 18px 26px; display: flex; align-items: center; justify-content: space-between; gap: 24px; overflow: hidden; background: #0e0e11; color: #fff; }
       .quote-header::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 4px; background: linear-gradient(90deg,#6d0cab,#9d0aca,#c505a8,#dd159d); }
-      .quote-logo { width: 238px; height: 90px; display: block; object-fit: cover; object-position: center; }
+      .quote-logo { width: 238px; height: 90px; display: block; object-fit: contain; object-position: left center; }
       .quote-client { max-width: 320px; color: #d8d3dc; font-size: 13px; line-height: 1.65; text-align: right; }
       .quote-client strong { color: #fff; font-size: 15px; }
       .quote-content { padding: 30px 32px 26px; }
