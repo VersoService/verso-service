@@ -697,11 +697,16 @@ mark { background: rgba(var(--accent-rgb),0.25); color: var(--accent); border-ra
 
 /* ===== PREVENTIVI ===== */
 .quote-layout { padding: 1.5rem 2rem 5rem; display: flex; flex-direction: column; gap: 1rem; }
-.quote-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+.quote-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; transition: border-color 0.2s, box-shadow 0.2s; }
+.quote-card.quote-card-paid { border-color: rgba(0,204,102,0.5); box-shadow: inset 4px 0 0 var(--success), 0 0 0 1px rgba(0,204,102,0.08); }
+.quote-card.quote-card-paid:hover { border-color: rgba(0,204,102,0.78); }
+.quote-card-paid .quote-card-head { background: linear-gradient(90deg, rgba(0,204,102,0.085), transparent 58%); }
+.quote-card-paid .quote-card-head:hover { background: linear-gradient(90deg, rgba(0,204,102,0.14), var(--surface2) 70%); }
 .quote-card.collapsed .quote-card-body { display: none; }
 .quote-card.collapsed .quote-card-head { border-bottom: none; }
 .quote-card-head { padding: 1rem 1.15rem; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; flex-wrap: wrap; cursor: pointer; transition: background 0.15s; }
 .quote-card-head:hover { background: var(--surface2); }
+.quote-card-title-row { display: flex; align-items: center; gap: 0.65rem; flex-wrap: wrap; }
 .quote-card-title { font-family: 'Montserrat', sans-serif; font-size: 1.28rem; letter-spacing: 0.1em; color: var(--text); }
 .quote-card-meta { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--text-dim); display: flex; gap: 0.9rem; flex-wrap: wrap; margin-top: 0.35rem; }
 .quote-card-body { padding: 1rem 1.15rem 1.15rem; display: flex; flex-direction: column; gap: 1rem; }
@@ -4230,11 +4235,36 @@ function toggleSvcCard(id) {
   renderService();
 }
 
+function updateQuotePaidUi(id, isPaid) {
+  const card = document.getElementById(`quoteCard_${id}`);
+  if (!card) return;
+  card.classList.toggle('quote-card-paid', isPaid);
+
+  const button = card.querySelector('.quote-paid-toggle');
+  if (!button) return;
+  const label = isPaid ? 'Pagato' : 'Da pagare';
+  button.classList.toggle('is-paid', isPaid);
+  button.setAttribute('aria-pressed', String(isPaid));
+  button.setAttribute('aria-label', isPaid
+    ? 'Preventivo pagato. Premi per rimuovere il pagamento'
+    : 'Preventivo da pagare. Premi per segnare come pagato');
+  button.setAttribute('title', isPaid
+    ? 'Premi per segnare nuovamente da pagare'
+    : 'Premi per segnare come pagato');
+  const check = button.querySelector('.service-paid-check');
+  const text = button.querySelector('.service-paid-label');
+  if (check) check.textContent = isPaid ? '✓' : '□';
+  if (text) text.textContent = label;
+}
+
 function toggleServicePaid(id) {
   const svc = services[id];
   if (!svc) return;
   const wasPaid = svc.pagato === true;
   if (wasPaid && !confirm(`Segnare nuovamente da pagare l'evento "${svc.nome || 'Evento'}"?`)) return;
+
+  const quoteCard = document.getElementById(`quoteCard_${id}`);
+  const preserveOpenQuote = currentPage === 'preventivi' && quoteCard?.classList.contains('expanded');
 
   const fb = getFbOrWarn();
   if (!fb) return;
@@ -4252,6 +4282,10 @@ function toggleServicePaid(id) {
     .then(() => {
       services[id] = { ...svc, ...paymentUpdate };
       renderService();
+      if (currentPage === 'preventivi') {
+        if (preserveOpenQuote) updateQuotePaidUi(id, isPaid);
+        else renderQuotes();
+      }
       showToast(isPaid ? `✓ Pagato: ${svc.nome || 'Evento'}` : `Da pagare: ${svc.nome || 'Evento'}`);
       haptic('success');
     })
@@ -5424,12 +5458,19 @@ function renderQuotes() {
     const cfg = summary.config;
     const statusLabel = { planned: 'Pianificato', active: 'In corso', returned: 'Rientrato' }[svc.stato] || svc.stato || '';
     const isExpanded = expandedQuoteCards.has(svc.id);
+    const isPaid = svc.pagato === true;
     const totalQty = summary.lines.reduce((sum, line) => sum + line.qty, 0);
     return `
-      <div class="quote-card ${isExpanded ? 'expanded' : 'collapsed'}" id="quoteCard_${svc.id}">
+      <div class="quote-card ${isExpanded ? 'expanded' : 'collapsed'} ${isPaid ? 'quote-card-paid' : ''}" id="quoteCard_${svc.id}">
         <div class="quote-card-head" onclick="toggleQuoteCard('${svc.id}')">
           <div style="flex:1;">
-            <div class="quote-card-title">${escHtml(svc.nome || 'Evento')}</div>
+            <div class="quote-card-title-row">
+              <div class="quote-card-title">${escHtml(svc.nome || 'Evento')}</div>
+              <button type="button" class="service-paid-toggle quote-paid-toggle ${isPaid ? 'is-paid' : ''}" aria-pressed="${isPaid}" aria-label="${isPaid ? 'Preventivo pagato. Premi per rimuovere il pagamento' : 'Preventivo da pagare. Premi per segnare come pagato'}" title="${isPaid ? 'Premi per segnare nuovamente da pagare' : 'Premi per segnare come pagato'}" onclick="event.stopPropagation(); toggleServicePaid('${svc.id}')">
+                <span class="service-paid-check" aria-hidden="true">${isPaid ? '✓' : '□'}</span>
+                <span class="service-paid-label">${isPaid ? 'Pagato' : 'Da pagare'}</span>
+              </button>
+            </div>
             <div class="quote-card-meta">
               <span>📍 ${escHtml(svc.luogo || 'Luogo non impostato')}</span>
               <span>📅 ${formatDate(svc.dataOut)} → ${formatDate(svc.dataIn)}</span>
